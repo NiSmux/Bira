@@ -26,8 +26,8 @@ class VartotojasController extends Controller
         User::create([
             'name' => $request->vardas,
             'email' => $request->e_pastas,
-            'password_hash' => Hash::make($request->slaptazodis), // <--- Naudojama čia
-            'role_id' => $request->role,
+            'password_hash' => Hash::make($request->slaptazodis),
+            'role_id' => 1,  // <-- Visada paprastas vartotojas
             'is_active' => 1
         ]);
 

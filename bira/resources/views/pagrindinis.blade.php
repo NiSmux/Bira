@@ -21,7 +21,7 @@
             @else
                 <p class="fs-4">Jūs esate svečias.</p>
                 <div class="mt-3">
-                    <a href="{{ route('prisijungimas.forma') }}" class="btn btn-primary">Prisijungti</a>
+                    <a href="{{ route('login') }}" class="btn btn-primary">Prisijungti</a>
                     <a href="{{ route('registracija.forma') }}" class="btn btn-outline-secondary">Registracija</a>
                 </div>
             @endauth

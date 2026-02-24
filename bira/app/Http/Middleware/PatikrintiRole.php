@@ -13,13 +13,11 @@ class PatikrintiRole
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next, $role)
     {
-    // Patikriname, ar vartotojas yra vadybininkas (role_id = 2)
-        if (auth()->check() && auth()->user()->role_id == 2) {
+        if (auth()->check() && auth()->user()->role_id == $role) {
             return $next($request);
         }
-
-    return redirect('/')->with('error', 'Neturite teisių.');
+        return redirect('/')->with('error', 'Neturite teisių.');
     }
 }

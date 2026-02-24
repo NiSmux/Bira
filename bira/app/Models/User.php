@@ -28,7 +28,12 @@ class User extends Authenticatable
     {
         return $this->password_hash;
     }
-
+    public function getAuthIdentifierName()
+    {
+        return 'email'; // Jau OK pagal nutylėjimą
+    }   
     // Tavo DB turi tik created_at, todėl išjungiame automatinį updated_at valdymą
-    public $timestamps = false; 
+    const CREATED_AT = 'created_at';
+    const UPDATED_AT = null;
+    public $timestamps = true;
 }
