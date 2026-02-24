@@ -10,9 +10,18 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
-        //
+    ->withMiddleware(function (Middleware $middleware) {
+        // Registruojame tavo sukurtą middleware alias'ą
+        $middleware->alias([
+            'mano_apsauga' => \App\Http\Middleware\PatikrintiArPrisijunges::class,
+        ]);
+
+        // Taip pat nurodome, kur Laravel turi nukreipti neprisijungusius
+        $middleware->redirectTo(
+            guests: '/prisijungimas',
+            users: '/'
+        );
     })
-    ->withExceptions(function (Exceptions $exceptions): void {
+    ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
