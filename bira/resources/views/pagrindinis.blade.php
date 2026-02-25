@@ -17,6 +17,8 @@
                 <form action="{{ route('atsijungti') }}" method="POST">
                     @csrf
                     <button type="submit" class="btn btn-danger">Atsijungti</button>
+                    <a href="{{ route('boards.index') }}" class="btn btn-primary">Mano lentos</a>
+                    <a href="{{ route('boards.create') }}" class="btn btn-success">Sukurti naują lentą</a>
                 </form>
             @else
                 <p class="fs-4">Jūs esate svečias.</p>
