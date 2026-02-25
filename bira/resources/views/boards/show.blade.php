@@ -48,7 +48,7 @@
 
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="h4 mb-0">{{ $board->name }}</h2>
-            <a href="{{ route('uzduotis.prideti', $board->id) }}" class="btn btn-success">+ Nauja užduotis</a>
+            <a href="{{ route('boards.tasks.createTask', $board->id) }}" class="btn btn-success">+ Nauja užduotis</a>
         </div>
 
         <div class="kanban-container h-100">
@@ -60,9 +60,33 @@
                     </div>
                     <div class="kanban-tasks" style="min-height: 400px;">
                         <!-- Užduotys bus čia -->
-                        <div class="text-center text-muted small mt-5">
-                            Nėra užduočių
-                        </div>
+                        @foreach($board->items->where('status_id', $status->id) as $item)
+                            <div class="card mb-2 shadow-sm">
+                                <div class="card-body p-2">
+                                    <strong>{{ $item->title }}</strong>
+                                    <div class="small text-muted">
+                                        {{ $item->description }}
+                                    </div>
+                                </div>
+                                <form action="{{ route('boards.tasks.destroy', [$board->id, $item->id]) }}"
+                                    method="POST"
+                                    style="display:inline-block;"
+                                    onsubmit="return confirm('Ar tikrai norite ištrinti?')">
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button class="btn btn-sm btn-danger mt-2">
+                                        🗑 Ištrinti
+                                    </button>
+                                </form>
+                            </div>
+                        @endforeach
+
+                        @if($board->items->where('status_id', $status->id)->count() == 0)
+                            <div class="text-center text-muted small mt-5">
+                                Nėra užduočių
+                            </div>
+                        @endif
                     </div>
                 </div>
             @empty

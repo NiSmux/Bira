@@ -21,12 +21,21 @@ Route::middleware(['mano_apsauga'])->group(function () {
 
         Route::post('/atsijungti', [VartotojasController::class , 'logout'])->name('atsijungti');
 
-        Route::get('/lenta/{board}', [WorkItemController::class , 'show'])->name('lenta.rodyti');
-        Route::get('/lenta/{board}/nauja-uzduotis', [WorkItemController::class , 'create'])->name('uzduotis.prideti');
-        Route::post('/lenta/uzduotis/saugoti', [WorkItemController::class , 'store'])->name('uzduotis.saugoti');
 
         // Boards Management
         Route::get('/boards', [BoardController::class , 'index'])->name('boards.index');
         Route::get('/boards/create', [BoardController::class , 'create'])->name('boards.create');
         Route::post('/boards', [BoardController::class , 'store'])->name('boards.store');
-        Route::get('/boards/{board}', [BoardController::class , 'show'])->name('boards.show');    });
+        Route::get('/boards/{board}', [BoardController::class , 'show'])->name('boards.show');   
+
+        // Forma naujai užduočiai
+        Route::get('/boards/{board}/tasks/create', [WorkItemController::class , 'create'])
+            ->name('boards.tasks.createTask');
+        // Išsaugoti užduotį
+        Route::post('/boards/{board}/tasks', [WorkItemController::class , 'store'])
+            ->name('boards.tasks.store');
+        // Užduoties ištrinimas
+        Route::delete('/boards/{board}/tasks/{task}', [WorkItemController::class, 'destroy'])
+            ->name('boards.tasks.destroy');
+        
+});

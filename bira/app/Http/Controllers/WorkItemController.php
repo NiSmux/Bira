@@ -47,64 +47,61 @@ class WorkItemController extends Controller
             ->orderBy('order_index')
             ->get();
 
-        return view('lenta.uzduotys.prideti_uzduoti', compact('board', 'itemTypes', 'priorities', 'statuses'));
+        return view('boards.tasks.createTask', compact('board', 'itemTypes', 'priorities', 'statuses'));
     }
 
     /**
      * Išsaugoti naują užduotį duomenų bazėje
      */
-    public function store(Request $request)
+   public function store(Request $request, Board $board)
     {
-        // 1. Validacija
         $validated = $request->validate([
             'title' => 'required|max:200',
             'description' => 'nullable|string',
-            'board_id' => 'required|exists:boards,id',
             'status_id' => 'required|exists:workflow_statuses,id',
             'item_type_id' => 'required|exists:item_types,id',
             'priority_id' => 'nullable|exists:priorities,id',
         ]);
 
-        // 2. Surandame lentą, kad gautume team_id
-        $board = Board::findOrFail($request->board_id);
-
-        // 3. Sukuriame užduotį
         $item = new WorkItem();
         $item->title = $request->title;
         $item->description = $request->description;
         $item->item_type_id = $request->item_type_id;
         $item->status_id = $request->status_id;
         $item->priority_id = $request->priority_id;
-        $item->team_id = $board->team_id; 
+        $item->team_id = $board->team_id;
 
-        // --- SAUGIKLIS DĖL created_by KLAIDOS ---
-        if (auth()->check()) {
-            $user = auth()->user();
-            
-            // Jei ID yra skaičius, naudojame jį. 
-            // Jei ID yra tekstas (email), surandame tikrą ID skaitmenį iš DB
-            if (is_numeric($user->id)) {
-                $item->created_by = $user->id;
-            } else {
-                // Priverstinai surandame ID pagal el. paštą
-                $userId = DB::table('users')
-                            ->where('email', $user->email)
-                            ->value('id');
-                $item->created_by = $userId;
-            }
+        $user = auth()->user();
+
+        if (is_numeric($user->id)) {
+            $item->created_by = $user->id;
         } else {
-            // Jei netyčia vartotojas nėra prisijungęs, bet pasiekė šį metodą
-            $item->created_by = 1; 
+            $item->created_by = \DB::table('users')
+                ->where('email', $user->email)
+                ->value('id');
         }
-        // ----------------------------------------
 
-        // Išsaugome užduotį (čia suveiks created_at, bet updated_at bus ignoruojamas, jei modelyje nustatei)
         $item->save();
 
-        // 4. Svarbu: Pririšame užduotį prie lentos (įrašas board_items lentelėje)
-        // Užtikrink, kad WorkItem modelyje yra boards() metodas su belongsToMany
-        $item->boards()->attach($request->board_id);
+        $item->boards()->attach($board->id);
 
-        return redirect()->route('lenta.rodyti', $board->id)->with('success', 'Užduotis sėkmingai sukurta!');
+        return redirect()
+            ->route('boards.show', $board->id)
+            ->with('success', 'Užduotis sėkmingai sukurta!');
+    }
+
+    public function destroy(Board $board, WorkItem $task)
+    {
+        // Atjungiam nuo lentos
+        $task->boards()->detach($board->id);
+
+        // Jei užduotis priklauso tik šiai lentai – galim ištrinti visiškai
+        if ($task->boards()->count() === 0) {
+            $task->delete();
+        }
+
+        return redirect()
+            ->route('boards.show', $board->id)
+            ->with('success', 'Užduotis ištrinta!');
     }
 }
