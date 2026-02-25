@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Board;
+use App\Models\WorkflowStatus;
 use Illuminate\Http\Request;
 
 class BoardController extends Controller
@@ -48,6 +49,11 @@ class BoardController extends Controller
     public function show($id)
     {
         $board = Board::findOrFail($id);
-        return view('boards.show', compact('board'));
+
+        $statuses = WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
+            ->orderBy('order_index')
+            ->get();
+
+        return view('boards.show', compact('board', 'statuses'));
     }
 }

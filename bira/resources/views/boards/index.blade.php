@@ -19,7 +19,7 @@
         @endif
 
         <div class="row">
-            @forelse ($boards as $board)
+            @forelse($boards as $board)
                 <div class="col-md-4 mb-4">
                     <div class="card shadow-sm h-100">
                         <div class="card-body">
