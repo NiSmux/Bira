@@ -104,4 +104,44 @@ class WorkItemController extends Controller
             ->route('boards.show', $board->id)
             ->with('success', 'Užduotis ištrinta!');
     }
+
+    public function edit(Board $board, WorkItem $task)
+    {
+        $itemTypes = \DB::table('item_types')->get();
+        $priorities = \DB::table('priorities')->get();
+
+        $statuses = WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
+            ->orderBy('order_index')
+            ->get();
+
+        return view('boards.tasks.editTask', compact(
+            'board',
+            'task',
+            'itemTypes',
+            'priorities',
+            'statuses'
+        ));
+    }
+    public function update(Request $request, Board $board, WorkItem $task)
+    {
+        $validated = $request->validate([
+            'title' => 'required|max:200',
+            'description' => 'nullable|string',
+            'status_id' => 'required|exists:workflow_statuses,id',
+            'item_type_id' => 'required|exists:item_types,id',
+            'priority_id' => 'nullable|exists:priorities,id',
+        ]);
+
+        $task->update([
+            'title' => $request->title,
+            'description' => $request->description,
+            'status_id' => $request->status_id,
+            'item_type_id' => $request->item_type_id,
+            'priority_id' => $request->priority_id,
+        ]);
+
+        return redirect()
+            ->route('boards.show', $board->id)
+            ->with('success', 'Užduotis atnaujinta!');
+    }
 }

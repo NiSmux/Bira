@@ -37,5 +37,9 @@ Route::middleware(['mano_apsauga'])->group(function () {
         // Užduoties ištrinimas
         Route::delete('/boards/{board}/tasks/{task}', [WorkItemController::class, 'destroy'])
             ->name('boards.tasks.destroy');
-        
+        // Užduoties redagavimas
+        Route::get('/boards/{board}/tasks/{task}/edit', [WorkItemController::class, 'edit'])
+            ->name('boards.tasks.edit');
+        Route::put('/boards/{board}/tasks/{task}', [WorkItemController::class, 'update'])
+            ->name('boards.tasks.update');
 });

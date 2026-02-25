@@ -74,6 +74,11 @@
                                     onsubmit="return confirm('Ar tikrai norite ištrinti?')">
                                     @csrf
                                     @method('DELETE')
+                                    
+                                    <a href="{{ route('boards.tasks.edit', [$board->id, $item->id]) }}"
+                                    class="btn btn-sm btn-warning mt-2">
+                                        ✏ Redaguoti
+                                    </a>
 
                                     <button class="btn btn-sm btn-danger mt-2">
                                         🗑 Ištrinti
