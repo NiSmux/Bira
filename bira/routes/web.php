@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfilisController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WorkItemController;
 use App\Http\Controllers\BoardController;
+use App\Http\Controllers\TeamController;
 
 // --- VIEŠI MARŠRUTAI (prieinami visiems) ---
 Route::get('/prisijungimas', [VartotojasController::class , 'showLoginForm'])->name('login');
@@ -22,6 +23,14 @@ Route::middleware(['mano_apsauga'])->group(function () {
 
         Route::post('/atsijungti', [VartotojasController::class , 'logout'])->name('atsijungti');
 
+
+        // Teams Management
+        Route::get('/teams', [TeamController::class, 'index'])->name('teams.index');
+        Route::get('/teams/create', [TeamController::class, 'create'])->name('teams.create');
+        Route::post('/teams', [TeamController::class, 'store'])->name('teams.store');
+        Route::get('/teams/{team}', [TeamController::class, 'show'])->name('teams.show');
+        Route::post('/teams/{team}/members', [TeamController::class, 'addMember'])->name('teams.members.store');
+        Route::delete('/teams/{team}/members/{user}', [TeamController::class, 'removeMember'])->name('teams.members.destroy');
 
         // Boards Management
         Route::get('/boards', [BoardController::class , 'index'])->name('boards.index');

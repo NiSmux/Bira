@@ -19,4 +19,9 @@ class Board extends Model
             'item_id'
         );
     }
+
+    public function team()
+    {
+        return $this->belongsTo(Team::class, 'team_id');
+    }
 }

@@ -24,6 +24,7 @@
                     <div class="card shadow-sm h-100">
                         <div class="card-body">
                             <h5 class="card-title">{{ $board->name }}</h5>
+                            <p class="mb-1"><strong>Komanda:</strong> {{ $board->team?->name ?? 'Nėra' }}</p>
                             <p class="card-text text-muted small">Sukurta: {{ $board->created_at ?? 'N/A' }}</p>
                             <a href="{{ route('boards.show', $board->id) }}" class="btn btn-outline-primary">Atidaryti lentą</a>
                         </div>

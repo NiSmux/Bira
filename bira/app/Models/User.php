@@ -32,6 +32,13 @@ class User extends Authenticatable
     {
         return 'email'; // Jau OK pagal nutylėjimą
     }   
+
+    public function teams()
+    {
+        return $this->belongsToMany(Team::class, 'team_members', 'user_id', 'team_id')
+            ->withPivot('role_in_team', 'joined_at');
+    }
+
     // Tavo DB turi tik created_at, todėl išjungiame automatinį updated_at valdymą
     const CREATED_AT = 'created_at';
     const UPDATED_AT = null;

@@ -18,6 +18,7 @@
                     @csrf
                     <button type="submit" class="btn btn-danger">Atsijungti</button>
                     <a href="{{ route('boards.index') }}" class="btn btn-primary">Mano lentos</a>
+                    <a href="{{ route('teams.index') }}" class="btn btn-outline-primary">Komandos</a>
                     <a href="{{ route('boards.create') }}" class="btn btn-success">Sukurti naują lentą</a>
                     <a href="{{ route('profilis.rodyti') }}" class="btn btn-outline-secondary">Mano profilis</a>
                 </form>
