@@ -148,4 +148,67 @@ class ProfilisController extends Controller
 
         return redirect()->route('profilis.rodyti')->with('success', 'Slaptažodis sėkmingai pakeistas!');
     }
+
+    /**
+     * Visiškai ištrinti vartotojo profilį
+     */
+    public function destroy(Request $request)
+    {
+        $user = Auth::user();
+
+        // 1. Surandame visas komandas, kurioms priklauso šis vartotojas
+        $userTeams = DB::table('team_members')
+            ->where('user_id', $user->id)
+            ->pluck('team_id');
+
+        foreach ($userTeams as $teamId) {
+            // Patikriname, kiek narių iš viso turi ši komanda
+            $membersCount = DB::table('team_members')
+                ->where('team_id', $teamId)
+                ->count();
+
+            // Jei vartotojas yra paskutinis narys šiame teame
+            if ($membersCount <= 1) {
+                // Ištriname visas komandos užduotis (work_items)
+                // Kadangi 'work_items' turi FK į 'teams', o 'board_items' priklauso 'work_items',
+                // turime išvalyti viską, kas susiję su šia komanda.
+                
+                // Pirmiausia surandame visus komandos work_items_id
+                $itemIds = DB::table('work_items')->where('team_id', $teamId)->pluck('id');
+                
+                // Išvalome sąsajas su lentomis, kurios galbūt nepriklauso šiai tarnybai (saugumo dėlei)
+                DB::table('board_items')->whereIn('item_id', $itemIds)->delete();
+                
+                // Ištriname pačias užduotis
+                DB::table('work_items')->where('team_id', $teamId)->delete();
+                
+                // Ištriname lentas (boards turi fk į teams su cascade, bet užduotis prieš tai išvalėme rankiniu būdu)
+                DB::table('boards')->where('team_id', $teamId)->delete();
+                
+                // Ištriname komandą (prieš tai išsitrina team_members per cascade)
+                DB::table('teams')->where('id', $teamId)->delete();
+            }
+        }
+
+        // 2. Jei liko užduočių kituose team'uose, kuriuos šis vartotojas SUKŪRĖ, 
+        // priskiriame jas kitam vartotojui, kad DB neleistų klaidų dėl 'created_by' FK.
+        $kitaVartotojoId = DB::table('users')
+            ->where('id', '!=', $user->id)
+            ->value('id');
+
+        if ($kitaVartotojoId) {
+            DB::table('work_items')
+                ->where('created_by', $user->id)
+                ->update(['created_by' => $kitaVartotojoId]);
+        }
+
+        // 3. Atsijungiame ir ištriname vartotoją
+        Auth::logout();
+        DB::table('users')->where('id', $user->id)->delete();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login')->with('success', 'Profilis ir jūsų valdomos komandos sėkmingai pašalintos.');
+    }
 }

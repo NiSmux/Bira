@@ -52,4 +52,5 @@ Route::middleware(['mano_apsauga'])->group(function () {
             return view('profilis.slaptazodis');
         })->name('profilis.slaptazodis');
         Route::put('/profilis/slaptazodis', [ProfilisController::class, 'keistiSlaptazodi'])->name('profilis.slaptazodis.keisti');
+        Route::delete('/profilis', [ProfilisController::class, 'destroy'])->name('profilis.trinti');
 });

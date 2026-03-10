@@ -482,6 +482,16 @@
                     <a href="{{ route('profilis.slaptazodis') }}" class="action-btn action-btn-outline">
                         <i class="bi bi-key"></i> Keisti slaptažodį
                     </a>
+
+                    <hr class="my-2 opacity-50">
+
+                    <form action="{{ route('profilis.trinti') }}" method="POST" onsubmit="return confirm('DĖMESIO! Ar tikrai norite visiškai ištrinti savo profilį? Visi jūsų duomenys bus pašalinti ir šio veiksmo atšaukti NEBŪS galima.')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="action-btn w-100" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.2);">
+                            <i class="bi bi-trash3"></i> Ištrinti profilį
+                        </button>
+                    </form>
                 </div>
             </div>
 
