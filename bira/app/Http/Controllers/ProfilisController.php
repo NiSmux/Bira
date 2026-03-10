@@ -65,6 +65,7 @@ class ProfilisController extends Controller
             ->select(
                 'work_items.id',
                 'work_items.title',
+                'work_items.story_points',
                 'work_items.updated_at',
                 'workflow_statuses.name as statusas',
                 'workflow_statuses.is_done',

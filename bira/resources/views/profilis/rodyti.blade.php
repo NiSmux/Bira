@@ -513,8 +513,13 @@
                             <span class="task-type-badge">{{ $task->tipas }}</span>
 
                             {{-- Pavadinimas --}}
-                            <div class="flex-grow-1 text-truncate">
+                            <div class="flex-grow-1 text-truncate d-flex align-items-center gap-2">
                                 <span style="font-size:0.92rem; font-weight:500;">{{ $task->title }}</span>
+                                @if($task->story_points)
+                                    <span class="badge bg-info text-dark" style="font-size: 0.65rem; padding: 0.2rem 0.4rem;" title="Story Points">
+                                        {{ $task->story_points }}
+                                    </span>
+                                @endif
                             </div>
 
                             {{-- Statusas --}}

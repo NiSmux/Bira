@@ -56,14 +56,23 @@
                 <div class="kanban-column shadow-sm">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h6 class="text-uppercase fw-bold text-secondary mb-0">{{ $status->name }}</h6>
-                        <span class="badge bg-secondary rounded-pill">0</span>
+                        <span class="badge bg-secondary rounded-pill">
+                            {{ $board->items->where('status_id', $status->id)->count() }}
+                        </span>
                     </div>
                     <div class="kanban-tasks" style="min-height: 400px;">
                         <!-- Užduotys bus čia -->
                         @foreach($board->items->where('status_id', $status->id) as $item)
                             <div class="card mb-2 shadow-sm">
                                 <div class="card-body p-2">
-                                    <strong>{{ $item->title }}</strong>
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <strong>{{ $item->title }}</strong>
+                                        @if($item->story_points)
+                                            <span class="badge bg-info text-dark" title="Story Points">
+                                                {{ $item->story_points }}
+                                            </span>
+                                        @endif
+                                    </div>
                                     <div class="small text-muted">
                                         {{ $item->description }}
                                     </div>

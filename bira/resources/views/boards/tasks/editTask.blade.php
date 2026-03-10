@@ -69,17 +69,30 @@
                     </select>
                 </div>
 
-                <div class="mb-4">
-                    <label class="form-label fw-bold">Prioritetas</label>
-                    <select name="priority_id" class="form-select">
-                        <option value="">-- Nėra prioriteto --</option>
-                        @foreach($priorities as $priority)
-                            <option value="{{ $priority->id }}"
-                                {{ old('priority_id', $task->priority_id) == $priority->id ? 'selected' : '' }}>
-                                {{ $priority->name }}
-                            </option>
-                        @endforeach
-                    </select>
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label fw-bold">Prioritetas</label>
+                        <select name="priority_id" class="form-select">
+                            <option value="">-- Nėra prioriteto --</option>
+                            @foreach($priorities as $priority)
+                                <option value="{{ $priority->id }}"
+                                    {{ old('priority_id', $task->priority_id) == $priority->id ? 'selected' : '' }}>
+                                    {{ $priority->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label fw-bold">Story Points</label>
+                        <input type="number" 
+                               name="story_points" 
+                               class="form-control" 
+                               value="{{ old('story_points', $task->story_points) }}" 
+                               min="0" 
+                               max="100" 
+                               placeholder="Pvz: 5">
+                    </div>
                 </div>
 
                 <div class="d-flex justify-content-between">

@@ -61,6 +61,7 @@ class WorkItemController extends Controller
             'status_id' => 'required|exists:workflow_statuses,id',
             'item_type_id' => 'required|exists:item_types,id',
             'priority_id' => 'nullable|exists:priorities,id',
+            'story_points' => 'nullable|integer|min:0|max:100',
         ]);
 
         $item = new WorkItem();
@@ -69,6 +70,7 @@ class WorkItemController extends Controller
         $item->item_type_id = $request->item_type_id;
         $item->status_id = $request->status_id;
         $item->priority_id = $request->priority_id;
+        $item->story_points = $request->story_points;
         $item->team_id = $board->team_id;
 
         $user = auth()->user();
@@ -130,6 +132,7 @@ class WorkItemController extends Controller
             'status_id' => 'required|exists:workflow_statuses,id',
             'item_type_id' => 'required|exists:item_types,id',
             'priority_id' => 'nullable|exists:priorities,id',
+            'story_points' => 'nullable|integer|min:0|max:100',
         ]);
 
         $task->update([
@@ -138,6 +141,7 @@ class WorkItemController extends Controller
             'status_id' => $request->status_id,
             'item_type_id' => $request->item_type_id,
             'priority_id' => $request->priority_id,
+            'story_points' => $request->story_points,
         ]);
 
         return redirect()
