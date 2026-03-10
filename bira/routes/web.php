@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\VartotojasController;
+use App\Http\Controllers\ProfilisController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WorkItemController;
 use App\Http\Controllers\BoardController;
@@ -42,4 +43,13 @@ Route::middleware(['mano_apsauga'])->group(function () {
             ->name('boards.tasks.edit');
         Route::put('/boards/{board}/tasks/{task}', [WorkItemController::class, 'update'])
             ->name('boards.tasks.update');
+
+        // Profilis
+        Route::get('/profilis', [ProfilisController::class, 'show'])->name('profilis.rodyti');
+        Route::get('/profilis/redaguoti', [ProfilisController::class, 'edit'])->name('profilis.redaguoti');
+        Route::put('/profilis', [ProfilisController::class, 'update'])->name('profilis.atnaujinti');
+        Route::get('/profilis/slaptazodis', function () {
+            return view('profilis.slaptazodis');
+        })->name('profilis.slaptazodis');
+        Route::put('/profilis/slaptazodis', [ProfilisController::class, 'keistiSlaptazodi'])->name('profilis.slaptazodis.keisti');
 });

@@ -19,6 +19,7 @@
                     <button type="submit" class="btn btn-danger">Atsijungti</button>
                     <a href="{{ route('boards.index') }}" class="btn btn-primary">Mano lentos</a>
                     <a href="{{ route('boards.create') }}" class="btn btn-success">Sukurti naują lentą</a>
+                    <a href="{{ route('profilis.rodyti') }}" class="btn btn-outline-secondary">Mano profilis</a>
                 </form>
             @else
                 <p class="fs-4">Jūs esate svečias.</p>
