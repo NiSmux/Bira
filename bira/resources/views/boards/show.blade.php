@@ -60,47 +60,52 @@
                             {{ $board->items->where('status_id', $status->id)->count() }}
                         </span>
                     </div>
-                    <div class="kanban-tasks" style="min-height: 400px;">
+                    <div class="kanban-tasks" style="min-height: 400px;" data-status-id="{{ $status->id }}">
                         <!-- Užduotys bus čia -->
                         @foreach($board->items->where('status_id', $status->id) as $item)
-                            <div class="card mb-2 shadow-sm">
+                            <div class="card mb-2 shadow-sm" data-id="{{ $item->id }}">
                                 <div class="card-body p-2">
                                     <div class="d-flex justify-content-between align-items-start">
-                                        <strong>{{ $item->title }}</strong>
-                                        @if($item->story_points)
-                                            <span class="badge bg-info text-dark" title="Story Points">
-                                                {{ $item->story_points }}
-                                            </span>
-                                        @endif
+                                        <div class="d-flex align-items-start">
+                                            @if($item->story_points)
+                                                <span class="badge bg-info text-dark me-2" title="Story Points">
+                                                    {{ $item->story_points }}
+                                                </span>
+                                            @endif
+                                            <a href="{{ route('boards.tasks.show', [$board->id, $item->id]) }}" class="text-decoration-none text-dark fw-bold">
+                                                {{ $item->title }}
+                                            </a>
+                                        </div>
                                     </div>
-                                    <div class="small text-muted">
-                                        {{ $item->description }}
+                                    <div class="small text-muted mt-1">
+                                        <strong>Prioritetas:</strong> {{ $item->priority->name ?? 'Nėra' }}
                                     </div>
                                 </div>
-                                <form action="{{ route('boards.tasks.destroy', [$board->id, $item->id]) }}"
-                                    method="POST"
-                                    style="display:inline-block;"
-                                    onsubmit="return confirm('Ar tikrai norite ištrinti?')">
-                                    @csrf
-                                    @method('DELETE')
+                                <div class="px-2 pb-2">
+                                    <a href="{{ route('boards.tasks.show', [$board->id, $item->id]) }}"
+                                        class="btn btn-sm btn-outline-primary mt-2">
+                                        👁 Peržiūrėti
+                                    </a>
                                     
                                     <a href="{{ route('boards.tasks.edit', [$board->id, $item->id]) }}"
-                                    class="btn btn-sm btn-warning mt-2">
+                                        class="btn btn-sm btn-warning mt-2">
                                         ✏ Redaguoti
                                     </a>
 
-                                    <button class="btn btn-sm btn-danger mt-2">
-                                        🗑 Ištrinti
-                                    </button>
-                                </form>
+                                    <form action="{{ route('boards.tasks.destroy', [$board->id, $item->id]) }}"
+                                        method="POST"
+                                        style="display:inline-block;"
+                                        onsubmit="return confirm('Ar tikrai norite ištrinti?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="btn btn-sm btn-danger mt-2">
+                                            🗑 Ištrinti
+                                        </button>
+                                    </form>
+                                </div>
+
                             </div>
                         @endforeach
-
-                        @if($board->items->where('status_id', $status->id)->count() == 0)
-                            <div class="text-center text-muted small mt-5">
-                                Nėra užduočių
-                            </div>
-                        @endif
                     </div>
                 </div>
             @empty
@@ -111,6 +116,51 @@
         </div>
     </div>
     
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const columns = document.querySelectorAll('.kanban-tasks');
+            
+            columns.forEach(column => {
+                new Sortable(column, {
+                    group: 'tasks',
+                    animation: 150,
+                    ghostClass: 'bg-light',
+                    onEnd: function (evt) {
+                        const itemEl = evt.item;
+                        const taskId = itemEl.getAttribute('data-id');
+                        const newStatusId = evt.to.getAttribute('data-status-id');
+                        
+                        // Update task status via AJAX
+                        fetch(`/boards/{{ $board->id }}/tasks/${taskId}/status`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({
+                                status_id: newStatusId
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (!data.success) {
+                                alert('Klaida perkeliant užduotį.');
+                                location.reload();
+                            }
+                            // Update counts and empty messages if needed (optional for basic impl)
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Sistemos klaida.');
+                            location.reload();
+                        });
+                    }
+                });
+            });
+        });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+

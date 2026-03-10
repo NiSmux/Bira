@@ -59,4 +59,11 @@ class WorkItem extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+    /**
+     * Ryšys su prioritetu
+     */
+    public function priority()
+    {
+        return $this->belongsTo(Priority::class, 'priority_id');
+    }
 }

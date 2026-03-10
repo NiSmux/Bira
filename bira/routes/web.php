@@ -43,6 +43,12 @@ Route::middleware(['mano_apsauga'])->group(function () {
             ->name('boards.tasks.edit');
         Route::put('/boards/{board}/tasks/{task}', [WorkItemController::class, 'update'])
             ->name('boards.tasks.update');
+        Route::get('/boards/{board}/tasks/{task}', [WorkItemController::class, 'show'])
+            ->name('boards.tasks.show');
+        Route::patch('/boards/{board}/tasks/{task}/status', [WorkItemController::class, 'updateStatus'])
+            ->name('boards.tasks.updateStatus');
+
+
 
         // Profilis
         Route::get('/profilis', [ProfilisController::class, 'show'])->name('profilis.rodyti');

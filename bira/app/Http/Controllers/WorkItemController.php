@@ -21,14 +21,12 @@ class WorkItemController extends Controller
     }
 
     /**
-     * Rodyti konkrečią lentą ir jos užduotis
+     * Rodyti konkrečią užduotį
      */
-    public function show($id)
+    public function show(Board $board, WorkItem $task)
     {
-        // Užkrauname lentą su jos užduotimis (naudojant boards() ryšį modelyje)
-        $board = Board::with('items.status', 'items.type')->findOrFail($id);
-        
-        return view('lenta.rodyti', compact('board'));
+        $task->load(['status', 'type', 'priority', 'creator']);
+        return view('boards.tasks.showTask', compact('board', 'task'));
     }
 
     /**
@@ -147,5 +145,18 @@ class WorkItemController extends Controller
         return redirect()
             ->route('boards.show', $board->id)
             ->with('success', 'Užduotis atnaujinta!');
+    }
+
+    public function updateStatus(Request $request, Board $board, WorkItem $task)
+    {
+        $validated = $request->validate([
+            'status_id' => 'required|exists:workflow_statuses,id',
+        ]);
+
+        $task->update([
+            'status_id' => $request->status_id,
+        ]);
+
+        return response()->json(['success' => true]);
     }
 }
