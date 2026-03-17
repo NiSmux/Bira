@@ -34,9 +34,6 @@
                 
                 <h3 class="text-xl font-bold text-white mb-2">{{ $board->name }}</h3>
                 <div class="flex items-center gap-2 mb-6">
-                    <div class="w-5 h-5 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[8px] font-bold text-muted-foreground">
-                        {{ strtoupper(substr($board->team->name ?? 'T', 0, 1)) }}
-                    </div>
                     <p class="text-sm text-muted-foreground">Komanda: <span class="text-white/80 font-medium">{{ $board->team?->name ?? 'Nėra' }}</span></p>
                 </div>
 

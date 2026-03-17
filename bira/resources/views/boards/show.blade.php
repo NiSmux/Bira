@@ -28,49 +28,47 @@
     <!-- Kanban Columns -->
     <div class="flex gap-6 overflow-x-auto pb-8 scrollbar-hide">
         @forelse($statuses as $status)
-            <div class="w-80 shrink-0">
-                <div class="flex items-center justify-between mb-4 px-2">
+            <div class="w-80 shrink-0 bg-white/[0.02] border border-white/5 rounded-3xl p-4 flex flex-col h-fit transition-colors hover:bg-white/[0.04]">
+                <div class="flex items-center justify-between mb-6 px-2">
                     <div class="flex items-center gap-3">
                         <h4 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">{{ $status->name }}</h4>
                         <span class="px-2 py-0.5 rounded-full bg-white/5 text-[10px] font-bold text-muted-foreground">
                             {{ $board->items->where('status_id', $status->id)->count() }}
                         </span>
                     </div>
-                    <button class="text-muted-foreground hover:text-white">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                    </button>
                 </div>
 
-                <div class="kanban-tasks space-y-4 min-h-[500px]" data-status-id="{{ $status->id }}">
+                <div class="kanban-tasks space-y-4 flex-1 min-h-[500px]" data-status-id="{{ $status->id }}">
                     @foreach($board->items->where('status_id', $status->id) as $item)
                         <div class="group bg-card border border-border-subtle rounded-2xl p-5 hover:border-primary/50 transition-all cursor-move shadow-sm active:scale-[0.98]" data-id="{{ $item->id }}">
-                            <div class="flex items-start justify-between mb-3">
-                                <div class="flex flex-wrap gap-2">
-                                    @if($item->story_points)
-                                        <span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 text-[10px] font-bold">
-                                            {{ $item->story_points }}
-                                        </span>
-                                    @endif
-                                    @php
-                                        $priorityColor = match(mb_strtolower($item->priority->name ?? 'Default')) {
-                                            'high', 'skubus' => 'red',
-                                            'medium', 'vidutinis' => 'amber',
-                                            'low', 'žemas' => 'emerald',
-                                            default => 'gray'
-                                        };
-                                    @endphp
-                                    <span class="px-2 py-0.5 rounded bg-{{ $priorityColor }}-500/10 text-{{ $priorityColor }}-400 text-[10px] font-bold uppercase tracking-wider">
-                                        {{ $item->priority->name ?? 'Nėra' }}
-                                    </span>
-                                </div>
-                                <div class="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                            <div class="flex items-start justify-between mb-2">
+                                <h5 class="text-white font-semibold line-clamp-2 leading-tight">{{ $item->title }}</h5>
+                                <div class="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 -mr-2">
                                     <a href="{{ route('boards.tasks.edit', [$board->id, $item->id]) }}" class="p-1.5 rounded-lg hover:bg-white/5 text-muted-foreground hover:text-white transition-colors">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                     </a>
                                 </div>
                             </div>
 
-                            <h5 class="text-white font-semibold mb-4 line-clamp-2">{{ $item->title }}</h5>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                @if($item->story_points)
+                                    <span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 text-[10px] font-bold">
+                                        {{ $item->story_points }}
+                                    </span>
+                                @endif
+                                @php
+                                    $priorityStyles = match(mb_strtolower($item->priority->name ?? 'Default')) {
+                                        'urgent', 'skubus' => 'bg-red-500/10 text-red-400',
+                                        'high', 'aukštas' => 'bg-yellow-500/10 text-yellow-400',
+                                        'medium', 'vidutinis' => 'bg-emerald-500/10 text-emerald-400',
+                                        'low', 'žemas' => 'bg-blue-500/10 text-blue-400',
+                                        default => 'bg-gray-500/10 text-gray-400'
+                                    };
+                                @endphp
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider {{ $priorityStyles }}">
+                                    {{ $item->priority->name ?? 'Nėra' }}
+                                </span>
+                            </div>
 
                             <div class="flex items-center justify-between mt-auto">
                                 <div class="flex -space-x-2">

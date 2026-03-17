@@ -71,16 +71,17 @@
                     <div>
                         <p class="text-[10px] font-bold text-muted-foreground uppercase mb-2">Prioritetas</p>
                         @php
-                            $priorityColor = match(mb_strtolower($task->priority->name ?? 'Default')) {
-                                'high', 'skubus' => 'red',
-                                'medium', 'vidutinis' => 'amber',
-                                'low', 'žemas' => 'emerald',
-                                default => 'gray'
+                            $priorityStyles = match(mb_strtolower($task->priority->name ?? 'Default')) {
+                                'urgent', 'skubus' => 'bg-red-500/10 text-red-400',
+                                'high', 'aukštas' => 'bg-yellow-500/10 text-yellow-400',
+                                'medium', 'vidutinis' => 'bg-emerald-500/10 text-emerald-400',
+                                'low', 'žemas' => 'bg-blue-500/10 text-blue-400',
+                                default => 'bg-gray-500/10 text-gray-400'
                             };
                         @endphp
-                        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-{{ $priorityColor }}-500/10 text-{{ $priorityColor }}-400 border border-{{ $priorityColor }}-500/20 font-medium">
+                        <span class="px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider {{ $priorityStyles }}">
                             {{ $task->priority->name ?? 'Nėra' }}
-                        </div>
+                        </span>
                     </div>
 
                     <div class="pt-6 border-t border-border-subtle">
