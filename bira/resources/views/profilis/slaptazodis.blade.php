@@ -1,228 +1,147 @@
-<!DOCTYPE html>
-<html lang="lt">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Keisti slaptažodį – Bira</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <style>
-        body {
-            background: #f8f9ff;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-        }
-        .navbar-bira {
-            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
-            padding: 0.75rem 1.5rem;
-        }
-        .navbar-bira .navbar-brand { font-weight: 700; font-size: 1.3rem; color: #fff !important; }
-        .nav-link-btn {
-            color: rgba(255,255,255,0.75);
-            text-decoration: none;
-            padding: 0.4rem 0.85rem;
-            border-radius: 8px;
-            font-size: 0.875rem;
-            transition: background 0.2s, color 0.2s;
-        }
-        .nav-link-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+@extends('layouts.app')
 
-        .form-card {
-            background: #fff;
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 4px 24px rgba(79,70,229,0.08);
-            border: 1px solid #e8e6ff;
-            max-width: 520px;
-            width: 100%;
-        }
-        .form-card h2 {
-            font-size: 1.35rem;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 0.4rem;
-        }
-        .form-label { font-weight: 500; font-size: 0.875rem; color: #374151; }
-        .form-control {
-            border-radius: 10px;
-            border: 1.5px solid #e2e8f0;
-            padding: 0.65rem 0.9rem;
-            font-size: 0.95rem;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        .form-control:focus {
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79,70,229,0.12);
-        }
-        .btn-save {
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            padding: 0.65rem 1.5rem;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: opacity 0.2s, transform 0.2s;
-        }
-        .btn-save:hover { opacity: 0.9; transform: translateY(-1px); color:#fff; }
-        .btn-cancel {
-            background: transparent;
-            color: #64748b;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 0.65rem 1.2rem;
-            font-weight: 500;
-            font-size: 0.95rem;
-            text-decoration: none;
-            transition: background 0.2s;
-        }
-        .btn-cancel:hover { background: #f1f5f9; color: #1e293b; }
+@section('title', 'Keisti slaptažodį – Bira')
 
-        /* Slaptažodžio stiprumo indikatrorius */
-        .strength-bar {
-            height: 4px;
-            border-radius: 10px;
-            background: #e2e8f0;
-            margin-top: 6px;
-            overflow: hidden;
-        }
-        .strength-fill {
-            height: 100%;
-            border-radius: 10px;
-            transition: width 0.3s, background 0.3s;
-            width: 0%;
-        }
-    </style>
-</head>
-<body>
+@section('hide_sidebar', true)
 
-<nav class="navbar-bira d-flex align-items-center justify-content-between mb-5">
-    <a class="navbar-brand" href="{{ route('pagrindinis') }}">
-        <i class="bi bi-kanban me-1"></i> Bira
-    </a>
-    <div class="d-flex gap-2">
-        <a href="{{ route('profilis.rodyti') }}" class="nav-link-btn">
-            <i class="bi bi-arrow-left me-1"></i>Atgal į profilį
+@section('content')
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    
+    <!-- Header -->
+    <div class="mb-10 flex items-center gap-6">
+        <a href="{{ route('profilis.rodyti') }}" class="group flex items-center justify-center w-12 h-12 rounded-xl bg-white/5 border border-white/10 text-muted-foreground hover:text-white hover:border-primary/50 transition-all">
+            <svg class="w-6 h-6 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
         </a>
-    </div>
-</nav>
-
-<div class="d-flex justify-content-center px-3">
-    <div class="form-card">
-        <div class="d-flex align-items-center gap-3 mb-4">
-            <div style="width:48px;height:48px;border-radius:14px;background:#fae8ff;display:flex;align-items:center;justify-content:center;color:#a21caf;font-size:1.4rem;">
-                <i class="bi bi-key-fill"></i>
-            </div>
-            <div>
-                <h2 class="mb-0">Keisti slaptažodį</h2>
-                <p class="text-muted mb-0" style="font-size:0.85rem;">Saugumas – pirmiausia</p>
-            </div>
+        <div>
+            <h1 class="text-3xl font-extrabold tracking-tight text-white mb-1">Keisti slaptažodį</h1>
+            <p class="text-muted-foreground">Saugumas – pirmiausia</p>
         </div>
+    </div>
 
-        @if($errors->any())
-            <div class="alert alert-danger rounded-3 mb-3" style="font-size:0.875rem;">
-                <i class="bi bi-exclamation-triangle me-1"></i>
-                <ul class="mb-0 ps-3">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+    @if($errors->any())
+        <div class="mb-8 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400">
+            <div class="flex items-center gap-3 mb-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="font-bold">Ištaisykite šias klaidas:</span>
             </div>
-        @endif
+            <ul class="list-disc list-inside text-sm space-y-1 opacity-90">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-        <form action="{{ route('profilis.slaptazodis.keisti') }}" method="POST">
+    <!-- Form Card -->
+    <div class="bg-card border border-border-subtle rounded-3xl overflow-hidden shadow-2xl">
+        <form action="{{ route('profilis.slaptazodis.keisti') }}" method="POST" class="p-8 sm:p-10 space-y-8">
             @csrf
             @method('PUT')
 
-            <div class="mb-3">
-                <label for="dabartinis_slaptazodis" class="form-label">
-                    <i class="bi bi-lock me-1 text-primary"></i> Dabartinis slaptažodis
-                </label>
-                <input
-                    type="password"
-                    id="dabartinis_slaptazodis"
-                    name="dabartinis_slaptazodis"
-                    class="form-control @error('dabartinis_slaptazodis') is-invalid @enderror"
-                    required
-                    placeholder="Įveskite dabartinį slaptažodį"
-                >
-                @error('dabartinis_slaptazodis')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-
-            <div class="mb-3">
-                <label for="naujas_slaptazodis" class="form-label">
-                    <i class="bi bi-lock-fill me-1 text-primary"></i> Naujas slaptažodis
-                </label>
-                <input
-                    type="password"
-                    id="naujas_slaptazodis"
-                    name="naujas_slaptazodis"
-                    class="form-control @error('naujas_slaptazodis') is-invalid @enderror"
-                    required
-                    minlength="8"
-                    placeholder="Mažiausiai 8 simboliai"
-                    oninput="checkStrength(this.value)"
-                >
-                <div class="strength-bar mt-1">
-                    <div class="strength-fill" id="strengthFill"></div>
+            <!-- Current Password -->
+            <div class="space-y-2">
+                <label for="dabartinis_slaptazodis" class="block text-sm font-semibold text-muted-foreground uppercase tracking-wider">Dabartinis slaptažodis</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    </div>
+                    <input
+                        type="password"
+                        id="dabartinis_slaptazodis"
+                        name="dabartinis_slaptazodis"
+                        class="block w-full pl-12 pr-4 py-3.5 bg-white/5 @error('dabartinis_slaptazodis') border-red-500/50 @else border-white/10 @enderror rounded-2xl text-white placeholder-muted-foreground/50 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
+                        required
+                        placeholder="Įveskite dabartinį slaptažodį"
+                    >
                 </div>
-                <div id="strengthText" class="mt-1" style="font-size:0.75rem; color:#64748b;"></div>
-                @error('naujas_slaptazodis')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
             </div>
 
-            <div class="mb-4">
-                <label for="naujas_slaptazodis_confirmation" class="form-label">
-                    <i class="bi bi-lock-fill me-1 text-primary"></i> Pakartokite naują slaptažodį
-                </label>
-                <input
-                    type="password"
-                    id="naujas_slaptazodis_confirmation"
-                    name="naujas_slaptazodis_confirmation"
-                    class="form-control"
-                    required
-                    placeholder="Pakartokite naują slaptažodį"
-                >
+            <!-- New Password -->
+            <div class="space-y-2">
+                <label for="naujas_slaptazodis" class="block text-sm font-semibold text-muted-foreground uppercase tracking-wider">Naujas slaptažodis</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 11-7.743-5.743L11 3l-2 2H5a2 2 0 00-2 2v10a2 2 0 002 2h2v2l2-2h2a2 2 0 002-2v-7a2 2 0 012-2h2a2 2 0 012 2v3m2 4l-2 2m2-2l2 2m-2-2l2-2m-2 2l-2-2"></path></svg>
+                    </div>
+                    <input
+                        type="password"
+                        id="naujas_slaptazodis"
+                        name="naujas_slaptazodis"
+                        class="block w-full pl-12 pr-4 py-3.5 bg-white/5 @error('naujas_slaptazodis') border-red-500/50 @else border-white/10 @enderror rounded-2xl text-white placeholder-muted-foreground/50 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
+                        required
+                        minlength="6"
+                        placeholder="Mažiausiai 6 simboliai"
+                        oninput="checkStrength(this.value)"
+                    >
+                </div>
+                <!-- Strength Indicator -->
+                <div class="space-y-1.5 pt-1">
+                    <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                        <div id="strengthFill" class="h-full w-0 transition-all duration-500 ease-out"></div>
+                    </div>
+                    <p id="strengthText" class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"></p>
+                </div>
             </div>
 
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn-save">
-                    <i class="bi bi-check2 me-1"></i> Pakeisti
+            <!-- Confirmation -->
+            <div class="space-y-2">
+                <label for="naujas_slaptazodis_confirmation" class="block text-sm font-semibold text-muted-foreground uppercase tracking-wider">Pakartokite naują slaptažodį</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <input
+                        type="password"
+                        id="naujas_slaptazodis_confirmation"
+                        name="naujas_slaptazodis_confirmation"
+                        class="block w-full pl-12 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-muted-foreground/50 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
+                        required
+                        placeholder="Pakartokite naują slaptažodį"
+                    >
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="pt-6 flex flex-col sm:flex-row gap-4">
+                <button type="submit" class="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-lg shadow-primary/20 active:scale-[0.98]">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    Pakeisti slaptažodį
                 </button>
-                <a href="{{ route('profilis.rodyti') }}" class="btn-cancel">Atšaukti</a>
+                <a href="{{ route('profilis.rodyti') }}" class="flex-1 flex items-center justify-center bg-white/5 hover:bg-white/10 text-white font-bold py-4 px-6 rounded-2xl transition-all border border-white/10 active:scale-[0.98]">
+                    Atšaukti
+                </a>
             </div>
         </form>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     function checkStrength(value) {
         const fill = document.getElementById('strengthFill');
         const text = document.getElementById('strengthText');
         let score = 0;
-        if (value.length >= 6)  score++;
-        if (value.length >= 10) score++;
+        
+        if (value.length >= 6) score++;
         if (/[A-Z]/.test(value)) score++;
         if (/[0-9]/.test(value)) score++;
         if (/[^A-Za-z0-9]/.test(value)) score++;
+        if (value.length >= 10) score++;
 
-        const levels = [
-            { pct: '0%',   color: '#e2e8f0', label: '' },
-            { pct: '25%',  color: '#ef4444', label: 'Labai silpnas' },
-            { pct: '50%',  color: '#f97316', label: 'Silpnas' },
-            { pct: '75%',  color: '#eab308', label: 'Vidutinis' },
-            { pct: '90%',  color: '#22c55e', label: 'Stiprus' },
-            { pct: '100%', color: '#15803d', label: 'Labai stiprus' },
+        const configs = [
+            { width: '0%', color: 'bg-white/10', label: '' },
+            { width: '20%', color: 'bg-red-500', label: 'Labai silpnas' },
+            { width: '40%', color: 'bg-orange-500', label: 'Silpnas' },
+            { width: '60%', color: 'bg-yellow-500', label: 'Vidutinis' },
+            { width: '80%', color: 'bg-emerald-500', label: 'Stiprus' },
+            { width: '100%', color: 'bg-primary', label: 'Ypač saugus' }
         ];
-        const lvl = levels[score] || levels[0];
-        fill.style.width = lvl.pct;
-        fill.style.background = lvl.color;
-        text.textContent = lvl.label;
-        text.style.color = lvl.color;
+
+        const config = configs[Math.min(score, 5)];
+        
+        fill.className = `h-full transition-all duration-500 ease-out ${config.color}`;
+        fill.style.width = config.width;
+        text.textContent = config.label;
+        text.className = `text-[10px] font-bold uppercase tracking-wider ${config.color.replace('bg-', 'text-')}`;
     }
 </script>
-</body>
-</html>
+@endsection

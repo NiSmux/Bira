@@ -2,6 +2,9 @@
 
 @section('title', 'Mano lentos')
 
+@section('hide_sidebar')
+@endsection
+
 @section('content')
 <div class="px-8 py-12">
     <div class="flex items-center justify-between mb-8">

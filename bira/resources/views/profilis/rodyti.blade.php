@@ -1,574 +1,283 @@
-<!DOCTYPE html>
-<html lang="lt">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mano profilis – Bira</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #4f46e5;
-            --primary-light: #6366f1;
-            --surface: #f8f9ff;
-            --card-bg: #ffffff;
-            --text-muted-soft: #64748b;
-        }
+@extends('layouts.app')
 
-        body {
-            background-color: var(--surface);
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            color: #1e293b;
-        }
+@section('title', 'Mano profilis – Bira')
 
-        /* ── Navbar ── */
-        .navbar-bira {
-            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            padding: 0.75rem 1.5rem;
-        }
-        .navbar-bira .navbar-brand {
-            font-weight: 700;
-            font-size: 1.3rem;
-            color: #fff !important;
-            letter-spacing: -0.5px;
-        }
-        .navbar-bira .nav-link-btn {
-            color: rgba(255,255,255,0.75);
-            text-decoration: none;
-            padding: 0.4rem 0.85rem;
-            border-radius: 8px;
-            font-size: 0.875rem;
-            transition: background 0.2s, color 0.2s;
-        }
-        .navbar-bira .nav-link-btn:hover {
-            background: rgba(255,255,255,0.12);
-            color: #fff;
-        }
+@section('hide_sidebar', true)
 
-        /* ── Hero / Profilio antraštė ── */
-        .profile-hero {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-            color: #fff;
-            padding: 2.5rem 0 4rem;
-            position: relative;
-            overflow: hidden;
-        }
-        .profile-hero::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0; right: 0;
-            height: 50px;
-            background: var(--surface);
-            clip-path: ellipse(60% 100% at 50% 100%);
-        }
-        .avatar-circle {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(4px);
-            border: 3px solid rgba(255,255,255,0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: #fff;
-            flex-shrink: 0;
-        }
-        .profile-hero h1 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-        }
-        .profile-hero .badge-role {
-            background: rgba(255,255,255,0.2);
-            color: #fff;
-            border-radius: 20px;
-            padding: 0.3rem 0.9rem;
-            font-size: 0.8rem;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
-        /* ── Statistikos kortelės ── */
-        .stat-card {
-            background: #fff;
-            border-radius: 16px;
-            padding: 1.4rem 1.6rem;
-            box-shadow: 0 1px 12px rgba(79,70,229,0.08);
-            border: 1px solid #e8e6ff;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(79,70,229,0.14);
-        }
-        .stat-icon {
-            width: 52px;
-            height: 52px;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            flex-shrink: 0;
-        }
-        .stat-icon.blue   { background: #ede9fe; color: #4f46e5; }
-        .stat-icon.green  { background: #dcfce7; color: #16a34a; }
-        .stat-icon.purple { background: #fae8ff; color: #a21caf; }
-        .stat-value {
-            font-size: 1.9rem;
-            font-weight: 700;
-            color: #1e293b;
-            line-height: 1;
-        }
-        .stat-label {
-            font-size: 0.8rem;
-            color: var(--text-muted-soft);
-            margin-top: 0.2rem;
-        }
-
-        /* ── Info kortelė ── */
-        .info-card {
-            background: #fff;
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: 0 1px 12px rgba(79,70,229,0.06);
-            border: 1px solid #e8e6ff;
-            height: 100%;
-        }
-        .info-card .section-title {
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--text-muted-soft);
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .info-row {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.75rem;
-            padding: 0.7rem 0;
-            border-bottom: 1px solid #f1f5f9;
-        }
-        .info-row:last-child { border-bottom: none; }
-        .info-row .info-icon {
-            color: var(--primary);
-            font-size: 1rem;
-            margin-top: 2px;
-            flex-shrink: 0;
-        }
-        .info-row .info-label {
-            font-size: 0.78rem;
-            color: var(--text-muted-soft);
-            margin-bottom: 0.1rem;
-        }
-        .info-row .info-value {
-            font-size: 0.95rem;
-            font-weight: 500;
-            color: #1e293b;
-        }
-
-        /* ── Komandos ── */
-        .team-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: #ede9fe;
-            color: #4f46e5;
-            border-radius: 10px;
-            padding: 0.45rem 0.9rem;
-            font-size: 0.85rem;
-            font-weight: 500;
-            margin: 0.2rem;
-            border: 1px solid #c4b5fd;
-        }
-
-        /* ── Paskutinės užduotys ── */
-        .task-row {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.85rem 0;
-            border-bottom: 1px solid #f1f5f9;
-            transition: background 0.15s;
-        }
-        .task-row:last-child { border-bottom: none; }
-        .task-type-badge {
-            font-size: 0.7rem;
-            padding: 0.2rem 0.55rem;
-            border-radius: 6px;
-            font-weight: 600;
-            white-space: nowrap;
-            background: #ede9fe;
-            color: #4f46e5;
-        }
-        .priority-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-        .p-skubus  { background: #ef4444; }
-        .p-aukštas { background: #f97316; }
-        .p-vidutinis{ background: #eab308; }
-        .p-žemas   { background: #22c55e; }
-        .p-none    { background: #cbd5e1; }
-
-        .status-pill {
-            font-size: 0.72rem;
-            padding: 0.2rem 0.65rem;
-            border-radius: 20px;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-        .status-done { background: #dcfce7; color: #16a34a; }
-        .status-pending { background: #fff7ed; color: #ea580c; }
-
-        /* ── Veiksmai ── */
-        .action-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            border-radius: 10px;
-            padding: 0.55rem 1rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            text-decoration: none;
-            transition: all 0.2s;
-            border: none;
-            cursor: pointer;
-        }
-        .action-btn-primary {
-            background: var(--primary);
-            color: #fff;
-        }
-        .action-btn-primary:hover {
-            background: var(--primary-light);
-            color: #fff;
-            transform: translateY(-1px);
-        }
-        .action-btn-outline {
-            background: transparent;
-            color: var(--primary);
-            border: 1.5px solid var(--primary);
-        }
-        .action-btn-outline:hover {
-            background: var(--primary);
-            color: #fff;
-            transform: translateY(-1px);
-        }
-
-        /* Alerts */
-        .alert-success-custom {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            color: #15803d;
-            border-radius: 12px;
-            padding: 0.85rem 1.1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-        }
-    </style>
-</head>
-<body>
-
-{{-- ── NAVBAR ── --}}
-<nav class="navbar-bira d-flex align-items-center justify-content-between">
-    <a class="navbar-brand" href="{{ route('pagrindinis') }}">
-        <i class="bi bi-kanban me-1"></i> Bira
-    </a>
-    <div class="d-flex align-items-center gap-2">
-        <a href="{{ route('pagrindinis') }}" class="nav-link-btn">
-            <i class="bi bi-house me-1"></i>Pradžia
-        </a>
-        <a href="{{ route('boards.index') }}" class="nav-link-btn">
-            <i class="bi bi-layout-three-columns me-1"></i>Lentos
-        </a>
-        <form action="{{ route('atsijungti') }}" method="POST" class="d-inline">
-            @csrf
-            <button type="submit" class="nav-link-btn" style="background:rgba(239,68,68,0.15);color:#fca5a5;">
-                <i class="bi bi-box-arrow-right me-1"></i>Atsijungti
-            </button>
-        </form>
-    </div>
-</nav>
-
-{{-- ── HERO ── --}}
-<div class="profile-hero">
-    <div class="container">
-
-        @if(session('success'))
-            <div class="alert-container alert-success-custom mb-4 flex items-center justify-between transition-opacity duration-300">
-                <div class="flex items-center gap-2">
-                    <i class="bi bi-check-circle-fill"></i>
-                    <strong>{{ session('success') }}</strong>
-                </div>
-                <button class="alert-close text-green-700/50 hover:text-green-700 text-xl font-bold transition-all ml-4">&times;</button>
+@section('content')
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    
+    @if(session('success'))
+        <div class="alert-container mb-8 p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 flex items-center justify-between transition-opacity duration-300">
+            <div class="flex items-center gap-3">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="font-medium">{{ session('success') }}</span>
             </div>
-        @endif
+            <button class="alert-close text-green-400/50 hover:text-green-400 text-xl font-bold transition-all">&times;</button>
+        </div>
+    @endif
 
-        <div class="d-flex align-items-center gap-4 flex-wrap">
-            {{-- Avataro apskritimas su inicialais --}}
-            <div class="avatar-circle">
+    <!-- Profile Header -->
+    <div class="mb-10 relative overflow-hidden rounded-3xl bg-linear-to-br from-primary/20 to-purple-500/10 border border-white/5 p-8 sm:p-12">
+        <div class="relative z-10 flex flex-col sm:flex-row items-center gap-8">
+            <div class="w-32 h-32 rounded-full bg-primary/20 backdrop-blur-md border-4 border-white/10 flex items-center justify-center text-4xl font-bold text-white shadow-2xl">
                 {{ strtoupper(substr($user->name, 0, 1)) }}{{ strtoupper(substr(strstr($user->name, ' ') ?: '', 1, 1)) }}
             </div>
-            <div>
-                <h1>{{ $user->name }}</h1>
-                <p class="mb-2 opacity-75" style="font-size:0.95rem;">{{ $user->email }}</p>
-                <span class="badge-role">
-                    <i class="bi bi-shield-check"></i>
-                    {{ $role ? $role->name : 'Nežinoma rolė' }}
-                </span>
-                @if(!$user->is_active)
-                    <span class="badge-role ms-2" style="background:rgba(239,68,68,0.3)">
-                        <i class="bi bi-x-circle"></i> Neaktyvus
+            <div class="text-center sm:text-left">
+                <h1 class="text-4xl font-extrabold tracking-tight text-white mb-2">{{ $user->name }}</h1>
+                <p class="text-lg text-muted-foreground mb-4">{{ $user->email }}</p>
+                <div class="flex flex-wrap justify-center sm:justify-start gap-3">
+                    <span class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-sm font-medium text-white">
+                        <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        {{ $role ? $role->name : 'Vartotojas' }}
                     </span>
-                @endif
+                    @if(!$user->is_active)
+                        <span class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 text-sm font-medium text-red-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Neaktyvus
+                        </span>
+                    @endif
+                </div>
+            </div>
+        </div>
+        <!-- Decorative blob -->
+        <div class="absolute -top-24 -right-24 w-64 h-64 bg-primary/20 rounded-full blur-3xl opacity-50"></div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div class="bg-card border border-border-subtle rounded-2xl p-6 hover:border-primary/30 transition-all group">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">Sukurtos užduotys</p>
+                    <h3 class="text-3xl font-bold text-white">{{ $sukurtuUzduociu }}</h3>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+            </div>
+        </div>
+        <div class="bg-card border border-border-subtle rounded-2xl p-6 hover:border-primary/30 transition-all group">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">Priskirtos užduotys</p>
+                    <h3 class="text-3xl font-bold text-white">{{ $priskirtuUzduociu }}</h3>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                </div>
+            </div>
+        </div>
+        <div class="bg-card border border-border-subtle rounded-2xl p-6 hover:border-primary/30 transition-all group">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">Atliktos užduotys</p>
+                    <h3 class="text-3xl font-bold text-white">{{ $atliktaUzduociu }}</h3>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-{{-- ── TURINYS ── --}}
-<div class="container pb-5" style="margin-top: -2.5rem; position: relative; z-index: 10;">
-
-    {{-- Statistika --}}
-    <div class="row g-3 mb-4">
-        <div class="col-12 col-sm-4">
-            <div class="stat-card">
-                <div class="stat-icon blue"><i class="bi bi-plus-circle"></i></div>
-                <div>
-                    <div class="stat-value">{{ $sukurtuUzduociu }}</div>
-                    <div class="stat-label">Sukurtos užduotys</div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Sidebar Columns (Actions & Teams) -->
+        <div class="space-y-8">
+            <!-- Account Details -->
+            <div class="bg-card border border-border-subtle rounded-2xl overflow-hidden shadow-sm">
+                <div class="px-6 py-4 border-b border-border-subtle bg-white/2">
+                    <h4 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">Paskyros informacija</h4>
                 </div>
-            </div>
-        </div>
-        <div class="col-12 col-sm-4">
-            <div class="stat-card">
-                <div class="stat-icon purple"><i class="bi bi-person-lines-fill"></i></div>
-                <div>
-                    <div class="stat-value">{{ $priskirtuUzduociu }}</div>
-                    <div class="stat-label">Priskirtos užduotys</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-sm-4">
-            <div class="stat-card">
-                <div class="stat-icon green"><i class="bi bi-check2-circle"></i></div>
-                <div>
-                    <div class="stat-value">{{ $atliktaUzduociu }}</div>
-                    <div class="stat-label">Atliktos užduotys</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-4">
-
-        {{-- ── Kairė kolona: Profilio info + komandos + veiksmai ── --}}
-        <div class="col-12 col-lg-4 d-flex flex-column gap-4">
-
-            {{-- Asmeninė informacija --}}
-            <div class="info-card">
-                <div class="section-title">
-                    <i class="bi bi-person-badge"></i> Paskyros informacija
-                </div>
-
-                <div class="info-row">
-                    <i class="bi bi-person info-icon"></i>
-                    <div>
-                        <div class="info-label">Vardas</div>
-                        <div class="info-value">{{ $user->name }}</div>
-                    </div>
-                </div>
-
-                <div class="info-row">
-                    <i class="bi bi-envelope info-icon"></i>
-                    <div>
-                        <div class="info-label">El. paštas</div>
-                        <div class="info-value">{{ $user->email }}</div>
-                    </div>
-                </div>
-
-                <div class="info-row">
-                    <i class="bi bi-shield info-icon"></i>
-                    <div>
-                        <div class="info-label">Sistemos rolė</div>
-                        <div class="info-value">{{ $role ? $role->name : '—' }}</div>
-                    </div>
-                </div>
-
-                <div class="info-row">
-                    <i class="bi bi-toggle-on info-icon"></i>
-                    <div>
-                        <div class="info-label">Paskyros būsena</div>
-                        <div class="info-value">
-                            @if($user->is_active)
-                                <span style="color:#16a34a; font-weight:600;">
-                                    <i class="bi bi-circle-fill" style="font-size:0.5rem; vertical-align:middle;"></i> Aktyvi
-                                </span>
-                            @else
-                                <span style="color:#dc2626; font-weight:600;">
-                                    <i class="bi bi-circle-fill" style="font-size:0.5rem; vertical-align:middle;"></i> Neaktyvi
-                                </span>
-                            @endif
+                <div class="p-6 space-y-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-muted-foreground shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-xs text-muted-foreground">Vardas</p>
+                            <p class="text-sm font-medium text-white truncate">{{ $user->name }}</p>
                         </div>
                     </div>
-                </div>
+                    
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-muted-foreground shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-xs text-muted-foreground">El. paštas</p>
+                            <p class="text-sm font-medium text-white truncate">{{ $user->email }}</p>
+                        </div>
+                    </div>
 
-                <div class="info-row">
-                    <i class="bi bi-calendar-plus info-icon"></i>
-                    <div>
-                        <div class="info-label">Registracijos data</div>
-                        <div class="info-value">
-                            {{ \Carbon\Carbon::parse($user->created_at)->format('Y-m-d') }}
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-muted-foreground shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-xs text-muted-foreground">Sistemos rolė</p>
+                            <p class="text-sm font-medium text-white">{{ $role ? $role->name : '—' }}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-muted-foreground shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-xs text-muted-foreground">Paskyros būsena</p>
+                            <p class="text-sm font-medium {{ $user->is_active ? 'text-emerald-400' : 'text-red-400' }}">
+                                {{ $user->is_active ? 'Aktyvi' : 'Neaktyvi' }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4 pt-2 border-t border-white/5">
+                        <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-muted-foreground shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-xs text-muted-foreground">Registracijos data</p>
+                            <p class="text-sm font-medium text-white">{{ \Carbon\Carbon::parse($user->created_at)->format('Y-m-d') }}</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {{-- Komandos --}}
-            <div class="info-card">
-                <div class="section-title">
-                    <i class="bi bi-people"></i> Mano komandos
+            <!-- Teams -->
+            <div class="bg-card border border-border-subtle rounded-2xl overflow-hidden shadow-sm">
+                <div class="px-6 py-4 border-b border-border-subtle bg-white/2">
+                    <h4 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">Mano komandos</h4>
                 </div>
-
-                @if($teams->isNotEmpty())
-                    @foreach($teams as $team)
-                        <div class="info-row" style="border-bottom: 1px solid #f1f5f9;">
-                            <i class="bi bi-diagram-3 info-icon"></i>
-                            <div>
-                                <div class="info-value">{{ $team->name }}</div>
+                <div class="p-6 space-y-4">
+                    @forelse($teams as $team)
+                        <a href="{{ route('teams.show', $team->id) }}" class="flex items-start gap-3 p-3 rounded-xl bg-white/2 border border-white/5 hover:border-primary/30 transition-colors group/team">
+                            <div class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary group-hover/team:scale-110 transition-transform">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm font-semibold text-white truncate group-hover/team:text-primary transition-colors">{{ $team->name }}</p>
                                 @if($team->role_in_team)
-                                    <div class="info-label">{{ $team->role_in_team }}</div>
+                                    <p class="text-xs text-muted-foreground mt-0.5">{{ $team->role_in_team }}</p>
                                 @endif
-                                @if($team->description)
-                                    <div class="info-label">{{ $team->description }}</div>
-                                @endif
-                                <div class="info-label" style="margin-top:0.15rem;">
-                                    <i class="bi bi-calendar2 me-1"></i>
-                                    Prisijungė: {{ \Carbon\Carbon::parse($team->joined_at)->format('Y-m-d') }}
+                            </div>
+                            <div class="self-center opacity-0 group-hover/team:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </div>
+                        </a>
+                    @empty
+                        <p class="text-xs text-muted-foreground text-center py-4 italic">Nesate jokios komandos narys.</p>
+                    @endforelse
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="bg-white/2 border border-border-subtle rounded-3xl p-6">
+                <h4 class="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-6 text-center">Profilio nustatymai</h4>
+                <div class="space-y-3">
+                    <a href="{{ route('profilis.redaguoti') }}" class="flex items-center justify-center gap-2 w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-lg shadow-primary/20">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        Redaguoti profilį
+                    </a>
+                    <a href="{{ route('profilis.slaptazodis') }}" class="flex items-center justify-center gap-2 w-full bg-white/5 hover:bg-white/10 text-white font-bold py-3 px-4 rounded-xl transition-all border border-white/10">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 11-7.743-5.743L11 3l-2 2H5a2 2 0 00-2 2v10a2 2 0 002 2h2v2l2-2h2a2 2 0 002-2v-7a2 2 0 012-2h2a2 2 0 012 2v3m2 4l-2 2m2-2l2 2m-2-2l2-2m-2 2l-2-2"></path></svg>
+                        Keisti slaptažodį
+                    </a>
+                    <div class="pt-4 mt-4 border-t border-white/5">
+                        <form action="{{ route('profilis.trinti') }}" method="POST" onsubmit="return confirm('DĖMESIO! Ar tikrai norite visiškai ištrinti savo profilį? Visi jūsų duomenys bus pašalinti.')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="flex items-center justify-center gap-2 w-full bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold py-3 px-4 rounded-xl transition-all border border-red-500/20 group">
+                                <svg class="w-5 h-5 group-hover:shake" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                Ištrinti paskyrą
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Tasks Main Content -->
+        <div class="lg:col-span-2">
+            <div class="bg-card border border-border-subtle rounded-2xl flex flex-col h-full shadow-sm">
+                <div class="px-8 py-6 border-b border-border-subtle flex items-center justify-between bg-white/2">
+                    <h4 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">Paskutiniai veiksmai (užduotys)</h4>
+                    <span class="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold text-muted-foreground uppercase">
+                        {{ $paskutinesUzduotys->count() }} veiksmai
+                    </span>
+                </div>
+
+                <div class="p-4 space-y-3 flex-1">
+                    @forelse($paskutinesUzduotys as $task)
+                        <div class="group bg-white/2 border border-white/5 rounded-2xl p-4 hover:border-primary/50 transition-all">
+                            <div class="flex flex-wrap items-center justify-between gap-4">
+                                <div class="flex items-center gap-4 flex-1 min-w-0">
+                                    @php
+                                        $priorityStyles = match(mb_strtolower($task->prioritetas ?? '')) {
+                                            'skubus'    => 'bg-red-500/10 text-red-400 border-red-500/20',
+                                            'aukštas'   => 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+                                            'vidutinis' => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+                                            'žemas'     => 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+                                            default     => 'bg-gray-500/10 text-gray-400 border-gray-500/20',
+                                        };
+                                    @endphp
+                                    <div class="w-2 h-2 rounded-full {{ explode(' ', $priorityStyles)[0] }}" title="Prioritetas: {{ $task->prioritetas }}"></div>
+                                    <div class="min-w-0">
+                                        <h5 class="text-white font-semibold truncate">{{ $task->title }}</h5>
+                                        <div class="flex items-center gap-3 mt-1">
+                                            <span class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{{ $task->tipas }}</span>
+                                            @if($task->story_points)
+                                                <span class="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 text-[10px] font-bold">
+                                                    {{ $task->story_points }} SP
+                                                </span>
+                                            @endif
+                                            <span class="text-[10px] text-muted-foreground italic">
+                                                {{ \Carbon\Carbon::parse($task->updated_at)->diffForHumans() }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3 shrink-0">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider {{ $task->is_done ? 'bg-emerald-500/10 text-emerald-400' : 'bg-white/5 text-muted-foreground' }}">
+                                        @if($task->is_done)
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                        @else
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        @endif
+                                        {{ $task->statusas }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
-                    @endforeach
-                @else
-                    <p class="text-muted small mb-0">
-                        <i class="bi bi-info-circle me-1"></i>Nesate jokios komandos narys.
-                    </p>
-                @endif
-            </div>
-
-            {{-- Veiksmai --}}
-            <div class="info-card">
-                <div class="section-title">
-                    <i class="bi bi-gear"></i> Paskyros valdymas
-                </div>
-                <div class="d-flex flex-column gap-2">
-                    <a href="{{ route('profilis.redaguoti') }}" class="action-btn action-btn-primary">
-                        <i class="bi bi-pencil-square"></i> Redaguoti profilį
-                    </a>
-                    <a href="{{ route('profilis.slaptazodis') }}" class="action-btn action-btn-outline">
-                        <i class="bi bi-key"></i> Keisti slaptažodį
-                    </a>
-
-                    <hr class="my-2 opacity-50">
-
-                    <form action="{{ route('profilis.trinti') }}" method="POST" onsubmit="return confirm('DĖMESIO! Ar tikrai norite visiškai ištrinti savo profilį? Visi jūsų duomenys bus pašalinti ir šio veiksmo atšaukti NEBŪS galima.')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="action-btn w-100" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.2);">
-                            <i class="bi bi-trash3"></i> Ištrinti profilį
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-        </div>
-
-        {{-- ── Dešinė kolona: paskutinės užduotys ── --}}
-        <div class="col-12 col-lg-8">
-            <div class="info-card" style="height: auto;">
-                <div class="section-title">
-                    <i class="bi bi-clock-history"></i> Paskutiniai veiksmai (užduotys)
-                </div>
-
-                @if($paskutinesUzduotys->isNotEmpty())
-                    @foreach($paskutinesUzduotys as $task)
-                        <div class="task-row">
-                            {{-- Prioriteto taškas --}}
-                            @php
-                                $pdot = match(mb_strtolower($task->prioritetas ?? '')) {
-                                    'skubus'    => 'p-skubus',
-                                    'aukštas'   => 'p-aukštas',
-                                    'vidutinis' => 'p-vidutinis',
-                                    'žemas'     => 'p-žemas',
-                                    default     => 'p-none',
-                                };
-                            @endphp
-                            <span class="priority-dot {{ $pdot }}" title="Prioritetas: {{ $task->prioritetas ?? 'nenustatytas' }}"></span>
-
-                            {{-- Tipas --}}
-                            <span class="task-type-badge">{{ $task->tipas }}</span>
-
-                            {{-- Pavadinimas --}}
-                            <div class="flex-grow-1 text-truncate d-flex align-items-center gap-2">
-                                <span style="font-size:0.92rem; font-weight:500;">{{ $task->title }}</span>
-                                @if($task->story_points)
-                                    <span class="badge bg-info text-dark" style="font-size: 0.65rem; padding: 0.2rem 0.4rem;" title="Story Points">
-                                        {{ $task->story_points }}
-                                    </span>
-                                @endif
+                    @empty
+                        <div class="h-full flex flex-col items-center justify-center py-20 text-center">
+                            <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6 border border-dashed border-white/10">
+                                <svg class="w-10 h-10 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
                             </div>
-
-                            {{-- Statusas --}}
-                            <span class="status-pill {{ $task->is_done ? 'status-done' : 'status-pending' }}">
-                                @if($task->is_done)
-                                    <i class="bi bi-check2 me-1"></i>
-                                @else
-                                    <i class="bi bi-hourglass-split me-1"></i>
-                                @endif
-                                {{ $task->statusas }}
-                            </span>
-
-                            {{-- Data --}}
-                            <span class="text-muted" style="font-size:0.78rem; white-space:nowrap;">
-                                {{ \Carbon\Carbon::parse($task->updated_at)->format('m-d H:i') }}
-                            </span>
+                            <p class="text-muted-foreground font-medium">Kol kas nėra jokių užduočių.</p>
                         </div>
-                    @endforeach
-                @else
-                    <div class="text-center py-4">
-                        <i class="bi bi-inbox" style="font-size:2.5rem; color:#c4b5fd;"></i>
-                        <p class="text-muted mt-2 mb-0">Kol kas nėra jokių užduočių.</p>
-                    </div>
-                @endif
-
-                <div class="mt-3 text-end">
-                    <a href="{{ route('boards.index') }}" class="action-btn action-btn-outline" style="display:inline-flex;">
-                        <i class="bi bi-layout-three-columns"></i> Peržiūrėti visas lentas
+                    @endforelse
+                </div>
+                
+                <div class="p-6 border-t border-border-subtle bg-white/1">
+                    <a href="{{ route('boards.index') }}" class="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-white transition-colors">
+                        Peržiūrėti visas lentas
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
                     </a>
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<style>
+    @keyframes shake {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(-10deg); }
+        75% { transform: rotate(10deg); }
+    }
+    .group-hover\:shake:hover {
+        animation: shake 0.5s ease-in-out infinite;
+    }
+</style>
+@endsection

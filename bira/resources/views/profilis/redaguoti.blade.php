@@ -1,172 +1,101 @@
-<!DOCTYPE html>
-<html lang="lt">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redaguoti profilį – Bira</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <style>
-        body {
-            background: #f8f9ff;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-        }
-        .navbar-bira {
-            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
-            padding: 0.75rem 1.5rem;
-        }
-        .navbar-bira .navbar-brand { font-weight: 700; font-size: 1.3rem; color: #fff !important; }
-        .nav-link-btn {
-            color: rgba(255,255,255,0.75);
-            text-decoration: none;
-            padding: 0.4rem 0.85rem;
-            border-radius: 8px;
-            font-size: 0.875rem;
-            transition: background 0.2s, color 0.2s;
-        }
-        .nav-link-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+@extends('layouts.app')
 
-        .form-card {
-            background: #fff;
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 4px 24px rgba(79,70,229,0.08);
-            border: 1px solid #e8e6ff;
-            max-width: 520px;
-            width: 100%;
-        }
-        .form-card h2 {
-            font-size: 1.35rem;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 0.4rem;
-        }
-        .form-label { font-weight: 500; font-size: 0.875rem; color: #374151; }
-        .form-control {
-            border-radius: 10px;
-            border: 1.5px solid #e2e8f0;
-            padding: 0.65rem 0.9rem;
-            font-size: 0.95rem;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        .form-control:focus {
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79,70,229,0.12);
-        }
-        .btn-save {
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            padding: 0.65rem 1.5rem;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: opacity 0.2s, transform 0.2s;
-        }
-        .btn-save:hover { opacity: 0.9; transform: translateY(-1px); color:#fff; }
-        .btn-cancel {
-            background: transparent;
-            color: #64748b;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 0.65rem 1.2rem;
-            font-weight: 500;
-            font-size: 0.95rem;
-            text-decoration: none;
-            transition: background 0.2s;
-        }
-        .btn-cancel:hover { background: #f1f5f9; color: #1e293b; }
-    </style>
-</head>
-<body>
+@section('title', 'Redaguoti profilį – Bira')
 
-<nav class="navbar-bira d-flex align-items-center justify-content-between mb-5">
-    <a class="navbar-brand" href="{{ route('pagrindinis') }}">
-        <i class="bi bi-kanban me-1"></i> Bira
-    </a>
-    <div class="d-flex gap-2">
-        <a href="{{ route('profilis.rodyti') }}" class="nav-link-btn">
-            <i class="bi bi-arrow-left me-1"></i>Atgal į profilį
+@section('hide_sidebar', true)
+
+@section('content')
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    
+    <!-- Header -->
+    <div class="mb-10 flex items-center gap-6">
+        <a href="{{ route('profilis.rodyti') }}" class="group flex items-center justify-center w-12 h-12 rounded-xl bg-white/5 border border-white/10 text-muted-foreground hover:text-white hover:border-primary/50 transition-all">
+            <svg class="w-6 h-6 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
         </a>
-    </div>
-</nav>
-
-<div class="d-flex justify-content-center px-3">
-    <div class="form-card">
-        <div class="d-flex align-items-center gap-3 mb-4">
-            <div style="width:48px;height:48px;border-radius:14px;background:#ede9fe;display:flex;align-items:center;justify-content:center;color:#4f46e5;font-size:1.4rem;">
-                <i class="bi bi-pencil-square"></i>
-            </div>
-            <div>
-                <h2 class="mb-0">Redaguoti profilį</h2>
-                <p class="text-muted mb-0" style="font-size:0.85rem;">Atnaujinkite savo asmeninę informaciją</p>
-            </div>
+        <div>
+            <h1 class="text-3xl font-extrabold tracking-tight text-white mb-1">Redaguoti profilį</h1>
+            <p class="text-muted-foreground">Atnaujinkite savo asmeninę informaciją</p>
         </div>
+    </div>
 
-        @if($errors->any())
-            <div class="alert alert-danger rounded-3 mb-3" style="font-size:0.875rem;">
-                <i class="bi bi-exclamation-triangle me-1"></i>
-                <ul class="mb-0 ps-3">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+    @if($errors->any())
+        <div class="mb-8 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400">
+            <div class="flex items-center gap-3 mb-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="font-bold">Ištaisykite šias klaidas:</span>
             </div>
-        @endif
+            <ul class="list-disc list-inside text-sm space-y-1 opacity-90">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-        <form action="{{ route('profilis.atnaujinti') }}" method="POST">
+    <!-- Form Card -->
+    <div class="bg-card border border-border-subtle rounded-3xl overflow-hidden shadow-2xl">
+        <form action="{{ route('profilis.atnaujinti') }}" method="POST" class="p-8 sm:p-10 space-y-8">
             @csrf
             @method('PUT')
 
-            <div class="mb-3">
-                <label for="name" class="form-label">
-                    <i class="bi bi-person me-1 text-primary"></i> Vardas
-                </label>
-                <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    class="form-control @error('name') is-invalid @enderror"
-                    value="{{ old('name', $user->name) }}"
-                    required
-                    minlength="2"
-                    maxlength="120"
-                    placeholder="Jūsų vardas"
-                >
+            <!-- Name Input -->
+            <div class="space-y-2">
+                <label for="name" class="block text-sm font-semibold text-muted-foreground uppercase tracking-wider">Vardas</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    </div>
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        class="block w-full pl-12 pr-4 py-3.5 bg-white/5 @error('name') border-red-500/50 @else border-white/10 @enderror rounded-2xl text-white placeholder-muted-foreground/50 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
+                        value="{{ old('name', $user->name) }}"
+                        required
+                        minlength="2"
+                        maxlength="120"
+                        placeholder="Jūsų vardas"
+                    >
+                </div>
                 @error('name')
-                    <div class="invalid-feedback">{{ $message }}</div>
+                    <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
                 @enderror
             </div>
 
-            <div class="mb-4">
-                <label for="email" class="form-label">
-                    <i class="bi bi-envelope me-1 text-primary"></i> El. paštas
-                </label>
-                <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    class="form-control @error('email') is-invalid @enderror"
-                    value="{{ old('email', $user->email) }}"
-                    required
-                    maxlength="190"
-                    placeholder="epastas@pavyzdys.lt"
-                >
+            <!-- Email Input -->
+            <div class="space-y-2">
+                <label for="email" class="block text-sm font-semibold text-muted-foreground uppercase tracking-wider">El. paštas</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    </div>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        class="block w-full pl-12 pr-4 py-3.5 bg-white/5 @error('email') border-red-500/50 @else border-white/10 @enderror rounded-2xl text-white placeholder-muted-foreground/50 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
+                        value="{{ old('email', $user->email) }}"
+                        required
+                        maxlength="190"
+                        placeholder="epastas@pavyzdys.lt"
+                    >
+                </div>
                 @error('email')
-                    <div class="invalid-feedback">{{ $message }}</div>
+                    <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
                 @enderror
             </div>
 
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn-save">
-                    <i class="bi bi-check2 me-1"></i> Išsaugoti
+            <!-- Buttons -->
+            <div class="pt-6 flex flex-col sm:flex-row gap-4">
+                <button type="submit" class="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-lg shadow-primary/20 active:scale-[0.98]">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    Išsaugoti pakeitimus
                 </button>
-                <a href="{{ route('profilis.rodyti') }}" class="btn-cancel">Atšaukti</a>
+                <a href="{{ route('profilis.rodyti') }}" class="flex-1 flex items-center justify-center bg-white/5 hover:bg-white/10 text-white font-bold py-4 px-6 rounded-2xl transition-all border border-white/10 active:scale-[0.98]">
+                    Atšaukti
+                </a>
             </div>
         </form>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+@endsection

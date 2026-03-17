@@ -125,7 +125,7 @@ class ProfilisController extends Controller
 
         $request->validate([
             'dabartinis_slaptazodis' => ['required', 'string'],
-            'naujas_slaptazodis'     => ['required', 'string', 'min:8', 'confirmed'],
+            'naujas_slaptazodis'     => ['required', 'string', 'min:6', 'confirmed'],
         ]);
 
         // 1. Patikrinti ar dabartinis slaptažodis teisingas

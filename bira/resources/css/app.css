@@ -9,8 +9,8 @@
     --font-sans: 'Inter', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 
-    --color-background: #272727;
-    --color-sidebar: #141414;
+    --color-background: #151515;
+    --color-sidebar: #1b1b1b;
     --color-card: #1a1a1a;
     --color-border-subtle: #ffffff0d;
     --color-primary: #8b5cf6;
@@ -22,7 +22,7 @@
 }
 
 :root {
-    --background: #0d0d0df3;
+    --background: #151515;
     --foreground: #ffffff;
     --card: #1a1a1a;
     --card-foreground: #ffffff;
