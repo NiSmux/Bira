@@ -1,117 +1,117 @@
-<!DOCTYPE html>
-<html lang="lt">
-<head>
-    <meta charset="UTF-8">
-    <title>Redaguoti užduotį</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
+@extends('layouts.app')
 
-<div class="container mt-5" style="max-width: 700px;">
+@section('title', 'Redaguoti užduotį - ' . $task->title)
 
-    <div class="card shadow-sm">
-        <div class="card-body">
+@section('content')
+<div class="max-w-3xl mx-auto px-8 py-12">
+    <div class="mb-8">
+        <a href="{{ route('boards.show', $board->id) }}" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors mb-4">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Grįžti į lentą
+        </a>
+        <h2 class="text-3xl font-bold tracking-tight text-white">Redaguoti užduotį</h2>
+        <p class="text-muted-foreground mt-1 text-sm">Redaguojama užduotis: <span class="text-white font-medium">{{ $task->title }}</span></p>
+    </div>
 
-            <h4 class="mb-4">Redaguoti užduotį</h4>
+    <div class="bg-card border border-border-subtle rounded-2xl p-8 shadow-sm">
+        @if ($errors->any())
+            <div class="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400">
+                <ul class="list-disc list-inside text-sm">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+        <form action="{{ route('boards.tasks.update', [$board->id, $task->id]) }}" method="POST" class="space-y-6">
+            @csrf
+            @method('PUT')
 
-            <form action="{{ route('boards.tasks.update', [$board->id, $task->id]) }}"
-                  method="POST">
-                @csrf
-                @method('PUT')
+            <div>
+                <label for="title" class="block text-sm font-semibold text-white mb-2">Pavadinimas</label>
+                <input type="text" 
+                       id="title"
+                       name="title" 
+                       class="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                       value="{{ old('title', $task->title) }}" 
+                       required>
+            </div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Pavadinimas</label>
-                    <input type="text"
-                           name="title"
-                           class="form-control"
-                           value="{{ old('title', $task->title) }}"
-                           required>
-                </div>
+            <div>
+                <label for="description" class="block text-sm font-semibold text-white mb-2">Aprašymas</label>
+                <textarea id="description"
+                          name="description" 
+                          rows="4" 
+                          class="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all resize-none">{{ old('description', $task->description) }}</textarea>
+            </div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Aprašymas</label>
-                    <textarea name="description"
-                              class="form-control"
-                              rows="3">{{ old('description', $task->description) }}</textarea>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Statusas</label>
-                    <select name="status_id" class="form-select" required>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="status_id" class="block text-sm font-semibold text-white mb-2">Statusas (Stulpelis)</label>
+                    <select id="status_id" 
+                            name="status_id" 
+                            class="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                            required>
                         @foreach($statuses as $status)
-                            <option value="{{ $status->id }}"
-                                {{ old('status_id', $task->status_id) == $status->id ? 'selected' : '' }}>
+                            <option value="{{ $status->id }}" {{ old('status_id', $task->status_id) == $status->id ? 'selected' : '' }}>
                                 {{ $status->name }}
                             </option>
                         @endforeach
                     </select>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Tipas</label>
-                    <select name="item_type_id" class="form-select" required>
+                <div>
+                    <label for="item_type_id" class="block text-sm font-semibold text-white mb-2">Tipas</label>
+                    <select id="item_type_id" 
+                            name="item_type_id" 
+                            class="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                            required>
                         @foreach($itemTypes as $type)
-                            <option value="{{ $type->id }}"
-                                {{ old('item_type_id', $task->item_type_id) == $type->id ? 'selected' : '' }}>
+                            <option value="{{ $type->id }}" {{ old('item_type_id', $task->item_type_id) == $type->id ? 'selected' : '' }}>
                                 {{ $type->name }}
                             </option>
                         @endforeach
                     </select>
                 </div>
+            </div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-4">
-                        <label class="form-label fw-bold">Prioritetas</label>
-                        <select name="priority_id" class="form-select">
-                            <option value="">-- Nėra prioriteto --</option>
-                            @foreach($priorities as $priority)
-                                <option value="{{ $priority->id }}"
-                                    {{ old('priority_id', $task->priority_id) == $priority->id ? 'selected' : '' }}>
-                                    {{ $priority->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="col-md-6 mb-4">
-                        <label class="form-label fw-bold">Story Points</label>
-                        <input type="number" 
-                               name="story_points" 
-                               class="form-control" 
-                               value="{{ old('story_points', $task->story_points) }}" 
-                               min="0" 
-                               max="100" 
-                               placeholder="Pvz: 5">
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="priority_id" class="block text-sm font-semibold text-white mb-2">Prioritetas</label>
+                    <select id="priority_id" 
+                            name="priority_id" 
+                            class="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all">
+                        <option value="">-- Nėra prioriteto --</option>
+                        @foreach($priorities as $priority)
+                            <option value="{{ $priority->id }}" {{ old('priority_id', $task->priority_id) == $priority->id ? 'selected' : '' }}>
+                                {{ $priority->name }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
 
-                <div class="d-flex justify-content-between">
-                    <a href="{{ route('boards.show', $board->id) }}"
-                       class="btn btn-secondary">
-                        Atšaukti
-                    </a>
-
-                    <button type="submit"
-                            class="btn btn-primary px-4">
-                        Atnaujinti
-                    </button>
+                <div>
+                    <label for="story_points" class="block text-sm font-semibold text-white mb-2">Story Points</label>
+                    <input type="number" 
+                           id="story_points"
+                           name="story_points" 
+                           class="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                           value="{{ old('story_points', $task->story_points) }}" 
+                           min="0" 
+                           max="100">
                 </div>
+            </div>
 
-            </form>
-
-        </div>
+            <div class="pt-6 border-t border-border-subtle flex items-center justify-between">
+                <a href="{{ route('boards.show', $board->id) }}" class="px-6 py-2.5 rounded-xl text-white font-medium hover:bg-white/5 transition-colors">
+                    Atšaukti
+                </a>
+                <button type="submit" class="bg-primary hover:bg-primary/90 text-white px-8 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-primary/20 active:scale-[0.98]">
+                    Atnaujinti užduotį
+                </button>
+            </div>
+        </form>
     </div>
 </div>
-
-</body>
-</html>
+@endsection

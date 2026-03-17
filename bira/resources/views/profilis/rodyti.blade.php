@@ -312,9 +312,12 @@
     <div class="container">
 
         @if(session('success'))
-            <div class="alert-success-custom mb-4">
-                <i class="bi bi-check-circle-fill"></i>
-                <strong>{{ session('success') }}</strong>
+            <div class="alert-container alert-success-custom mb-4 flex items-center justify-between transition-opacity duration-300">
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <strong>{{ session('success') }}</strong>
+                </div>
+                <button class="alert-close text-green-700/50 hover:text-green-700 text-xl font-bold transition-all ml-4">&times;</button>
             </div>
         @endif
 

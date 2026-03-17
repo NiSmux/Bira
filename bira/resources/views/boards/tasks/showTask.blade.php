@@ -1,106 +1,103 @@
-<!DOCTYPE html>
-<html lang="lt">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ $task->title }} - Bira Kanban</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .task-detail-container {
-            max-width: 800px;
-            margin: 40px auto;
-            background: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        }
-        .task-label {
-            font-weight: 600;
-            color: #6c757d;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            margin-bottom: 4px;
-        }
-        .task-value {
-            font-size: 1.1rem;
-            margin-bottom: 20px;
-        }
-        .badge-points {
-            background-color: #0dcaf0;
-            color: #000;
-            font-weight: bold;
-            padding: 0.5em 0.8em;
-            border-radius: 6px;
-        }
-    </style>
-</head>
-<body class="bg-light">
-    <nav class="navbar navbar-dark bg-dark mb-4">
-        <div class="container-fluid px-4">
-            <a class="navbar-brand" href="{{ route('boards.index') }}">Bira Kanban</a>
-            <div class="d-flex align-items-center">
-                <a href="{{ route('boards.show', $board->id) }}" class="btn btn-outline-light btn-sm">Atgal į lentą</a>
-            </div>
-        </div>
-    </nav>
+@extends('layouts.app')
 
-    <div class="container">
-        <div class="task-detail-container">
-            <div class="d-flex justify-content-between align-items-start mb-4">
-                <h1 class="h2 mb-0">{{ $task->title }}</h1>
+@section('title', $task->title . ' - Detalės')
+
+@section('content')
+<div class="max-w-4xl mx-auto px-8 py-12">
+    <!-- Breadcrumbs / Back -->
+    <div class="mb-8 flex items-center justify-between">
+        <div>
+            <a href="{{ route('boards.show', $board->id) }}" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors mb-4">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Grįžti į lentą
+            </a>
+            <div class="flex items-center gap-4">
+                <h2 class="text-3xl font-bold tracking-tight text-white">{{ $task->title }}</h2>
                 @if($task->story_points)
-                    <span class="badge badge-points">SP: {{ $task->story_points }}</span>
+                    <span class="px-3 py-1 rounded-lg bg-blue-500/10 text-blue-400 text-sm font-bold border border-blue-500/20">
+                        {{ $task->story_points }} SP
+                    </span>
                 @endif
             </div>
-
-            <hr class="mb-4">
-
-            <div class="row">
-                <div class="col-md-8">
-                    <div class="task-label">Aprašymas</div>
-                    <div class="task-value text-break">
-                        @if($task->description)
-                            {!! nl2br(e($task->description)) !!}
-                        @else
-                            <span class="text-muted italic">Aprašymo nėra</span>
-                        @endif
-                    </div>
-                </div>
-                <div class="col-md-4 border-start">
-                    <div class="task-label">Statusas</div>
-                    <div class="task-value">
-                        <span class="badge bg-secondary p-2">{{ $task->status->name ?? 'Nėra' }}</span>
-                    </div>
-
-                    <div class="task-label">Tipas</div>
-                    <div class="task-value">
-                        {{ $task->type->name ?? 'Nėra' }}
-                    </div>
-
-                    <div class="task-label">Prioritetas</div>
-                    <div class="task-value">
-                        {{ $task->priority->name ?? 'Nėra' }}
-                    </div>
-
-                    <div class="task-label">Sukurta</div>
-                    <div class="task-value small">
-                        {{ $task->created_at ? $task->created_at->format('Y-m-d H:i') : 'Nežinoma' }}
-                        <br>
-                        <span class="text-muted">Autorius: {{ $task->creator->name ?? 'Sistemos vartotojas' }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="d-flex justify-content-end mt-4 pt-3 border-top">
-                <a href="{{ route('boards.tasks.edit', [$board->id, $task->id]) }}" class="btn btn-warning me-2">✏ Redaguoti</a>
-                <form action="{{ route('boards.tasks.destroy', [$board->id, $task->id]) }}" method="POST" onsubmit="return confirm('Ar tikrai norite ištrinti?')">
-                    @csrf
-                    @method('DELETE')
-                    <button class="btn btn-danger">🗑 Ištrinti</button>
-                </form>
-            </div>
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <a href="{{ route('boards.tasks.edit', [$board->id, $task->id]) }}" class="inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-xl font-medium transition-all border border-white/10">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                Redaguoti
+            </a>
+            <form action="{{ route('boards.tasks.destroy', [$board->id, $task->id]) }}" method="POST" onsubmit="return confirm('Ar tikrai norite ištrinti šią užduotį?')">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="inline-flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-4 py-2 rounded-xl font-medium transition-all border border-red-500/20">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    Ištrinti
+                </button>
+            </form>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Content (Description) -->
+        <div class="lg:col-span-2 space-y-8">
+            <div class="bg-card border border-border-subtle rounded-2xl p-8 shadow-sm h-full">
+                <h3 class="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-4">Aprašymas</h3>
+                <div class="text-white text-lg leading-relaxed whitespace-pre-wrap text-left">@if($task->description){!! nl2br(e($task->description)) !!}@else<p class="text-muted-foreground italic">Aprašymo nėra.</p>@endif</div>
+            </div>
+        </div>
+
+        <!-- Sidebar (Meta Info) -->
+        <div class="space-y-6">
+            <div class="bg-card border border-border-subtle rounded-2xl p-6 shadow-sm">
+                <h3 class="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-6">Informacija</h3>
+                
+                <div class="space-y-6">
+                    <div>
+                        <p class="text-[10px] font-bold text-muted-foreground uppercase mb-2">Statusas</p>
+                        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20 font-medium">
+                            <div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                            {{ $task->status->name ?? 'Nėra' }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="text-[10px] font-bold text-muted-foreground uppercase mb-2">Tipas</p>
+                        <div class="flex items-center gap-2 text-white">
+                            <svg class="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                            <span class="font-medium">{{ $task->type->name ?? 'Nėra' }}</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="text-[10px] font-bold text-muted-foreground uppercase mb-2">Prioritetas</p>
+                        @php
+                            $priorityColor = match(mb_strtolower($task->priority->name ?? 'Default')) {
+                                'high', 'skubus' => 'red',
+                                'medium', 'vidutinis' => 'amber',
+                                'low', 'žemas' => 'emerald',
+                                default => 'gray'
+                            };
+                        @endphp
+                        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-{{ $priorityColor }}-500/10 text-{{ $priorityColor }}-400 border border-{{ $priorityColor }}-500/20 font-medium">
+                            {{ $task->priority->name ?? 'Nėra' }}
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-border-subtle">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs border border-primary/20">
+                                {{ strtoupper(substr($task->creator->name ?? 'S', 0, 1)) }}{{ strtoupper(substr(strstr($task->creator->name ?? '', ' ') ?: '', 1, 1)) }}
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-muted-foreground uppercase">Autorius</p>
+                                <p class="text-sm font-medium text-white">{{ $task->creator->name ?? 'Sistemos vartotojas' }}</p>
+                            </div>
+                        </div>
+                        <p class="text-[10px] text-muted-foreground mt-4">Sukurta: {{ $task->created_at ? $task->created_at->format('Y-m-d H:i') : 'Nežinoma' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection

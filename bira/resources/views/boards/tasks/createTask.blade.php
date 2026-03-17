@@ -1,134 +1,121 @@
-<!DOCTYPE html>
-<html lang="lt">
-<head>
-    <meta charset="UTF-8">
-    <title>Nauja užduotis - {{ $board->name }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
+@extends('layouts.app')
 
-<nav class="navbar navbar-dark bg-dark mb-4">
-    <div class="container-fluid px-4">
-        <a class="navbar-brand" href="{{ route('boards.index') }}">Bira Kanban</a>
-        <div class="d-flex align-items-center">
-            <span class="navbar-text me-3 text-white">
-                Lenta: <strong>{{ $board->name }}</strong>
-            </span>
-            <a href="{{ route('boards.show', $board->id) }}" class="btn btn-outline-light btn-sm">
-                ← Grįžti į lentą
-            </a>
-        </div>
+@section('title', 'Nauja užduotis - ' . $board->name)
+
+@section('content')
+<div class="max-w-3xl mx-auto px-8 py-12">
+    <div class="mb-8">
+        <a href="{{ route('boards.show', $board->id) }}" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors mb-4">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Grįžti į lentą
+        </a>
+        <h2 class="text-3xl font-bold tracking-tight text-white">Nauja užduotis</h2>
+        <p class="text-muted-foreground mt-1">Sukurkite naują darbą lentai: <span class="text-white font-medium">{{ $board->name }}</span></p>
     </div>
-</nav>
 
-<div class="container" style="max-width: 700px;">
+    <div class="bg-card border border-border-subtle rounded-2xl p-8 shadow-sm">
+        @if ($errors->any())
+            <div class="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400">
+                <ul class="list-disc list-inside text-sm">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-    <div class="card shadow-sm">
-        <div class="card-body">
+        <form action="{{ route('boards.tasks.store', $board->id) }}" method="POST" class="space-y-6">
+            @csrf
 
-            <h4 class="mb-4">Nauja užduotis</h4>
+            <div>
+                <label for="title" class="block text-sm font-semibold text-white mb-2">Užduoties pavadinimas</label>
+                <input type="text" 
+                       id="title"
+                       name="title" 
+                       class="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                       value="{{ old('title') }}" 
+                       required 
+                       placeholder="Pvz.: Sukurti prisijungimo langą">
+            </div>
 
-            {{-- Klaidos --}}
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+            <div>
+                <label for="description" class="block text-sm font-semibold text-white mb-2">Aprašymas</label>
+                <textarea id="description"
+                          name="description" 
+                          rows="4" 
+                          class="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all resize-none"
+                          placeholder="Išsamiau aprašykite užduotį...">{{ old('description') }}</textarea>
+            </div>
 
-            <form action="{{ route('boards.tasks.store', $board->id) }}" method="POST">
-                @csrf
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Užduoties pavadinimas</label>
-                    <input type="text"
-                           name="title"
-                           class="form-control"
-                           value="{{ old('title') }}"
-                           required
-                           placeholder="Įveskite pavadinimą...">
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Aprašymas</label>
-                    <textarea name="description"
-                              class="form-control"
-                              rows="3"
-                              placeholder="Trumpas užduoties aprašymas...">{{ old('description') }}</textarea>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Tipas</label>
-                        <select name="item_type_id" class="form-select" required>
-                            <option disabled selected>Pasirinkite tipą...</option>
-                            @foreach($itemTypes as $type)
-                                <option value="{{ $type->id }}"
-                                    {{ old('item_type_id') == $type->id ? 'selected' : '' }}>
-                                    {{ $type->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Prioritetas</label>
-                        <select name="priority_id" class="form-select">
-                            <option value="">-- Nėra prioriteto --</option>
-                            @foreach($priorities as $priority)
-                                <option value="{{ $priority->id }}"
-                                    {{ old('priority_id') == $priority->id ? 'selected' : '' }}>
-                                    {{ $priority->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Story Points</label>
-                        <input type="number" 
-                               name="story_points" 
-                               class="form-control" 
-                               value="{{ old('story_points') }}" 
-                               min="0" 
-                               max="100" 
-                               placeholder="Pvz: 5">
-                    </div>
-                </div>
-
-                <div class="mb-4">
-                    <label class="form-label fw-bold">Statusas (Stulpelis)</label>
-                    <select name="status_id" class="form-select" required>
-                        <option disabled selected>Pasirinkite stulpelį...</option>
-                        @foreach($statuses as $status)
-                            <option value="{{ $status->id }}"
-                                {{ old('status_id') == $status->id ? 'selected' : '' }}>
-                                {{ $status->name }}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="item_type_id" class="block text-sm font-semibold text-white mb-2">Tipas</label>
+                    <select id="item_type_id" 
+                            name="item_type_id" 
+                            class="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                            required>
+                        <option disabled selected>Pasirinkite tipą...</option>
+                        @foreach($itemTypes as $type)
+                            <option value="{{ $type->id }}" {{ old('item_type_id') == $type->id ? 'selected' : '' }}>
+                                {{ $type->name }}
                             </option>
                         @endforeach
                     </select>
                 </div>
 
-                <div class="d-flex justify-content-between">
-                    <a href="{{ route('boards.show', $board->id) }}" class="btn btn-secondary">
-                        Atšaukti
-                    </a>
+                <div>
+                    <label for="priority_id" class="block text-sm font-semibold text-white mb-2">Prioritetas</label>
+                    <select id="priority_id" 
+                            name="priority_id" 
+                            class="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all">
+                        <option value="">-- Nėra prioriteto --</option>
+                        @foreach($priorities as $priority)
+                            <option value="{{ $priority->id }}" {{ old('priority_id') == $priority->id ? 'selected' : '' }}>
+                                {{ $priority->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
 
-                    <button type="submit" class="btn btn-success px-4">
-                        Išsaugoti
-                    </button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="story_points" class="block text-sm font-semibold text-white mb-2">Story Points</label>
+                    <input type="number" 
+                           id="story_points"
+                           name="story_points" 
+                           class="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                           value="{{ old('story_points') }}" 
+                           min="0" 
+                           max="100" 
+                           placeholder="Pvz.: 5">
                 </div>
 
-            </form>
+                <div>
+                    <label for="status_id" class="block text-sm font-semibold text-white mb-2">Statusas (Stulpelis)</label>
+                    <select id="status_id" 
+                            name="status_id" 
+                            class="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                            required>
+                        <option disabled selected>Pasirinkite stulpelį...</option>
+                        @foreach($statuses as $status)
+                            <option value="{{ $status->id }}" {{ old('status_id') == $status->id ? 'selected' : '' }}>
+                                {{ $status->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
 
-        </div>
+            <div class="pt-6 border-t border-border-subtle flex items-center justify-between">
+                <a href="{{ route('boards.show', $board->id) }}" class="px-6 py-2.5 rounded-xl text-white font-medium hover:bg-white/5 transition-colors">
+                    Atšaukti
+                </a>
+                <button type="submit" class="bg-primary hover:bg-primary/90 text-white px-8 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-primary/20 active:scale-[0.98]">
+                    Sukurti užduotį
+                </button>
+            </div>
+        </form>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+@endsection
