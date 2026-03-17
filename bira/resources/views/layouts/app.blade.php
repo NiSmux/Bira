@@ -29,10 +29,27 @@
             </a>
             
             <nav class="flex-1 px-4 space-y-1 mt-4">
-                <a href="{{ isset($board) ? route('boards.show', $board->id) : route('boards.index') }}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-white/5 hover:text-white transition-colors {{ request()->is('boards*') ? 'active' : '' }}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                    <span>Board</span>
-                </a>
+                <div>
+                    <a href="{{ isset($board) ? route('boards.show', $board->id) : route('boards.index') }}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-white/5 hover:text-white transition-colors {{ request()->is('boards*') ? 'active' : '' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                        <span>Board</span>
+                    </a>
+
+                    @php
+                        $currentTeam = isset($board) ? $board->team : (isset($team) ? $team : null);
+                        $teamBoards = $currentTeam ? $currentTeam->boards : collect();
+                    @endphp
+
+                    @if($teamBoards->count() > 1)
+                        <div class="ml-9 mt-2 space-y-1.5 border-l border-white/5 pl-4">
+                            @foreach($teamBoards as $tb)
+                                <a href="{{ route('boards.show', $tb->id) }}" class="block text-xs font-medium transition-colors {{ (request()->routeIs('boards.show') && isset($board) && $board->id == $tb->id) ? 'text-primary' : 'text-muted-foreground hover:text-white' }}">
+                                    {{ $tb->name }}
+                                </a>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
                 <a href="#" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-white/5 hover:text-white transition-colors {{ request()->is('backlog*') ? 'active' : '' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                     <span>Backlog</span>
