@@ -46,54 +46,54 @@ class BoardController extends Controller
      * Store a newly created board in storage.
      */
     public function store(Request $request)
-{
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'team_id' => 'required|exists:teams,id',
-    ]);
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'team_id' => 'required|exists:teams,id',
+        ]);
 
-    $userId = Auth::user()->id;
+        $userId = Auth::user()->id;
 
-    $team = Team::whereHas('members', function ($query) use ($userId) {
-        $query->where('users.id', $userId)
-            ->where('team_members.role_in_team', 'owner');
-    })->where('id', $validated['team_id'])->firstOrFail();
+        $team = Team::whereHas('members', function ($query) use ($userId) {
+            $query->where('users.id', $userId)
+                ->where('team_members.role_in_team', 'owner');
+        })->where('id', $validated['team_id'])->firstOrFail();
 
-    $workflowGroup = WorkflowGroup::create([
-        'name' => $validated['name'] . ' Workflow',
-        'team_id' => $team->id,
-    ]);
+        $workflowGroup = WorkflowGroup::create([
+            'name' => $validated['name'] . ' Workflow',
+            'team_id' => $team->id,
+        ]);
 
-    WorkflowStatus::create([
-        'workflow_group_id' => $workflowGroup->id,
-        'name' => 'Laukia',
-        'order_index' => 1,
-        'is_done' => 0,
-    ]);
+        WorkflowStatus::create([
+            'workflow_group_id' => $workflowGroup->id,
+            'name' => 'Laukia',
+            'order_index' => 1,
+            'is_done' => 0,
+        ]);
 
-    WorkflowStatus::create([
-        'workflow_group_id' => $workflowGroup->id,
-        'name' => 'Daroma',
-        'order_index' => 2,
-        'is_done' => 0,
-    ]);
+        WorkflowStatus::create([
+            'workflow_group_id' => $workflowGroup->id,
+            'name' => 'Daroma',
+            'order_index' => 2,
+            'is_done' => 0,
+        ]);
 
-    WorkflowStatus::create([
-        'workflow_group_id' => $workflowGroup->id,
-        'name' => 'Atlikta',
-        'order_index' => 3,
-        'is_done' => 1,
-    ]);
+        WorkflowStatus::create([
+            'workflow_group_id' => $workflowGroup->id,
+            'name' => 'Atlikta',
+            'order_index' => 3,
+            'is_done' => 1,
+        ]);
 
-    $board = Board::create([
-        'name' => $validated['name'],
-        'team_id' => $team->id,
-        'workflow_group_id' => $workflowGroup->id,
-    ]);
+        $board = Board::create([
+            'name' => $validated['name'],
+            'team_id' => $team->id,
+            'workflow_group_id' => $workflowGroup->id,
+        ]);
 
-    return redirect()->route('boards.show', $board->id)
-        ->with('success', 'Lenta sėkmingai sukurta!');
-}
+        return redirect()->route('boards.show', $board->id)
+            ->with('success', 'Lenta sėkmingai sukurta!');
+    }
 
     /**
      * Display the specified board.
@@ -116,5 +116,106 @@ class BoardController extends Controller
             ->get();
 
         return view('boards.show', compact('board', 'statuses'));
+    }
+
+    /**
+     * Add a new column (status) to the board.
+     */
+    public function addColumn(Request $request, Board $board)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $userId = Auth::user()->id;
+
+        // Check if user is a member of the team
+        $isMember = $board->team
+            && $board->team->members()
+                ->where('users.id', $userId)
+                ->exists();
+
+        abort_unless($isMember, 403);
+
+        // Get the last order index
+        $lastOrder = WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
+            ->max('order_index') ?? 0;
+
+        WorkflowStatus::create([
+            'workflow_group_id' => $board->workflow_group_id,
+            'name' => $validated['name'],
+            'order_index' => $lastOrder + 1,
+            'is_done' => 0,
+        ]);
+
+        return redirect()->route('boards.show', $board->id)
+            ->with('success', 'Skiltis sėkmingai pridėta!');
+    }
+
+    /**
+     * Reorder columns (statuses) in the board.
+     */
+    public function reorderColumn(Request $request, Board $board, WorkflowStatus $column)
+    {
+        $validated = $request->validate([
+            'new_index' => 'required|integer|min:0',
+        ]);
+
+        $userId = Auth::user()->id;
+
+        // Check if user is a member of the team
+        $isMember = $board->team
+            && $board->team->members()
+                ->where('users.id', $userId)
+                ->exists();
+
+        abort_unless($isMember, 403);
+
+        $newIndex = $validated['new_index'] + 1; // Frontend is 0-indexed, Backend is 1-indexed (order_index)
+        $oldIndex = $column->order_index;
+
+        if ($newIndex == $oldIndex) {
+            return response()->json(['success' => true]);
+        }
+
+        if ($newIndex > $oldIndex) {
+            // Moving down (to the right)
+            WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
+                ->whereBetween('order_index', [$oldIndex + 1, $newIndex])
+                ->decrement('order_index');
+        } else {
+            // Moving up (to the left)
+            WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
+                ->whereBetween('order_index', [$newIndex, $oldIndex - 1])
+                ->increment('order_index');
+        }
+
+        $column->update(['order_index' => $newIndex]);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Update column (status) details.
+     */
+    public function updateColumn(Request $request, Board $board, WorkflowStatus $column)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $userId = Auth::user()->id;
+
+        // Check if user is a member of the team
+        $isMember = $board->team
+            && $board->team->members()
+                ->where('users.id', $userId)
+                ->exists();
+
+        abort_unless($isMember, 403);
+
+        $column->update(['name' => $validated['name']]);
+
+        return response()->json(['success' => true]);
     }
 }

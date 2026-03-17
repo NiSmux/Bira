@@ -37,6 +37,9 @@ Route::middleware(['mano_apsauga'])->group(function () {
         Route::get('/boards/create', [BoardController::class , 'create'])->name('boards.create');
         Route::post('/boards', [BoardController::class , 'store'])->name('boards.store');
         Route::get('/boards/{board}', [BoardController::class , 'show'])->name('boards.show');   
+        Route::post('/boards/{board}/columns', [BoardController::class, 'addColumn'])->name('boards.columns.store');
+        Route::patch('/boards/{board}/columns/{column}/reorder', [BoardController::class, 'reorderColumn'])->name('boards.columns.reorder');
+        Route::patch('/boards/{board}/columns/{column}', [BoardController::class, 'updateColumn'])->name('boards.columns.update');
 
         // Forma naujai užduočiai
         Route::get('/boards/{board}/tasks/create', [WorkItemController::class , 'create'])

@@ -26,12 +26,16 @@
     @endif
 
     <!-- Kanban Columns -->
-    <div class="flex gap-6 overflow-x-auto pb-8 scrollbar-hide">
+    <div id="kanban-columns-container" class="flex gap-6 overflow-x-auto pb-8 scrollbar-hide">
         @forelse($statuses as $status)
-            <div class="w-80 shrink-0 bg-white/[0.02] border border-white/5 rounded-3xl p-4 flex flex-col h-fit transition-colors hover:bg-white/[0.04]">
+            <div class="kanban-column w-80 shrink-0 bg-white/[0.02] border border-white/5 rounded-3xl p-4 flex flex-col h-fit transition-colors hover:bg-white/[0.04]" data-column-id="{{ $status->id }}">
                 <div class="flex items-center justify-between mb-6 px-2">
                     <div class="flex items-center gap-3">
-                        <h4 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">{{ $status->name }}</h4>
+                        <div class="column-title-container flex items-center gap-2 group/title cursor-pointer">
+                            <h4 class="column-name text-xs font-bold uppercase tracking-widest text-muted-foreground group-hover/title:text-white transition-colors" data-id="{{ $status->id }}">{{ $status->name }}</h4>
+                            <input type="text" class="column-name-input hidden bg-white/5 border border-white/10 rounded px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-white focus:outline-none focus:ring-1 focus:ring-primary/50 w-32" value="{{ $status->name }}">
+                            <svg class="w-3 h-3 text-muted-foreground/0 group-hover/title:text-muted-foreground transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        </div>
                         <span class="px-2 py-0.5 rounded-full bg-white/5 text-[10px] font-bold text-muted-foreground">
                             {{ $board->items->where('status_id', $status->id)->count() }}
                         </span>
@@ -88,6 +92,32 @@
                 <p class="text-muted-foreground">Šiai lentai nėra sukonfigūruota jokia eiga.</p>
             </div>
         @endforelse
+
+        <!-- Add Column Button -->
+        <div class="w-80 shrink-0">
+            <div id="add-column-trigger" class="group w-full h-12 flex items-center justify-center gap-2 bg-white/5 border border-dashed border-white/20 rounded-xl cursor-pointer hover:bg-white/10 hover:border-primary/50 transition-all">
+                <svg class="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                <span class="text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors">Pridėti skiltį</span>
+            </div>
+
+            <div id="add-column-form" class="hidden w-full bg-white/5 border border-white/5 rounded-3xl p-4 flex-col h-fit">
+                <form action="{{ route('boards.columns.store', $board->id) }}" method="POST">
+                    @csrf
+                    <input type="text" name="name" placeholder="Skilties pavadinimas..." required
+                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 mb-3">
+                    <div class="flex gap-2">
+                        <button type="submit" class="flex-1 bg-primary hover:bg-primary/90 text-white text-xs font-bold py-2 rounded-lg transition-colors">
+                            Išsaugoti
+                        </button>
+                        <button type="button" id="cancel-add-column" class="px-3 bg-white/5 hover:bg-white/10 text-white text-xs font-bold py-2 rounded-lg transition-colors">
+                            Atšaukti
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 @endsection
@@ -134,6 +164,119 @@
                 }
             });
         });
+
+        // Column Reordering
+        const columnsContainer = document.getElementById('kanban-columns-container');
+        if (columnsContainer) {
+            new Sortable(columnsContainer, {
+                animation: 150,
+                draggable: '.kanban-column', // Only actual columns are draggable
+                filter: '.column-name-input, input, button', // Don't trigger drag on inputs or buttons
+                preventOnFilter: false, // Allow default actions (like focus) on filtered elements
+                onEnd: function (evt) {
+                    const columnId = evt.item.getAttribute('data-column-id');
+                    if (!columnId) return;
+
+                    fetch(`/boards/{{ $board->id }}/columns/${columnId}/reorder`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            new_index: evt.newIndex
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            alert('Klaida pervadinant skiltis.');
+                            location.reload();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Sistemos klaida.');
+                        location.reload();
+                    });
+                }
+            });
+        }
+
+        // Column Renaming
+        document.querySelectorAll('.column-title-container').forEach(container => {
+            const nameEl = container.querySelector('.column-name');
+            const inputEl = container.querySelector('.column-name-input');
+            const columnId = nameEl.getAttribute('data-id');
+
+            container.addEventListener('click', () => {
+                nameEl.classList.add('hidden');
+                inputEl.classList.remove('hidden');
+                inputEl.focus();
+                inputEl.setSelectionRange(inputEl.value.length, inputEl.value.length);
+            });
+
+            const saveName = () => {
+                const newName = inputEl.value.trim();
+                if (newName && newName !== nameEl.textContent) {
+                    fetch(`/boards/{{ $board->id }}/columns/${columnId}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ name: newName })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            nameEl.textContent = newName;
+                            nameEl.classList.remove('hidden');
+                            inputEl.classList.add('hidden');
+                        } else {
+                            alert('Klaida pervadinant skiltį.');
+                            location.reload();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        location.reload();
+                    });
+                } else {
+                    nameEl.classList.remove('hidden');
+                    inputEl.classList.add('hidden');
+                    inputEl.value = nameEl.textContent;
+                }
+            };
+
+            inputEl.addEventListener('blur', saveName);
+            inputEl.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    inputEl.blur();
+                } else if (e.key === 'Escape') {
+                    inputEl.value = nameEl.textContent;
+                    inputEl.blur();
+                }
+            });
+        });
+
+        // Add Column Toggling
+        const addTrigger = document.getElementById('add-column-trigger');
+        const addForm = document.getElementById('add-column-form');
+        const cancelBtn = document.getElementById('cancel-add-column');
+
+        if (addTrigger && addForm && cancelBtn) {
+            addTrigger.addEventListener('click', () => {
+                addTrigger.classList.add('hidden');
+                addForm.classList.remove('hidden');
+                addForm.querySelector('input').focus();
+            });
+
+            cancelBtn.addEventListener('click', () => {
+                addForm.classList.add('hidden');
+                addTrigger.classList.remove('hidden');
+            });
+        }
     });
 </script>
 @endpush
