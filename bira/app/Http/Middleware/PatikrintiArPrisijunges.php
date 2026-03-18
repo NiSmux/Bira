@@ -17,7 +17,7 @@ class PatikrintiArPrisijunges
     {
         if (!auth()->check()) {
         // Jei neprisijungęs, siunčiame į tavo prisijungimo puslapį
-            return redirect('/prisijungimas');
+            return redirect('/login');
         }
 
         return $next($request);

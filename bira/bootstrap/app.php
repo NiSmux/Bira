@@ -18,7 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Taip pat nurodome, kur Laravel turi nukreipti neprisijungusius
         $middleware->redirectTo(
-            guests: '/prisijungimas',
+            guests: '/login',
             users: '/'
         );
     })

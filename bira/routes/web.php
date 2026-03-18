@@ -7,6 +7,8 @@ use App\Http\Controllers\WorkItemController;
 use App\Http\Controllers\BoardController;
 use App\Http\Controllers\TeamController;
 
+use App\Http\Controllers\PlanningPokerController;
+
 // --- PUBLIC ROUTES ---
 // --- PUBLIC ROUTES ---
 Route::get('/login', [VartotojasController::class , 'showLoginForm'])->name('login');
@@ -73,4 +75,15 @@ Route::middleware(['mano_apsauga'])->group(function () {
         })->name('profilis.slaptazodis');
         Route::put('/profile/password', [ProfilisController::class, 'keistiSlaptazodi'])->name('profilis.slaptazodis.keisti');
         Route::delete('/profile', [ProfilisController::class, 'destroy'])->name('profilis.trinti');
+
+        // Planning Poker
+        Route::get('/poker', [PlanningPokerController::class, 'index'])->name('poker.index');
+        Route::get('/poker/create', [PlanningPokerController::class, 'create'])->name('poker.create');
+        Route::post('/poker', [PlanningPokerController::class, 'store'])->name('poker.store');
+        Route::get('/poker/{session}', [PlanningPokerController::class, 'show'])->name('poker.show');
+        Route::post('/poker/{session}/items/{item}/vote', [PlanningPokerController::class, 'vote'])->name('poker.vote');
+        Route::post('/poker/{session}/complete', [PlanningPokerController::class, 'complete'])->name('poker.complete');
+        Route::get('/poker/{session}/results', [PlanningPokerController::class, 'results'])->name('poker.results');
+        Route::post('/poker/{session}/save-points', [PlanningPokerController::class, 'savePoints'])->name('poker.savePoints');
+        Route::get('/poker/team/{team}/items', [PlanningPokerController::class, 'teamItems'])->name('poker.teamItems');
 });
