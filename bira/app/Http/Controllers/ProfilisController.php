@@ -113,7 +113,7 @@ class ProfilisController extends Controller
                 'email' => $validated['email'],
             ]);
 
-        return redirect()->route('profilis.rodyti')->with('success', 'Profilis sėkmingai atnaujintas!');
+        return redirect()->route('profilis.rodyti')->with('success', 'Profile updated successfully!');
     }
 
     /**
@@ -131,14 +131,14 @@ class ProfilisController extends Controller
         // 1. Patikrinti ar dabartinis slaptažodis teisingas
         if (!Hash::check($request->dabartinis_slaptazodis, $user->password_hash)) {
             return back()->withErrors([
-                'dabartinis_slaptazodis' => 'Dabartinis slaptažodis neteisingas.',
+                'dabartinis_slaptazodis' => 'Current password is incorrect.',
             ]);
         }
 
         // 2. Drausti keisti į tą patį slaptažodį
         if (Hash::check($request->naujas_slaptazodis, $user->password_hash)) {
             return back()->withErrors([
-                'naujas_slaptazodis' => 'Naujas slaptažodis negali būti toks pats kaip dabartinis.',
+                'naujas_slaptazodis' => 'New password cannot be the same as current password.',
             ]);
         }
 
@@ -146,7 +146,7 @@ class ProfilisController extends Controller
             ->where('id', $user->id)
             ->update(['password_hash' => Hash::make($request->naujas_slaptazodis)]);
 
-        return redirect()->route('profilis.rodyti')->with('success', 'Slaptažodis sėkmingai pakeistas!');
+        return redirect()->route('profilis.rodyti')->with('success', 'Password changed successfully!');
     }
 
     /**
@@ -209,6 +209,6 @@ class ProfilisController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login')->with('success', 'Profilis ir jūsų valdomos komandos sėkmingai pašalintos.');
+        return redirect()->route('login')->with('success', 'Profile and your managed teams have been successfully removed.');
     }
 }

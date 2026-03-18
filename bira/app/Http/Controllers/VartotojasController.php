@@ -31,7 +31,7 @@ class VartotojasController extends Controller
             'is_active' => 1
         ]);
 
-        return redirect()->route('login')->with('success', 'Registracija sėkminga!');
+        return redirect()->route('login')->with('success', 'Registration successful!');
     }
 
     public function showLoginForm() {
@@ -47,19 +47,19 @@ class VartotojasController extends Controller
             'password' => 'required',
         ]);
 
-        // Auth::attempt automatiškai naudos Hash klasę patikrinimui fone
+        // Auth::attempt will automatically use the Hash class for checking in the background
         if (Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']])) {
             $request->session()->regenerate();
             return redirect()->intended('/');
         }
 
-        return back()->withErrors(['login_error' => 'Neteisingi duomenys.']);
+        return back()->withErrors(['login_error' => 'Invalid credentials.']);
     }
 
     public function logout(Request $request) {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/prisijungimas');
+        return redirect('/login');
     }
 }

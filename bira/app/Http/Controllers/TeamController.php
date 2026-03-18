@@ -85,7 +85,7 @@ class TeamController extends Controller
     });
 
     return redirect()->route('teams.show', $team->id)
-        ->with('success', 'Komanda sėkmingai sukurta.');
+        ->with('success', 'Team created successfully.');
     }
 
     public function show(Team $team)
@@ -111,7 +111,7 @@ class TeamController extends Controller
 
         if ($alreadyInTeam) {
             return back()->withErrors([
-                'user_id' => 'Šis vartotojas jau yra komandoje.',
+                'user_id' => 'This user is already in the team.',
             ]);
         }
 
@@ -120,7 +120,7 @@ class TeamController extends Controller
         ]);
 
         return redirect()->route('teams.show', $team->id)
-            ->with('success', 'Narys sėkmingai pridėtas.');
+            ->with('success', 'Member added successfully.');
     }
 
     public function removeMember(Team $team, User $user)
@@ -130,7 +130,7 @@ class TeamController extends Controller
         $team->members()->detach($user->id);
 
         return redirect()->route('teams.show', $team->id)
-            ->with('success', 'Narys pašalintas iš komandos.');
+            ->with('success', 'Member removed from the team.');
     }
 
     private function ensureOwner(Team $team)

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Mano profilis – Bira')
+@section('title', 'My Profile – Bira')
 
 @section('hide_sidebar', true)
 
@@ -29,12 +29,12 @@
                 <div class="flex flex-wrap justify-center sm:justify-start gap-3">
                     <span class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-sm font-medium text-white">
                         <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                        {{ $role ? $role->name : 'Vartotojas' }}
+                        {{ $role ? $role->name : 'User' }}
                     </span>
                     @if(!$user->is_active)
                         <span class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 text-sm font-medium text-red-400">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            Neaktyvus
+                            Inactive
                         </span>
                     @endif
                 </div>
@@ -49,7 +49,7 @@
         <div class="bg-card border border-border-subtle rounded-2xl p-6 hover:border-primary/30 transition-all group">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">Sukurtos užduotys</p>
+                    <p class="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">Created tasks</p>
                     <h3 class="text-3xl font-bold text-white">{{ $sukurtuUzduociu }}</h3>
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
@@ -60,7 +60,7 @@
         <div class="bg-card border border-border-subtle rounded-2xl p-6 hover:border-primary/30 transition-all group">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">Priskirtos užduotys</p>
+                    <p class="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">Assigned tasks</p>
                     <h3 class="text-3xl font-bold text-white">{{ $priskirtuUzduociu }}</h3>
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
@@ -71,7 +71,7 @@
         <div class="bg-card border border-border-subtle rounded-2xl p-6 hover:border-primary/30 transition-all group">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">Atliktos užduotys</p>
+                    <p class="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">Completed tasks</p>
                     <h3 class="text-3xl font-bold text-white">{{ $atliktaUzduociu }}</h3>
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
@@ -87,7 +87,7 @@
             <!-- Account Details -->
             <div class="bg-card border border-border-subtle rounded-2xl overflow-hidden shadow-sm">
                 <div class="px-6 py-4 border-b border-border-subtle bg-white/2">
-                    <h4 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">Paskyros informacija</h4>
+                    <h4 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">Account details</h4>
                 </div>
                 <div class="p-6 space-y-4">
                     <div class="flex items-center gap-4">
@@ -95,7 +95,7 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                         </div>
                         <div class="min-w-0">
-                            <p class="text-xs text-muted-foreground">Vardas</p>
+                            <p class="text-xs text-muted-foreground">Name</p>
                             <p class="text-sm font-medium text-white truncate">{{ $user->name }}</p>
                         </div>
                     </div>
@@ -105,7 +105,7 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                         </div>
                         <div class="min-w-0">
-                            <p class="text-xs text-muted-foreground">El. paštas</p>
+                            <p class="text-xs text-muted-foreground">Email</p>
                             <p class="text-sm font-medium text-white truncate">{{ $user->email }}</p>
                         </div>
                     </div>
@@ -115,7 +115,7 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
                         </div>
                         <div class="min-w-0">
-                            <p class="text-xs text-muted-foreground">Sistemos rolė</p>
+                            <p class="text-xs text-muted-foreground">System role</p>
                             <p class="text-sm font-medium text-white">{{ $role ? $role->name : '—' }}</p>
                         </div>
                     </div>
@@ -125,9 +125,9 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                         </div>
                         <div class="min-w-0">
-                            <p class="text-xs text-muted-foreground">Paskyros būsena</p>
+                            <p class="text-xs text-muted-foreground">Account status</p>
                             <p class="text-sm font-medium {{ $user->is_active ? 'text-emerald-400' : 'text-red-400' }}">
-                                {{ $user->is_active ? 'Aktyvi' : 'Neaktyvi' }}
+                                {{ $user->is_active ? 'Active' : 'Inactive' }}
                             </p>
                         </div>
                     </div>
@@ -137,7 +137,7 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                         </div>
                         <div class="min-w-0">
-                            <p class="text-xs text-muted-foreground">Registracijos data</p>
+                            <p class="text-xs text-muted-foreground">Registration date</p>
                             <p class="text-sm font-medium text-white">{{ \Carbon\Carbon::parse($user->created_at)->format('Y-m-d') }}</p>
                         </div>
                     </div>
@@ -147,7 +147,7 @@
             <!-- Teams -->
             <div class="bg-card border border-border-subtle rounded-2xl overflow-hidden shadow-sm">
                 <div class="px-6 py-4 border-b border-border-subtle bg-white/2">
-                    <h4 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">Mano komandos</h4>
+                    <h4 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">My teams</h4>
                 </div>
                 <div class="p-6 space-y-4">
                     @forelse($teams as $team)
@@ -166,30 +166,30 @@
                             </div>
                         </a>
                     @empty
-                        <p class="text-xs text-muted-foreground text-center py-4 italic">Nesate jokios komandos narys.</p>
+                        <p class="text-xs text-muted-foreground text-center py-4 italic">You are not a member of any team.</p>
                     @endforelse
                 </div>
             </div>
 
             <!-- Actions -->
             <div class="bg-white/2 border border-border-subtle rounded-3xl p-6">
-                <h4 class="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-6 text-center">Profilio nustatymai</h4>
+                <h4 class="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-6 text-center">Profile settings</h4>
                 <div class="space-y-3">
                     <a href="{{ route('profilis.redaguoti') }}" class="flex items-center justify-center gap-2 w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-lg shadow-primary/20">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                        Redaguoti profilį
+                        Edit profile
                     </a>
                     <a href="{{ route('profilis.slaptazodis') }}" class="flex items-center justify-center gap-2 w-full bg-white/5 hover:bg-white/10 text-white font-bold py-3 px-4 rounded-xl transition-all border border-white/10">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 11-7.743-5.743L11 3l-2 2H5a2 2 0 00-2 2v10a2 2 0 002 2h2v2l2-2h2a2 2 0 002-2v-7a2 2 0 012-2h2a2 2 0 012 2v3m2 4l-2 2m2-2l2 2m-2-2l2-2m-2 2l-2-2"></path></svg>
-                        Keisti slaptažodį
+                        Change password
                     </a>
                     <div class="pt-4 mt-4 border-t border-white/5">
-                        <form action="{{ route('profilis.trinti') }}" method="POST" onsubmit="return confirm('DĖMESIO! Ar tikrai norite visiškai ištrinti savo profilį? Visi jūsų duomenys bus pašalinti.')">
+                        <form action="{{ route('profilis.trinti') }}" method="POST" onsubmit="return confirm('WARNING! Are you sure you want to completely delete your profile? All your data will be removed.')">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="flex items-center justify-center gap-2 w-full bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold py-3 px-4 rounded-xl transition-all border border-red-500/20 group">
                                 <svg class="w-5 h-5 group-hover:shake" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                Ištrinti paskyrą
+                                Delete account
                             </button>
                         </form>
                     </div>
@@ -201,9 +201,9 @@
         <div class="lg:col-span-2">
             <div class="bg-card border border-border-subtle rounded-2xl flex flex-col h-full shadow-sm">
                 <div class="px-8 py-6 border-b border-border-subtle flex items-center justify-between bg-white/2">
-                    <h4 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">Paskutiniai veiksmai (užduotys)</h4>
+                    <h4 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">Recent actions (tasks)</h4>
                     <span class="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold text-muted-foreground uppercase">
-                        {{ $paskutinesUzduotys->count() }} veiksmai
+                        {{ $paskutinesUzduotys->count() }} actions
                     </span>
                 </div>
 
@@ -214,10 +214,10 @@
                                 <div class="flex items-center gap-4 flex-1 min-w-0">
                                     @php
                                         $priorityStyles = match(mb_strtolower($task->prioritetas ?? '')) {
-                                            'skubus'    => 'bg-red-500/10 text-red-400 border-red-500/20',
-                                            'aukštas'   => 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-                                            'vidutinis' => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-                                            'žemas'     => 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+                                            'urgent'    => 'bg-red-500/10 text-red-400 border-red-500/20',
+                                            'high'   => 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+                                            'medium' => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+                                            'low'     => 'bg-blue-500/10 text-blue-400 border-blue-500/20',
                                             default     => 'bg-gray-500/10 text-gray-400 border-gray-500/20',
                                         };
                                     @endphp
@@ -254,14 +254,14 @@
                             <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6 border border-dashed border-white/10">
                                 <svg class="w-10 h-10 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
                             </div>
-                            <p class="text-muted-foreground font-medium">Kol kas nėra jokių užduočių.</p>
+                            <p class="text-muted-foreground font-medium">There are no tasks yet.</p>
                         </div>
                     @endforelse
                 </div>
                 
                 <div class="p-6 border-t border-border-subtle bg-white/1">
                     <a href="{{ route('boards.index') }}" class="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-white transition-colors">
-                        Peržiūrėti visas lentas
+                        View all boards
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
                     </a>
                 </div>

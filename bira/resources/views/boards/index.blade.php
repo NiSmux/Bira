@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Mano lentos')
+@section('title', 'My boards')
 
 @section('hide_sidebar')
 @endsection
@@ -9,12 +9,12 @@
 <div class="px-8 py-12">
     <div class="flex items-center justify-between mb-8">
         <div>
-            <h2 class="text-3xl font-bold tracking-tight text-white">Mano Kanban lentos</h2>
-            <p class="text-muted-foreground mt-1">Peržiūrėkite ir valdykite visus savo projektus</p>
+            <h2 class="text-3xl font-bold tracking-tight text-white">My Kanban boards</h2>
+            <p class="text-muted-foreground mt-1">View and manage all your projects</p>
         </div>
         <a href="{{ route('boards.create') }}" class="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium transition-colors">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-            Sukurti naują lentą
+            Create new board
         </a>
     </div>
 
@@ -37,13 +37,13 @@
                 
                 <h3 class="text-xl font-bold text-white mb-2">{{ $board->name }}</h3>
                 <div class="flex items-center gap-2 mb-6">
-                    <p class="text-sm text-muted-foreground">Komanda: <span class="text-white/80 font-medium">{{ $board->team?->name ?? 'Nėra' }}</span></p>
+                    <p class="text-sm text-muted-foreground">Team: <span class="text-white/80 font-medium">{{ $board->team?->name ?? 'None' }}</span></p>
                 </div>
 
                 <div class="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">
-                    <span class="text-xs text-muted-foreground">Sukurta: {{ \Carbon\Carbon::parse($board->created_at)->format('Y-m-d') }}</span>
+                    <span class="text-xs text-muted-foreground">Created: {{ \Carbon\Carbon::parse($board->created_at)->format('Y-m-d') }}</span>
                     <a href="{{ route('boards.show', $board->id) }}" class="inline-flex items-center gap-1 text-primary hover:text-primary-light font-bold text-sm transition-colors group-hover:gap-2 transition-all">
-                        Atidaryti
+                        Open
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
                     </a>
                 </div>
@@ -53,10 +53,10 @@
                 <div class="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-muted-foreground mb-4">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                 </div>
-                <h3 class="text-lg font-bold text-white mb-2">Dar neturite jokių lentų</h3>
-                <p class="text-muted-foreground mb-8 text-center max-w-sm">Pradėkite sukurdami savo pirmąją Kanban lentą ir pakviesdami savo komandą prisijungti.</p>
+                <h3 class="text-lg font-bold text-white mb-2">You don't have any boards yet</h3>
+                <p class="text-muted-foreground mb-8 text-center max-w-sm">Start by creating your first Kanban board and inviting your team to join.</p>
                 <a href="{{ route('boards.create') }}" class="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-primary/20">
-                    Sukurti pirmąją lentą
+                    Create first board
                 </a>
             </div>
         @endforelse

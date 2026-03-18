@@ -1,16 +1,16 @@
 @extends('layouts.app')
 
-@section('title', 'Redaguoti užduotį - ' . $task->title)
+@section('title', 'Edit task - ' . $task->title)
 
 @section('content')
 <div class="max-w-3xl mx-auto px-8 py-12">
     <div class="mb-8">
         <a href="{{ route('boards.show', $board->id) }}" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors mb-4">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            Grįžti į lentą
+            Back to board
         </a>
-        <h2 class="text-3xl font-bold tracking-tight text-white">Redaguoti užduotį</h2>
-        <p class="text-muted-foreground mt-1 text-sm">Redaguojama užduotis: <span class="text-white font-medium">{{ $task->title }}</span></p>
+        <h2 class="text-3xl font-bold tracking-tight text-white">Edit task</h2>
+        <p class="text-muted-foreground mt-1 text-sm">Editing task: <span class="text-white font-medium">{{ $task->title }}</span></p>
     </div>
 
     <div class="bg-card border border-border-subtle rounded-2xl p-8 shadow-sm">
@@ -29,7 +29,7 @@
             @method('PUT')
 
             <div>
-                <label for="title" class="block text-sm font-semibold text-white mb-2">Pavadinimas</label>
+                <label for="title" class="block text-sm font-semibold text-white mb-2">Title</label>
                 <input type="text" 
                        id="title"
                        name="title" 
@@ -39,7 +39,7 @@
             </div>
 
             <div>
-                <label for="description" class="block text-sm font-semibold text-white mb-2">Aprašymas</label>
+                <label for="description" class="block text-sm font-semibold text-white mb-2">Description</label>
                 <textarea id="description"
                           name="description" 
                           rows="4" 
@@ -48,7 +48,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="status_id" class="block text-sm font-semibold text-white mb-2">Statusas (Stulpelis)</label>
+                    <label for="status_id" class="block text-sm font-semibold text-white mb-2">Status (Column)</label>
                     <select id="status_id" 
                             name="status_id" 
                             class="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
@@ -62,7 +62,7 @@
                 </div>
 
                 <div>
-                    <label for="item_type_id" class="block text-sm font-semibold text-white mb-2">Tipas</label>
+                    <label for="item_type_id" class="block text-sm font-semibold text-white mb-2">Type</label>
                     <select id="item_type_id" 
                             name="item_type_id" 
                             class="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
@@ -78,11 +78,11 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="priority_id" class="block text-sm font-semibold text-white mb-2">Prioritetas</label>
+                    <label for="priority_id" class="block text-sm font-semibold text-white mb-2">Priority</label>
                     <select id="priority_id" 
                             name="priority_id" 
                             class="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all">
-                        <option value="">-- Nėra prioriteto --</option>
+                        <option value="">-- No priority --</option>
                         @foreach($priorities as $priority)
                             <option value="{{ $priority->id }}" {{ old('priority_id', $task->priority_id) == $priority->id ? 'selected' : '' }}>
                                 {{ $priority->name }}
@@ -105,10 +105,10 @@
 
             <div class="pt-6 border-t border-border-subtle flex items-center justify-between">
                 <a href="{{ route('boards.show', $board->id) }}" class="px-6 py-2.5 rounded-xl text-white font-medium hover:bg-white/5 transition-colors">
-                    Atšaukti
+                    Cancel
                 </a>
                 <button type="submit" class="bg-primary hover:bg-primary/90 text-white px-8 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-primary/20 active:scale-[0.98]">
-                    Atnaujinti užduotį
+                    Update task
                 </button>
             </div>
         </form>

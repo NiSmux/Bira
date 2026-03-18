@@ -66,21 +66,21 @@ class BoardController extends Controller
 
         WorkflowStatus::create([
             'workflow_group_id' => $workflowGroup->id,
-            'name' => 'Laukia',
+            'name' => 'To Do',
             'order_index' => 1,
             'is_done' => 0,
         ]);
 
         WorkflowStatus::create([
             'workflow_group_id' => $workflowGroup->id,
-            'name' => 'Daroma',
+            'name' => 'In Progress',
             'order_index' => 2,
             'is_done' => 0,
         ]);
 
         WorkflowStatus::create([
             'workflow_group_id' => $workflowGroup->id,
-            'name' => 'Atlikta',
+            'name' => 'Done',
             'order_index' => 3,
             'is_done' => 1,
         ]);
@@ -92,7 +92,7 @@ class BoardController extends Controller
         ]);
 
         return redirect()->route('boards.show', $board->id)
-            ->with('success', 'Lenta sėkmingai sukurta!');
+            ->with('success', 'Board created successfully!');
     }
 
     /**
@@ -149,7 +149,7 @@ class BoardController extends Controller
         ]);
 
         return redirect()->route('boards.show', $board->id)
-            ->with('success', 'Skiltis sėkmingai pridėta!');
+            ->with('success', 'Column added successfully!');
     }
 
     /**
@@ -215,6 +215,35 @@ class BoardController extends Controller
         abort_unless($isMember, 403);
 
         $column->update(['name' => $validated['name']]);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Delete a column (status) from the board.
+     */
+    public function deleteColumn(Request $request, Board $board, WorkflowStatus $column)
+    {
+        $userId = Auth::user()->id;
+
+        $isMember = $board->team
+            && $board->team->members()
+                ->where('users.id', $userId)
+                ->exists();
+
+        abort_unless($isMember, 403);
+
+        // Block deletion if the column still has tasks
+        $taskCount = $column->workItems()->count();
+        if ($taskCount > 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This column still has ' . $taskCount . ' task(s). Please move or delete all tasks before removing the column.',
+                'has_tasks' => true,
+            ], 422);
+        }
+
+        $column->delete();
 
         return response()->json(['success' => true]);
     }

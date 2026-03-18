@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Lenta: ' . $board->name)
+@section('title', 'Board: ' . $board->name)
 
 @section('content')
 <div class="px-8 py-8">
@@ -13,7 +13,7 @@
             </div>
             <a href="{{ route('boards.tasks.createTask', $board->id) }}" class="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                Nauja užduotis
+                New task
             </a>
         </div>
     </div>
@@ -40,6 +40,14 @@
                             {{ $board->items->where('status_id', $status->id)->count() }}
                         </span>
                     </div>
+                    <button
+                        class="delete-column-btn p-1 rounded-lg hover:bg-red-500/10 text-muted-foreground/40 hover:text-red-400 transition-colors"
+                        data-column-id="{{ $status->id }}"
+                        data-column-name="{{ $status->name }}"
+                        title="Delete column"
+                    >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                 </div>
 
                 <div class="kanban-tasks space-y-4 flex-1 min-h-[500px]" data-status-id="{{ $status->id }}">
@@ -70,7 +78,7 @@
                                     };
                                 @endphp
                                 <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider {{ $priorityStyles }}">
-                                    {{ $item->priority->name ?? 'Nėra' }}
+                                    {{ $item->priority->name ?? 'None' }}
                                 </span>
                             </div>
 
@@ -89,7 +97,7 @@
             </div>
         @empty
             <div class="w-full py-12 flex flex-col items-center justify-center bg-white/5 border border-dashed border-white/10 rounded-2xl">
-                <p class="text-muted-foreground">Šiai lentai nėra sukonfigūruota jokia eiga.</p>
+                <p class="text-muted-foreground">No workflow is configured for this board.</p>
             </div>
         @endforelse
 
@@ -99,20 +107,20 @@
                 <svg class="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
-                <span class="text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors">Pridėti skiltį</span>
+                <span class="text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors">Add column</span>
             </div>
 
             <div id="add-column-form" class="hidden w-full bg-white/5 border border-white/5 rounded-3xl p-4 flex-col h-fit">
                 <form action="{{ route('boards.columns.store', $board->id) }}" method="POST">
                     @csrf
-                    <input type="text" name="name" placeholder="Skilties pavadinimas..." required
+                    <input type="text" name="name" placeholder="Column name..." required
                         class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 mb-3">
                     <div class="flex gap-2">
                         <button type="submit" class="flex-1 bg-primary hover:bg-primary/90 text-white text-xs font-bold py-2 rounded-lg transition-colors">
-                            Išsaugoti
+                            Save
                         </button>
                         <button type="button" id="cancel-add-column" class="px-3 bg-white/5 hover:bg-white/10 text-white text-xs font-bold py-2 rounded-lg transition-colors">
-                            Atšaukti
+                            Cancel
                         </button>
                     </div>
                 </form>
@@ -121,6 +129,19 @@
     </div>
 </div>
 @endsection
+
+{{-- Delete Column Modal --}}
+<div id="delete-column-modal" class="fixed inset-0 z-50 items-center justify-center" style="display:none;">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="delete-modal-backdrop"></div>
+    <div class="relative bg-[#1a1a2e] border border-white/10 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl">
+        <h3 class="text-white font-bold text-lg mb-2" id="delete-modal-title">Delete Column</h3>
+        <p class="text-muted-foreground text-sm mb-6" id="delete-modal-message"></p>
+        <div class="flex gap-3 justify-end">
+            <button id="delete-modal-cancel" class="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white text-sm font-medium transition-colors">Cancel</button>
+            <button id="delete-modal-confirm" class="px-4 py-2 rounded-lg bg-red-500/80 hover:bg-red-500 text-white text-sm font-bold transition-colors hidden">Delete Column</button>
+        </div>
+    </div>
+</div>
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -152,13 +173,13 @@
                     .then(response => response.json())
                     .then(data => {
                         if (!data.success) {
-                            alert('Klaida perkeliant užduotį.');
+                            alert('Error moving task.');
                             location.reload();
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('Sistemos klaida.');
+                        alert('System error.');
                         location.reload();
                     });
                 }
@@ -190,13 +211,13 @@
                     .then(response => response.json())
                     .then(data => {
                         if (!data.success) {
-                            alert('Klaida pervadinant skiltis.');
+                            alert('Error reordering columns.');
                             location.reload();
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('Sistemos klaida.');
+                        alert('System error.');
                         location.reload();
                     });
                 }
@@ -234,7 +255,7 @@
                             nameEl.classList.remove('hidden');
                             inputEl.classList.add('hidden');
                         } else {
-                            alert('Klaida pervadinant skiltį.');
+                            alert('Error renaming column.');
                             location.reload();
                         }
                     })
@@ -277,6 +298,72 @@
                 addTrigger.classList.remove('hidden');
             });
         }
+
+        // ── Delete Column ──────────────────────────────────────────
+        const deleteModal      = document.getElementById('delete-column-modal');
+        const deleteModalMsg   = document.getElementById('delete-modal-message');
+        const deleteModalTitle = document.getElementById('delete-modal-title');
+        const deleteCancelBtn  = document.getElementById('delete-modal-cancel');
+        const deleteConfirmBtn = document.getElementById('delete-modal-confirm');
+
+        let pendingDeleteColumnId   = null;
+        let pendingDeleteColumnEl   = null;
+
+        const openDeleteModal = (msg, showConfirm, title = 'Delete Column') => {
+            deleteModalTitle.textContent = title;
+            deleteModalMsg.textContent   = msg;
+            deleteConfirmBtn.classList.toggle('hidden', !showConfirm);
+            deleteModal.style.display = 'flex';
+        };
+
+        const closeDeleteModal = () => {
+            deleteModal.style.display = 'none';
+            pendingDeleteColumnId = null;
+            pendingDeleteColumnEl = null;
+        };
+
+        document.querySelectorAll('.delete-column-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation(); // don't trigger column rename
+                const columnId   = btn.getAttribute('data-column-id');
+                const columnName = btn.getAttribute('data-column-name');
+                const columnEl   = btn.closest('.kanban-column');
+
+                // First do a dry-run DELETE to check if tasks exist
+                fetch(`/boards/{{ $board->id }}/columns/${columnId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                })
+                .then(async response => {
+                    const data = await response.json();
+                    if (response.ok && data.success) {
+                        // Already deleted (empty column) — remove from DOM
+                        columnEl.remove();
+                    } else if (data.has_tasks) {
+                        // Has tasks — show warning modal, no confirm button
+                        openDeleteModal(
+                            data.message,
+                            false,
+                            `Cannot delete "${columnName}"`
+                        );
+                    } else {
+                        openDeleteModal('An unexpected error occurred. Please try again.', false, 'Error');
+                    }
+                })
+                .catch(() => {
+                    openDeleteModal('Network error. Please try again.', false, 'Error');
+                });
+            });
+        });
+
+        deleteCancelBtn.addEventListener('click', closeDeleteModal);
+        document.getElementById('delete-modal-backdrop').addEventListener('click', closeDeleteModal);
+        // The confirm button is only shown for non-task-blocked columns,
+        // but since we delete immediately on click (empty check), it's a fallback.
+        deleteConfirmBtn.addEventListener('click', closeDeleteModal);
     });
 </script>
 @endpush

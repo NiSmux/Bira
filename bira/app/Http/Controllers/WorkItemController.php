@@ -87,7 +87,7 @@ class WorkItemController extends Controller
 
         return redirect()
             ->route('boards.show', $board->id)
-            ->with('success', 'Užduotis sėkmingai sukurta!');
+            ->with('success', 'Task created successfully!');
     }
 
     public function destroy(Board $board, WorkItem $task)
@@ -102,7 +102,7 @@ class WorkItemController extends Controller
 
         return redirect()
             ->route('boards.show', $board->id)
-            ->with('success', 'Užduotis ištrinta!');
+            ->with('success', 'Task deleted!');
     }
 
     public function edit(Board $board, WorkItem $task)
@@ -144,7 +144,7 @@ class WorkItemController extends Controller
 
         return redirect()
             ->route('boards.show', $board->id)
-            ->with('success', 'Užduotis atnaujinta!');
+            ->with('success', 'Task updated!');
     }
 
     public function updateStatus(Request $request, Board $board, WorkItem $task)

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Keisti slaptažodį – Bira')
+@section('title', 'Change password – Bira')
 
 @section('hide_sidebar', true)
 
@@ -13,8 +13,8 @@
             <svg class="w-6 h-6 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
         </a>
         <div>
-            <h1 class="text-3xl font-extrabold tracking-tight text-white mb-1">Keisti slaptažodį</h1>
-            <p class="text-muted-foreground">Saugumas – pirmiausia</p>
+            <h1 class="text-3xl font-extrabold tracking-tight text-white mb-1">Change password</h1>
+            <p class="text-muted-foreground">Security first</p>
         </div>
     </div>
 
@@ -22,7 +22,7 @@
         <div class="mb-8 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400">
             <div class="flex items-center gap-3 mb-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span class="font-bold">Ištaisykite šias klaidas:</span>
+                <span class="font-bold">Fix these errors:</span>
             </div>
             <ul class="list-disc list-inside text-sm space-y-1 opacity-90">
                 @foreach($errors->all() as $error)
@@ -40,7 +40,7 @@
 
             <!-- Current Password -->
             <div class="space-y-2">
-                <label for="dabartinis_slaptazodis" class="block text-sm font-semibold text-muted-foreground uppercase tracking-wider">Dabartinis slaptažodis</label>
+                <label for="dabartinis_slaptazodis" class="block text-sm font-semibold text-muted-foreground uppercase tracking-wider">Current password</label>
                 <div class="relative group">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
@@ -51,14 +51,14 @@
                         name="dabartinis_slaptazodis"
                         class="block w-full pl-12 pr-4 py-3.5 bg-white/5 @error('dabartinis_slaptazodis') border-red-500/50 @else border-white/10 @enderror rounded-2xl text-white placeholder-muted-foreground/50 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
                         required
-                        placeholder="Įveskite dabartinį slaptažodį"
+                        placeholder="Enter current password"
                     >
                 </div>
             </div>
 
             <!-- New Password -->
             <div class="space-y-2">
-                <label for="naujas_slaptazodis" class="block text-sm font-semibold text-muted-foreground uppercase tracking-wider">Naujas slaptažodis</label>
+                <label for="naujas_slaptazodis" class="block text-sm font-semibold text-muted-foreground uppercase tracking-wider">New password</label>
                 <div class="relative group">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 11-7.743-5.743L11 3l-2 2H5a2 2 0 00-2 2v10a2 2 0 002 2h2v2l2-2h2a2 2 0 002-2v-7a2 2 0 012-2h2a2 2 0 012 2v3m2 4l-2 2m2-2l2 2m-2-2l2-2m-2 2l-2-2"></path></svg>
@@ -70,7 +70,7 @@
                         class="block w-full pl-12 pr-4 py-3.5 bg-white/5 @error('naujas_slaptazodis') border-red-500/50 @else border-white/10 @enderror rounded-2xl text-white placeholder-muted-foreground/50 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
                         required
                         minlength="6"
-                        placeholder="Mažiausiai 6 simboliai"
+                        placeholder="At least 6 characters"
                         oninput="checkStrength(this.value)"
                     >
                 </div>
@@ -85,7 +85,7 @@
 
             <!-- Confirmation -->
             <div class="space-y-2">
-                <label for="naujas_slaptazodis_confirmation" class="block text-sm font-semibold text-muted-foreground uppercase tracking-wider">Pakartokite naują slaptažodį</label>
+                <label for="naujas_slaptazodis_confirmation" class="block text-sm font-semibold text-muted-foreground uppercase tracking-wider">Confirm new password</label>
                 <div class="relative group">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
@@ -96,7 +96,7 @@
                         name="naujas_slaptazodis_confirmation"
                         class="block w-full pl-12 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-muted-foreground/50 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
                         required
-                        placeholder="Pakartokite naują slaptažodį"
+                        placeholder="Confirm new password"
                     >
                 </div>
             </div>
@@ -105,10 +105,10 @@
             <div class="pt-6 flex flex-col sm:flex-row gap-4">
                 <button type="submit" class="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-lg shadow-primary/20 active:scale-[0.98]">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                    Pakeisti slaptažodį
+                    Change password
                 </button>
                 <a href="{{ route('profilis.rodyti') }}" class="flex-1 flex items-center justify-center bg-white/5 hover:bg-white/10 text-white font-bold py-4 px-6 rounded-2xl transition-all border border-white/10 active:scale-[0.98]">
-                    Atšaukti
+                    Cancel
                 </a>
             </div>
         </form>
@@ -129,11 +129,11 @@
 
         const configs = [
             { width: '0%', color: 'bg-white/10', label: '' },
-            { width: '20%', color: 'bg-red-500', label: 'Labai silpnas' },
-            { width: '40%', color: 'bg-orange-500', label: 'Silpnas' },
-            { width: '60%', color: 'bg-yellow-500', label: 'Vidutinis' },
-            { width: '80%', color: 'bg-emerald-500', label: 'Stiprus' },
-            { width: '100%', color: 'bg-primary', label: 'Ypač saugus' }
+            { width: '20%', color: 'bg-red-500', label: 'Very weak' },
+            { width: '40%', color: 'bg-orange-500', label: 'Weak' },
+            { width: '60%', color: 'bg-yellow-500', label: 'Medium' },
+            { width: '80%', color: 'bg-emerald-500', label: 'Strong' },
+            { width: '100%', color: 'bg-primary', label: 'Very strong' }
         ];
 
         const config = configs[Math.min(score, 5)];

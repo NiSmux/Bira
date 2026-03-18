@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="lt" class="dark">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prisijungimas – Bira</title>
+    <title>Login – Bira</title>
     @vite(['resources/css/app.css'])
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,10 +20,10 @@
             <img src="{{ asset('assets/logo_su_pavadinimu.png') }}" alt="Bira Logo" class="h-12 w-auto">
         </div>
         <h2 class="text-center text-3xl font-extrabold tracking-tight text-white mb-2">
-            Sveiki sugrįžę
+            Welcome back
         </h2>
         <p class="text-center text-sm text-muted-foreground">
-            Prisijunkite prie savo paskyros
+            Log in to your account
         </p>
     </div>
 
@@ -50,7 +50,7 @@
                 
                 <!-- Email -->
                 <div class="space-y-2">
-                    <label for="email" class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider pl-1">El. paštas</label>
+                    <label for="email" class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider pl-1">Email</label>
                     <div class="relative group">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.206"></path></svg>
@@ -61,7 +61,7 @@
                             name="email"
                             class="block w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-muted-foreground/30 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
                             required
-                            placeholder="epastas@pavyzdys.lt"
+                            placeholder="email@example.com"
                         >
                     </div>
                 </div>
@@ -69,7 +69,7 @@
                 <!-- Password -->
                 <div class="space-y-2">
                     <div class="flex items-center justify-between px-1">
-                        <label for="password" class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider">Slaptažodis</label>
+                        <label for="password" class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider">Password</label>
                     </div>
                     <div class="relative group">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
@@ -89,16 +89,16 @@
                 <!-- Submit Button -->
                 <div>
                     <button type="submit" class="w-full flex justify-center py-4 px-4 border border-transparent rounded-2xl shadow-lg text-sm font-bold text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-4 focus:ring-primary/20 transition-all active:scale-[0.98]">
-                        Prisijungti
+                        Log in
                     </button>
                 </div>
             </form>
 
             <div class="mt-8 pt-6 border-t border-white/5 text-center">
                 <p class="text-sm text-muted-foreground">
-                    Neturite paskyros? 
+                    Don't have an account? 
                     <a href="{{ route('registracija.forma') }}" class="font-bold text-primary hover:text-primary/80 transition-colors ml-1">
-                        Registruotis nemokamai
+                        Register for free
                     </a>
                 </p>
             </div>

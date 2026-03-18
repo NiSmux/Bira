@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $team->name . ' - Komanda')
+@section('title', $team->name . ' - Team')
 
 @section('content')
 <div class="px-8 py-12">
@@ -10,11 +10,11 @@
                 <h2 class="text-3xl font-bold tracking-tight text-white">{{ $team->name }}</h2>
                 <span class="px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider border border-primary/20">Team</span>
             </div>
-            <p class="text-muted-foreground">{{ $team->description ?: 'Aprašymo nėra' }}</p>
+            <p class="text-muted-foreground">{{ $team->description ?: 'No description' }}</p>
         </div>
         <a href="{{ route('teams.index') }}" class="inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg font-medium transition-all border border-white/10">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            Atgal
+            Back
         </a>
     </div>
 
@@ -32,27 +32,27 @@
             <div class="bg-card border border-border-subtle rounded-2xl p-6 shadow-sm">
                 <h3 class="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-6 flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
-                    Pridėti narį
+                    Add member
                 </h3>
                 
                 @if($availableUsers->isEmpty())
                     <div class="p-4 rounded-xl bg-white/5 border border-dashed border-white/10 text-center">
-                        <p class="text-xs text-muted-foreground italic">Daugiau narių pridėti negalima.</p>
+                        <p class="text-xs text-muted-foreground italic">No more members can be added.</p>
                     </div>
                 @else
                     <form action="{{ route('teams.members.store', $team->id) }}" method="POST" class="space-y-4">
                         @csrf
                         <div>
-                            <label for="user_id" class="block text-[10px] font-bold text-muted-foreground uppercase mb-2">Vartotojas</label>
+                            <label for="user_id" class="block text-[10px] font-bold text-muted-foreground uppercase mb-2">User</label>
                             <select name="user_id" id="user_id" class="w-full bg-background border border-border-subtle rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all appearance-none" required>
-                                <option value="">Pasirinkite vartotoją</option>
+                                <option value="">Select user</option>
                                 @foreach($availableUsers as $user)
                                     <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
                                 @endforeach
                             </select>
                         </div>
                         <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white py-2.5 rounded-xl font-bold transition-all active:scale-[0.98]">
-                            Pridėti prie komandos
+                            Add to team
                         </button>
                     </form>
                 @endif
@@ -62,7 +62,7 @@
             <div class="bg-card border border-border-subtle rounded-2xl p-6 shadow-sm">
                 <h3 class="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-6 flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                    Komandos lentos
+                    Team boards
                 </h3>
                 <div class="space-y-2">
                     @forelse($team->boards as $board)
@@ -73,7 +73,7 @@
                             </a>
                         </div>
                     @empty
-                        <p class="text-xs text-muted-foreground italic text-center py-4">Ši komanda dar neturi lentų.</p>
+                        <p class="text-xs text-muted-foreground italic text-center py-4">This team doesn't have boards yet.</p>
                     @endforelse
                 </div>
             </div>
@@ -83,17 +83,17 @@
         <div class="lg:col-span-2">
             <div class="bg-card border border-border-subtle rounded-2xl shadow-sm overflow-hidden">
                 <div class="px-6 py-4 border-b border-border-subtle flex items-center justify-between bg-white/5">
-                    <h3 class="text-sm font-bold uppercase tracking-widest text-muted-foreground">Komandos nariai</h3>
-                    <span class="px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">{{ $team->members->count() }} nariai</span>
+                    <h3 class="text-sm font-bold uppercase tracking-widest text-muted-foreground">Team members</h3>
+                    <span class="px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">{{ $team->members->count() }} members</span>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead>
                             <tr class="bg-white/5 border-b border-border-subtle">
-                                <th class="px-6 py-4 text-[10px] font-bold text-muted-foreground uppercase">Vardas</th>
-                                <th class="px-6 py-4 text-[10px] font-bold text-muted-foreground uppercase">El. paštas</th>
-                                <th class="px-6 py-4 text-[10px] font-bold text-muted-foreground uppercase">Rolė</th>
-                                <th class="px-6 py-4 text-[10px] font-bold text-muted-foreground uppercase text-right">Veiksmai</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-muted-foreground uppercase">Name</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-muted-foreground uppercase">Email</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-muted-foreground uppercase">Role</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-muted-foreground uppercase text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-white/5">
@@ -115,7 +115,7 @@
                                     </td>
                                     <td class="px-6 py-4 text-right">
                                         @if($member->pivot->role_in_team !== 'owner')
-                                            <form action="{{ route('teams.members.destroy', [$team->id, $member->id]) }}" method="POST" onsubmit="return confirm('Ar tikrai norite pašalinti šį narį?')">
+                                            <form action="{{ route('teams.members.destroy', [$team->id, $member->id]) }}" method="POST" onsubmit="return confirm('Are you sure you want to remove this member?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="text-red-400/50 hover:text-red-400 transition-colors">

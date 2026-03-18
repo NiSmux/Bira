@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Komandos')
+@section('title', 'Teams')
 
 @section('hide_sidebar')
 @endsection
@@ -9,12 +9,12 @@
 <div class="px-8 py-12">
     <div class="flex items-center justify-between mb-8">
         <div>
-            <h2 class="text-3xl font-bold tracking-tight text-white">Komandos</h2>
-            <p class="text-muted-foreground mt-1">Valdykite savo komandas ir narius</p>
+            <h2 class="text-3xl font-bold tracking-tight text-white">Teams</h2>
+            <p class="text-muted-foreground mt-1">Manage your teams and members</p>
         </div>
         <a href="{{ route('teams.create') }}" class="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium transition-colors">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-            Sukurti komandą
+            Create team
         </a>
     </div>
 
@@ -30,21 +30,21 @@
         <section>
             <h3 class="text-lg font-semibold text-white mb-6 flex items-center gap-2">
                 <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                Mano sukurtos komandos
+                My teams
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse($ownedTeams as $team)
                     <div class="group bg-card border border-border-subtle rounded-2xl p-6 hover:border-primary/50 transition-all shadow-sm">
                         <h4 class="text-xl font-bold text-white mb-2">{{ $team->name }}</h4>
-                        <p class="text-muted-foreground text-sm mb-4 line-clamp-2">{{ $team->description ?: 'Aprašymo nėra' }}</p>
+                        <p class="text-muted-foreground text-sm mb-4 line-clamp-2">{{ $team->description ?: 'No description' }}</p>
                         <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
-                            <span class="text-xs text-muted-foreground">Narių: {{ $team->members->count() }}</span>
-                            <a href="{{ route('teams.show', $team->id) }}" class="text-primary hover:text-primary-light font-medium text-sm transition-colors">Valdyti →</a>
+                            <span class="text-xs text-muted-foreground">Members: {{ $team->members->count() }}</span>
+                            <a href="{{ route('teams.show', $team->id) }}" class="text-primary hover:text-primary-light font-medium text-sm transition-colors">Manage →</a>
                         </div>
                     </div>
                 @empty
                     <div class="col-span-full py-12 flex flex-col items-center justify-center bg-white/5 border border-dashed border-white/10 rounded-2xl">
-                        <p class="text-muted-foreground italic">Dar nesukūrėte nei vienos komandos.</p>
+                        <p class="text-muted-foreground italic">You haven't created any teams yet.</p>
                     </div>
                 @endforelse
             </div>
@@ -54,20 +54,20 @@
         <section>
             <h3 class="text-lg font-semibold text-white mb-6 flex items-center gap-2">
                 <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                Komandos, kuriose esu narys
+                Teams I'm a member of
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse($memberTeams as $team)
                     <div class="bg-card border border-border-subtle rounded-2xl p-6 shadow-sm">
                         <h4 class="text-xl font-bold text-white mb-2">{{ $team->name }}</h4>
-                        <p class="text-muted-foreground text-sm mb-4">{{ $team->description ?: 'Aprašymo nėra' }}</p>
+                        <p class="text-muted-foreground text-sm mb-4">{{ $team->description ?: 'No description' }}</p>
                         <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/5 text-xs text-muted-foreground">
-                            <span>Narių: {{ $team->members->count() }}</span>
+                            <span>Members: {{ $team->members->count() }}</span>
                         </div>
                     </div>
                 @empty
                     <div class="col-span-full py-12 flex flex-col items-center justify-center bg-white/5 border border-dashed border-white/10 rounded-2xl">
-                        <p class="text-muted-foreground italic">Kol kas nesate kitų komandų narys.</p>
+                        <p class="text-muted-foreground italic">You are not a member of any other teams yet.</p>
                     </div>
                 @endforelse
             </div>
