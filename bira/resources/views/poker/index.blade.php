@@ -10,7 +10,7 @@
             <h1 class="text-3xl font-bold text-white tracking-tight">Planning Poker</h1>
             <p class="text-muted-foreground mt-1">Estimate story points with your team</p>
         </div>
-        <a href="{{ route('poker.create', ['team_id' => request('team_id')]) }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition-all active:scale-[0.98] shadow-lg shadow-primary/20">
+        <a href="{{ route('poker.create', array_filter(['team_id' => request('team_id'), 'board_id' => request('board_id')])) }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition-all active:scale-[0.98] shadow-lg shadow-primary/20">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
             Create Session
         </a>
@@ -34,7 +34,9 @@
     @else
         <div class="grid gap-4">
             @foreach($sessions as $session)
-                <a href="{{ $session->status === 'completed' ? route('poker.results', $session->id) : route('poker.show', $session->id) }}" 
+                <a href="{{ $session->status === 'completed'
+                        ? route('poker.results', [$session->id, 'board_id' => request('board_id'), 'team_id' => request('team_id')])
+                        : route('poker.show',    [$session->id, 'board_id' => request('board_id'), 'team_id' => request('team_id')]) }}" 
                    class="block bg-card border border-border-subtle rounded-2xl p-6 hover:border-primary/30 hover:bg-white/[0.02] transition-all group">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-4">

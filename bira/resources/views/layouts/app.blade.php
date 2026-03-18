@@ -30,7 +30,14 @@
             
             <nav class="flex-1 px-4 space-y-1 mt-4">
                 <div>
-                    <a href="{{ isset($board) ? route('boards.show', $board->id) : route('boards.index') }}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-white/5 hover:text-white transition-colors {{ request()->is('boards*') ? 'active' : '' }}">
+                    @php
+                        $boardUrl = isset($board)
+                            ? route('boards.show', $board->id)
+                            : (request()->query('board_id')
+                                ? route('boards.show', request()->query('board_id'))
+                                : route('boards.index'));
+                    @endphp
+                    <a href="{{ $boardUrl }}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-white/5 hover:text-white transition-colors {{ request()->is('boards*') ? 'active' : '' }}">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
                         <span>Board</span>
                     </a>
@@ -62,7 +69,17 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                     <span>Reports</span>
                 </a>
-                <a href="{{ isset($board) ? route('poker.index', ['team_id' => $board->team_id]) : (isset($team) ? route('poker.index', ['team_id' => $team->id]) : route('poker.index')) }}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-white/5 hover:text-white transition-colors {{ request()->is('poker*') ? 'active' : '' }}">
+                @php
+                    $pokerParams = [];
+                    if (isset($board)) {
+                        $pokerParams = ['team_id' => $board->team_id, 'board_id' => $board->id];
+                    } elseif (isset($team)) {
+                        $pokerParams = ['team_id' => $team->id];
+                    } elseif (request()->query('board_id')) {
+                        $pokerParams = ['team_id' => request()->query('team_id'), 'board_id' => request()->query('board_id')];
+                    }
+                @endphp
+                <a href="{{ route('poker.index', $pokerParams) }}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-white/5 hover:text-white transition-colors {{ request()->is('poker*') ? 'active' : '' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                     <span>Planning Poker</span>
                 </a>

@@ -58,13 +58,19 @@ class PokerSession extends Model
     }
 
     /**
-     * Get remaining seconds on the timer
+     * Get remaining seconds on the timer using database clock to avoid timezone issues
      */
     public function remainingSeconds(): int
     {
-        if (!$this->created_at) return 0;
-        $remaining = $this->created_at->addSeconds($this->time_limit)->diffInSeconds(now(), false);
-        return max(0, -$remaining);
+        if (!$this->exists || !$this->created_at) return $this->time_limit;
+
+        // Ask the database for the difference based on its own internal clock
+        $elapsed = \Illuminate\Support\Facades\DB::selectOne(
+            "SELECT TIMESTAMPDIFF(SECOND, created_at, NOW()) as elapsed FROM poker_sessions WHERE id = ?", 
+            [$this->id]
+        )->elapsed ?? 0;
+
+        return max(0, $this->time_limit - (int)$elapsed);
     }
 
     /**

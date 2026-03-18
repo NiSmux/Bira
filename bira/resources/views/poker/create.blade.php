@@ -6,7 +6,7 @@
 <div class="p-8 max-w-2xl mx-auto">
     {{-- Header --}}
     <div class="mb-8">
-        <a href="{{ route('poker.index') }}" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors mb-4">
+        <a href="{{ route('poker.index', ['team_id' => $selectedTeamId]) }}" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors mb-4">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
             Back to Sessions
         </a>
@@ -25,9 +25,29 @@
         </div>
     @endif
 
+    {{-- No team context guard --}}
+    @if(!$selectedTeamId)
+        <div class="p-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm">
+            <p class="font-semibold mb-1">No team selected</p>
+            <p>Please open a board first, then use the Planning Poker link from the sidebar to create a session for that team.</p>
+        </div>
+    @else
+
     {{-- Form --}}
     <form action="{{ route('poker.store') }}" method="POST" class="space-y-6">
         @csrf
+
+        {{-- Hidden team_id --}}
+        <input type="hidden" name="team_id" value="{{ $selectedTeamId }}">
+
+        {{-- Team display (read-only) --}}
+        @php $selectedTeam = $teams->firstWhere('id', $selectedTeamId); @endphp
+        @if($selectedTeam)
+            <div class="flex items-center gap-3 px-4 py-3 bg-primary/10 border border-primary/20 rounded-2xl">
+                <svg class="w-5 h-5 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                <span class="text-white font-semibold">{{ $selectedTeam->name }}</span>
+            </div>
+        @endif
 
         {{-- Session Title --}}
         <div class="space-y-2">
@@ -35,18 +55,6 @@
             <input type="text" id="title" name="title" value="{{ old('title') }}" required
                    class="block w-full px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-muted-foreground/30 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
                    placeholder="e.g. Sprint 5 Estimation">
-        </div>
-
-        {{-- Team Selection --}}
-        <div class="space-y-2">
-            <label for="team_id" class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider pl-1">Team</label>
-            <select id="team_id" name="team_id" required
-                    class="block w-full px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all appearance-none">
-                <option value="" disabled {{ !isset($selectedTeamId) ? 'selected' : '' }} class="bg-card text-muted-foreground">Select a team...</option>
-                @foreach($teams as $team)
-                    <option value="{{ $team->id }}" class="bg-card text-white" {{ (old('team_id') == $team->id || (isset($selectedTeamId) && $selectedTeamId == $team->id)) ? 'selected' : '' }}>{{ $team->name }}</option>
-                @endforeach
-            </select>
         </div>
 
         {{-- Time Limit --}}
@@ -60,7 +68,7 @@
         <div class="space-y-2">
             <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider pl-1">Work Items to Estimate</label>
             <div id="work-items-container" class="bg-white/5 border border-white/10 rounded-2xl p-4 min-h-[120px]">
-                <p id="work-items-placeholder" class="text-muted-foreground/50 text-sm text-center py-6">Select a team first to load work items...</p>
+                <p id="work-items-placeholder" class="text-muted-foreground/50 text-sm text-center py-6">Loading work items...</p>
                 <div id="work-items-list" class="space-y-2 hidden"></div>
             </div>
         </div>
@@ -72,18 +80,18 @@
             </button>
         </div>
     </form>
+    @endif
 </div>
 @endsection
 
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const teamSelect = document.getElementById('team_id');
     const container = document.getElementById('work-items-list');
     const placeholder = document.getElementById('work-items-placeholder');
+    const teamId = {{ $selectedTeamId ?? 'null' }};
 
-    teamSelect.addEventListener('change', function() {
-        const teamId = this.value;
+    function loadItems(teamId) {
         if (!teamId) return;
 
         placeholder.textContent = 'Loading work items...';
@@ -94,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(res => res.json())
             .then(items => {
                 container.innerHTML = '';
-                
+
                 if (items.length === 0) {
                     placeholder.textContent = 'No work items found for this team.';
                     placeholder.classList.remove('hidden');
@@ -109,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const label = document.createElement('label');
                     label.className = 'flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors cursor-pointer';
                     label.innerHTML = `
-                        <input type="checkbox" name="work_items[]" value="${item.id}" 
+                        <input type="checkbox" name="work_items[]" value="${item.id}"
                                class="w-4 h-4 rounded bg-white/5 border-white/20 text-primary focus:ring-primary/20 focus:ring-offset-0">
                         <div class="flex-1 min-w-0">
                             <span class="text-white text-sm font-medium">${item.title}</span>
@@ -124,12 +132,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 placeholder.classList.remove('hidden');
                 container.classList.add('hidden');
             });
-    });
+    }
 
-    // Trigger on page load if team was already selected (old value)
-    if (teamSelect.value) {
-        teamSelect.dispatchEvent(new Event('change'));
+    // Auto-load on page load since team is already known
+    if (teamId) {
+        loadItems(teamId);
     }
 });
 </script>
 @endpush
+

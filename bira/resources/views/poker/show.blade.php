@@ -19,7 +19,7 @@
 
             {{-- Reveal / Complete (only for creator) --}}
             @if(auth()->id() === $session->created_by)
-                <form action="{{ route('poker.complete', $session->id) }}" method="POST" class="inline">
+                <form action="{{ route('poker.complete', [$session->id, 'board_id' => request('board_id'), 'team_id' => request('team_id')]) }}" method="POST" class="inline">
                     @csrf
                     <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition-all active:scale-[0.98] shadow-lg shadow-primary/20"
                             onclick="return confirm('Are you sure you want to reveal all cards and finish the session?')">
@@ -101,7 +101,7 @@
                     $userVote = $currentItem->votes->where('user_id', $user->id)->first();
                 @endphp
                 @foreach($fibonacciCards as $card)
-                    <form action="{{ route('poker.vote', [$session->id, $currentItem->id]) }}" method="POST">
+                    <form action="{{ route('poker.vote', [$session->id, $currentItem->id, 'board_id' => request('board_id'), 'team_id' => request('team_id')]) }}" method="POST">
                         @csrf
                         <input type="hidden" name="points" value="{{ $card === '?' ? '' : $card }}">
                         <button type="submit" 
@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
             timerPill.classList.add('animate-pulse');
             // Redirect to results when timer expires
             setTimeout(() => {
-                window.location.href = '{{ route("poker.results", $session->id) }}';
+                window.location.href = '{{ route("poker.results", [$session->id, "board_id" => request("board_id"), "team_id" => request("team_id")]) }}';
             }, 2000);
             return;
         }

@@ -15,17 +15,24 @@ class PlanningPokerController extends Controller
     /**
      * List all poker sessions for the user's teams
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $teamIds = $user->teams()->pluck('teams.id');
+        $selectedTeamId = $request->query('team_id');
 
-        $sessions = PokerSession::whereIn('team_id', $teamIds)
+        $query = PokerSession::whereIn('team_id', $teamIds)
             ->with(['team', 'creator', 'items'])
-            ->orderByDesc('created_at')
-            ->get();
+            ->orderByDesc('created_at');
 
-        return view('poker.index', compact('sessions'));
+        // Filter to specific team if provided
+        if ($selectedTeamId && $teamIds->contains($selectedTeamId)) {
+            $query->where('team_id', $selectedTeamId);
+        }
+
+        $sessions = $query->get();
+
+        return view('poker.index', compact('sessions', 'selectedTeamId'));
     }
 
     /**
@@ -89,6 +96,7 @@ class PlanningPokerController extends Controller
             'time_limit' => $request->time_limit * 60, // convert minutes to seconds
             'status' => 'active',
             'created_by' => $user->id,
+            'created_at' => now(), // Force Laravel's current time
         ]);
 
         // Attach work items
@@ -170,7 +178,11 @@ class PlanningPokerController extends Controller
 
         if ($session->isExpired()) {
             $this->finishSession($session);
-            return redirect()->route('poker.results', $session->id);
+            return redirect()->route('poker.results', [
+                $session->id,
+                'board_id' => $request->query('board_id'),
+                'team_id'  => $request->query('team_id'),
+            ]);
         }
 
         $request->validate([
@@ -200,12 +212,18 @@ class PlanningPokerController extends Controller
 
         if ($allDone) {
             $this->finishSession($session);
-            return redirect()->route('poker.results', $session->id)
-                ->with('success', 'All votes are in! Here are the results.');
+            return redirect()->route('poker.results', [
+                $session->id,
+                'board_id' => $request->query('board_id'),
+                'team_id'  => $request->query('team_id'),
+            ])->with('success', 'All votes are in! Here are the results.');
         }
 
-        return redirect()->route('poker.show', $session->id)
-            ->with('success', 'Vote recorded!');
+        return redirect()->route('poker.show', [
+            $session->id,
+            'board_id' => $request->query('board_id'),
+            'team_id'  => $request->query('team_id'),
+        ])->with('success', 'Vote recorded!');
     }
 
     /**
@@ -221,8 +239,11 @@ class PlanningPokerController extends Controller
 
         $this->finishSession($session);
 
-        return redirect()->route('poker.results', $session->id)
-            ->with('success', 'Session completed! Here are the results.');
+        return redirect()->route('poker.results', [
+            $session->id,
+            'board_id' => request()->query('board_id'),
+            'team_id'  => request()->query('team_id'),
+        ])->with('success', 'Session completed! Here are the results.');
     }
 
     /**
@@ -275,8 +296,11 @@ class PlanningPokerController extends Controller
             }
         }
 
-        return redirect()->route('poker.results', $session->id)
-            ->with('success', 'Story points saved to all tasks!');
+        return redirect()->route('poker.results', [
+            $session->id,
+            'board_id' => request()->query('board_id'),
+            'team_id'  => request()->query('team_id'),
+        ])->with('success', 'Story points saved to all tasks!');
     }
 
     /**
