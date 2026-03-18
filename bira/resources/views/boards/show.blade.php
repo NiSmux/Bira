@@ -11,10 +11,12 @@
                 <h2 class="text-3xl font-bold tracking-tight text-white">{{ $board->name }}</h2>
                 <p class="text-sm text-muted-foreground mt-1">{{ $board->team->name }}</p>
             </div>
-            <a href="{{ route('boards.tasks.createTask', $board->id) }}" class="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                New task
-            </a>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('boards.tasks.createTask', $board->id) }}" class="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                    New task
+                </a>
+            </div>
         </div>
     </div>
 

@@ -63,6 +63,7 @@
                         <p class="text-muted-foreground text-sm mb-4">{{ $team->description ?: 'No description' }}</p>
                         <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/5 text-xs text-muted-foreground">
                             <span>Members: {{ $team->members->count() }}</span>
+                            <a href="{{ route('teams.show', $team->id) }}" class="text-primary hover:text-primary-light font-medium transition-colors">View →</a>
                         </div>
                     </div>
                 @empty
