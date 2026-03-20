@@ -111,11 +111,17 @@ class BoardController extends Controller
 
         abort_unless($isMember, 403);
 
+        $isOwner = $board->team
+            && $board->team->members()
+                ->where('users.id', $userId)
+                ->where('team_members.role_in_team', 'owner')
+                ->exists();
+
         $statuses = WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
             ->orderBy('order_index')
             ->get();
 
-        return view('boards.show', compact('board', 'statuses'));
+        return view('boards.show', compact('board', 'statuses', 'isOwner'));
     }
 
     /**
@@ -246,5 +252,28 @@ class BoardController extends Controller
         $column->delete();
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Delete the specified board.
+     */
+    public function destroy($id)
+    {
+        $userId = Auth::user()->id;
+
+        $board = Board::with('team.members')->findOrFail($id);
+
+        // Check if user is an owner of the team
+        $isOwner = $board->team
+            && $board->team->members()
+                ->where('users.id', $userId)
+                ->where('team_members.role_in_team', 'owner')
+                ->exists();
+
+        abort_unless($isOwner, 403, 'Only team owners can delete boards.');
+
+        $board->delete();
+
+        return redirect()->back()->with('success', 'Board deleted successfully!');
     }
 }

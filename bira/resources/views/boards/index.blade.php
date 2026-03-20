@@ -42,10 +42,24 @@
 
                 <div class="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">
                     <span class="text-xs text-muted-foreground">Created: {{ \Carbon\Carbon::parse($board->created_at)->format('Y-m-d') }}</span>
-                    <a href="{{ route('boards.show', $board->id) }}" class="inline-flex items-center gap-1 text-primary hover:text-primary-light font-bold text-sm transition-colors group-hover:gap-2 transition-all">
-                        Open
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
-                    </a>
+                    <div class="flex items-center gap-4">
+                        @php
+                            $isOwner = $board->team && $board->team->members()->where('users.id', Auth::id())->where('team_members.role_in_team', 'owner')->exists();
+                        @endphp
+                        @if($isOwner)
+                            <form action="{{ route('boards.destroy', $board->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this board?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-500 hover:text-red-400 font-bold text-sm transition-colors" title="Delete board">
+                                    Delete
+                                </button>
+                            </form>
+                        @endif
+                        <a href="{{ route('boards.show', $board->id) }}" class="inline-flex items-center gap-1 text-primary hover:text-primary-light font-bold text-sm transition-colors group-hover:gap-2 transition-all">
+                            Open
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                        </a>
+                    </div>
                 </div>
             </div>
         @empty

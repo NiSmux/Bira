@@ -90,13 +90,21 @@ class TeamController extends Controller
 
     public function show(Team $team)
     {
-        $this->ensureOwner($team);
+        $this->ensureMember($team);
 
         $team->load('members', 'boards');
 
-        $availableUsers = User::whereNotIn('id', $team->members->pluck('id'))->get();
+        $userId = Auth::user()->id;
+        $isOwner = $team->members()
+            ->where('users.id', $userId)
+            ->wherePivot('role_in_team', 'owner')
+            ->exists();
 
-        return view('teams.show', compact('team', 'availableUsers'));
+        $availableUsers = $isOwner
+            ? User::whereNotIn('id', $team->members->pluck('id'))->get()
+            : collect();
+
+        return view('teams.show', compact('team', 'availableUsers', 'isOwner'));
     }
 
     public function addMember(Request $request, Team $team)
@@ -131,6 +139,17 @@ class TeamController extends Controller
 
         return redirect()->route('teams.show', $team->id)
             ->with('success', 'Member removed from the team.');
+    }
+
+    private function ensureMember(Team $team)
+    {
+        $userId = Auth::user()->id;
+
+        $isMember = $team->members()
+            ->where('users.id', $userId)
+            ->exists();
+
+        abort_unless($isMember, 403);
     }
 
     private function ensureOwner(Team $team)

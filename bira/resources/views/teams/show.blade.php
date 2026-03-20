@@ -28,7 +28,8 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Sidebar: Add Member & Boards List -->
         <div class="space-y-8">
-            <!-- Add Member Form -->
+        <!-- Add Member Form (owner only) -->
+            @if($isOwner)
             <div class="bg-card border border-border-subtle rounded-2xl p-6 shadow-sm">
                 <h3 class="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-6 flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
@@ -57,6 +58,7 @@
                     </form>
                 @endif
             </div>
+            @endif
 
             <!-- Team Boards -->
             <div class="bg-card border border-border-subtle rounded-2xl p-6 shadow-sm">
@@ -68,9 +70,20 @@
                     @forelse($team->boards as $board)
                         <div class="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 hover:border-primary/30 transition-all group">
                             <span class="text-sm font-medium text-white">{{ $board->name }}</span>
-                            <a href="{{ route('boards.show', $board->id) }}" class="text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                            </a>
+                            <div class="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                @if(isset($isOwner) && $isOwner)
+                                    <form action="{{ route('boards.destroy', $board->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this board?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-400 hover:text-red-500 transition-colors" title="Delete board">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        </button>
+                                    </form>
+                                @endif
+                                <a href="{{ route('boards.show', $board->id) }}" class="text-primary hover:text-primary-light transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                </a>
+                            </div>
                         </div>
                     @empty
                         <p class="text-xs text-muted-foreground italic text-center py-4">This team doesn't have boards yet.</p>
@@ -93,7 +106,9 @@
                                 <th class="px-6 py-4 text-[10px] font-bold text-muted-foreground uppercase">Name</th>
                                 <th class="px-6 py-4 text-[10px] font-bold text-muted-foreground uppercase">Email</th>
                                 <th class="px-6 py-4 text-[10px] font-bold text-muted-foreground uppercase">Role</th>
-                                <th class="px-6 py-4 text-[10px] font-bold text-muted-foreground uppercase text-right">Actions</th>
+                                @if($isOwner)
+                                    <th class="px-6 py-4 text-[10px] font-bold text-muted-foreground uppercase text-right">Actions</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-white/5">
@@ -102,7 +117,7 @@
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-3">
                                             <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
-                                                {{ strtoupper(substr($member->name, 0, 1)) }}
+                                                {{ strtoupper(substr($member->name, 0, 1)) }}{{ strtoupper(substr(strstr($member->name, ' ') ?: '', 1, 1)) }}
                                             </div>
                                             <span class="text-sm font-medium text-white">{{ $member->name }}</span>
                                         </div>
@@ -114,7 +129,7 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-right">
-                                        @if($member->pivot->role_in_team !== 'owner')
+                                        @if($isOwner && $member->pivot->role_in_team !== 'owner')
                                             <form action="{{ route('teams.members.destroy', [$team->id, $member->id]) }}" method="POST" onsubmit="return confirm('Are you sure you want to remove this member?')">
                                                 @csrf
                                                 @method('DELETE')
