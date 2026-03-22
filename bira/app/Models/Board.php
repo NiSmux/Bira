@@ -24,4 +24,10 @@ class Board extends Model
     {
         return $this->belongsTo(Team::class, 'team_id');
     }
+
+    public function members()
+    {
+        return $this->belongsToMany(User::class, 'board_members', 'board_id', 'user_id')
+            ->withPivot('role', 'assigned_at');
+    }
 }

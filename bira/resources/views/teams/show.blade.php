@@ -62,16 +62,26 @@
 
             <!-- Team Boards -->
             <div class="bg-card border border-border-subtle rounded-2xl p-6 shadow-sm">
-                <h3 class="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-6 flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                    Team boards
-                </h3>
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                        Team boards
+                    </h3>
+                    @if($isOwner)
+                        <a href="{{ route('boards.create', ['team_id' => $team->id]) }}" class="p-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-all" title="Create new board">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                        </a>
+                    @endif
+                </div>
                 <div class="space-y-2">
                     @forelse($team->boards as $board)
                         <div class="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 hover:border-primary/30 transition-all group">
                             <span class="text-sm font-medium text-white">{{ $board->name }}</span>
                             <div class="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                 @if(isset($isOwner) && $isOwner)
+                                    <a href="{{ route('boards.settings', $board->id) }}" class="text-muted-foreground hover:text-white transition-colors" title="Board settings">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                    </a>
                                     <form action="{{ route('boards.destroy', $board->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this board?');">
                                         @csrf
                                         @method('DELETE')

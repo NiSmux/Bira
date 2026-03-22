@@ -44,7 +44,7 @@
                     <span class="text-xs text-muted-foreground">Created: {{ \Carbon\Carbon::parse($board->created_at)->format('Y-m-d') }}</span>
                     <div class="flex items-center gap-4">
                         @php
-                            $isOwner = $board->team && $board->team->members()->where('users.id', Auth::id())->where('team_members.role_in_team', 'owner')->exists();
+                            $isOwner = $board->team && $board->team->members()->where('users.id', Auth::user()->id)->where('team_members.role_in_team', 'owner')->exists();
                         @endphp
                         @if($isOwner)
                             <form action="{{ route('boards.destroy', $board->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this board?');">

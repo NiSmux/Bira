@@ -64,6 +64,14 @@ class TeamController extends Controller
 
         WorkflowStatus::create([
             'workflow_group_id' => $workflowGroup->id,
+            'name' => 'Backlog',
+            'order_index' => 0,
+            'is_done' => 0,
+            'is_backlog' => 1,
+        ]);
+
+        WorkflowStatus::create([
+            'workflow_group_id' => $workflowGroup->id,
             'name' => 'To Do',
             'order_index' => 1,
             'is_done' => 0,
@@ -137,8 +145,17 @@ class TeamController extends Controller
 
         $team->members()->detach($user->id);
 
+        // Also remove the user from all boards belonging to this team
+        $boardIds = $team->boards()->pluck('id');
+        if ($boardIds->isNotEmpty()) {
+            DB::table('board_members')
+                ->whereIn('board_id', $boardIds)
+                ->where('user_id', $user->id)
+                ->delete();
+        }
+
         return redirect()->route('teams.show', $team->id)
-            ->with('success', 'Member removed from the team.');
+            ->with('success', 'Member removed from the team and all associated boards.');
     }
 
     private function ensureMember(Team $team)

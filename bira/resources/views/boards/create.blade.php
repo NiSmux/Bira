@@ -29,7 +29,7 @@
                 </a>
             </div>
         @else
-            <form action="{{ route('boards.store') }}" method="POST" class="space-y-8 relative z-10">
+            <form action="{{ route('boards.store') }}" method="POST" class="space-y-8 relative z-10" id="create-board-form">
                 @csrf
                 
                 <div class="space-y-6">
@@ -60,7 +60,7 @@
                                     required>
                                 <option value="" class="bg-card">Select a team</option>
                                 @foreach($teams as $team)
-                                    <option value="{{ $team->id }}" @selected(old('team_id') == $team->id) class="bg-card">
+                                    <option value="{{ $team->id }}" @selected(old('team_id', $preselectedTeamId) == $team->id) class="bg-card">
                                         {{ $team->name }}
                                     </option>
                                 @endforeach
@@ -74,6 +74,28 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                 {{ $message }}
                             </p>
+                        @enderror
+                    </div>
+
+                    {{-- Dynamic Members Section --}}
+                    <div id="members-section" class="hidden">
+                        <label class="block text-sm font-bold text-muted-foreground uppercase tracking-widest mb-3">Board members & roles</label>
+                        <p class="text-xs text-muted-foreground mb-4">Select which team members to include and assign their roles.</p>
+                        
+                        <div id="members-loading" class="hidden p-6 text-center">
+                            <div class="inline-flex items-center gap-2 text-muted-foreground text-sm">
+                                <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                </svg>
+                                Loading members...
+                            </div>
+                        </div>
+
+                        <div id="members-list" class="space-y-3"></div>
+
+                        @error('members')
+                            <p class="mt-2 text-sm text-red-400 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
@@ -91,3 +113,162 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const teamSelect = document.getElementById('team_id');
+    const membersSection = document.getElementById('members-section');
+    const membersList = document.getElementById('members-list');
+    const membersLoading = document.getElementById('members-loading');
+
+    const roles = @json($roles);
+    const currentUserId = {{ Auth::user()->id }};
+
+    function fetchTeamMembers(teamId) {
+        if (!teamId) {
+            membersSection.classList.add('hidden');
+            membersList.innerHTML = '';
+            return;
+        }
+
+        membersSection.classList.remove('hidden');
+        membersLoading.classList.remove('hidden');
+        membersList.innerHTML = '';
+
+        fetch(`/api/teams/${teamId}/members`, {
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(members => {
+            membersLoading.classList.add('hidden');
+            
+            members.forEach((member, index) => {
+                const isCurrentUser = member.id === currentUserId;
+                const div = document.createElement('div');
+                div.className = 'flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition-all';
+                
+                div.innerHTML = `
+                    <label class="flex items-center gap-3 flex-1 cursor-pointer min-w-0">
+                        <input type="checkbox" 
+                               class="member-checkbox w-4 h-4 rounded border-white/20 bg-white/5 text-primary focus:ring-primary/50 accent-[var(--primary)] shrink-0"
+                               data-user-id="${member.id}"
+                               ${isCurrentUser ? 'checked disabled' : 'checked'}
+                        >
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary shrink-0">
+                                ${member.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
+                            </div>
+                            <div class="min-w-0">
+                                <span class="text-sm font-medium text-white block truncate">${member.name}</span>
+                                <span class="text-xs text-muted-foreground block truncate">${member.email}</span>
+                            </div>
+                        </div>
+                    </label>
+                    <select class="role-select bg-background border border-border-subtle rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all appearance-none cursor-pointer shrink-0"
+                            data-user-id="${member.id}">
+                        ${Object.entries(roles).map(([value, label]) => 
+                            `<option value="${value}" ${isCurrentUser && value === 'product_owner' ? 'selected' : (!isCurrentUser && value === 'fe_dev' ? 'selected' : '')}>${label}</option>`
+                        ).join('')}
+                    </select>
+                `;
+
+                membersList.appendChild(div);
+
+                // Hidden inputs for the form
+                if (isCurrentUser) {
+                    addHiddenInputs(member.id, 'product_owner', index);
+                } else {
+                    addHiddenInputs(member.id, 'fe_dev', index);
+                }
+            });
+
+            // Re-bind checkbox events
+            bindCheckboxEvents();
+        })
+        .catch(error => {
+            membersLoading.classList.add('hidden');
+            membersList.innerHTML = '<p class="text-red-400 text-sm p-4">Error loading team members.</p>';
+        });
+    }
+
+    function addHiddenInputs(userId, role, index) {
+        const container = document.getElementById('create-board-form');
+        
+        // Remove existing hidden inputs for this user
+        container.querySelectorAll(`input[data-member-hidden="${userId}"]`).forEach(el => el.remove());
+
+        const userInput = document.createElement('input');
+        userInput.type = 'hidden';
+        userInput.name = `members[${index}][user_id]`;
+        userInput.value = userId;
+        userInput.setAttribute('data-member-hidden', userId);
+
+        const roleInput = document.createElement('input');
+        roleInput.type = 'hidden';
+        roleInput.name = `members[${index}][role]`;
+        roleInput.value = role;
+        roleInput.setAttribute('data-member-hidden', userId);
+        roleInput.classList.add('role-hidden-input');
+        roleInput.setAttribute('data-user-id', userId);
+
+        container.appendChild(userInput);
+        container.appendChild(roleInput);
+    }
+
+    function removeHiddenInputs(userId) {
+        const container = document.getElementById('create-board-form');
+        container.querySelectorAll(`input[data-member-hidden="${userId}"]`).forEach(el => el.remove());
+    }
+
+    function rebuildHiddenInputs() {
+        const container = document.getElementById('create-board-form');
+        // Remove all existing member hidden inputs
+        container.querySelectorAll('input[data-member-hidden]').forEach(el => el.remove());
+
+        // Rebuild from checked checkboxes
+        let index = 0;
+        membersList.querySelectorAll('.member-checkbox').forEach(cb => {
+            const userId = cb.getAttribute('data-user-id');
+            const isCurrentUser = parseInt(userId) === currentUserId;
+            
+            if (cb.checked || isCurrentUser) {
+                const roleSelect = membersList.querySelector(`.role-select[data-user-id="${userId}"]`);
+                const role = roleSelect ? roleSelect.value : 'fe_dev';
+                addHiddenInputs(userId, role, index);
+                index++;
+            }
+        });
+    }
+
+    function bindCheckboxEvents() {
+        membersList.querySelectorAll('.member-checkbox').forEach(cb => {
+            cb.addEventListener('change', () => rebuildHiddenInputs());
+        });
+
+        membersList.querySelectorAll('.role-select').forEach(select => {
+            select.addEventListener('change', () => {
+                const userId = select.getAttribute('data-user-id');
+                const hiddenRole = document.querySelector(`.role-hidden-input[data-user-id="${userId}"]`);
+                if (hiddenRole) {
+                    hiddenRole.value = select.value;
+                }
+            });
+        });
+    }
+
+    // Listen for team selection
+    teamSelect.addEventListener('change', () => {
+        fetchTeamMembers(teamSelect.value);
+    });
+
+    // If preselected (from team page "+" button)
+    if (teamSelect.value) {
+        fetchTeamMembers(teamSelect.value);
+    }
+});
+</script>
+@endpush

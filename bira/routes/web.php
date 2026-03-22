@@ -5,11 +5,11 @@ use App\Http\Controllers\ProfilisController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WorkItemController;
 use App\Http\Controllers\BoardController;
+use App\Http\Controllers\BacklogController;
 use App\Http\Controllers\TeamController;
 
 use App\Http\Controllers\PlanningPokerController;
 
-// --- PUBLIC ROUTES ---
 // --- PUBLIC ROUTES ---
 Route::get('/login', [VartotojasController::class , 'showLoginForm'])->name('login');
 Route::post('/login', [VartotojasController::class , 'login'])->name('prisijungimas.jungtis');
@@ -35,12 +35,28 @@ Route::middleware(['mano_apsauga'])->group(function () {
         Route::post('/teams/{team}/members', [TeamController::class, 'addMember'])->name('teams.members.store');
         Route::delete('/teams/{team}/members/{user}', [TeamController::class, 'removeMember'])->name('teams.members.destroy');
 
+        // AJAX: get team members for board creation form
+        Route::get('/api/teams/{team}/members', [BoardController::class, 'getTeamMembers'])->name('api.teams.members');
+
+        // Pagrindinis (Švieslentės ar kiti valdikliai)
+    Route::get('/dashboard', [WorkItemController::class, 'index'])->name('pagrindinis');
+    
+    // Backlog (Global view)
+    Route::get('/backlog', [BacklogController::class, 'index'])->name('backlog.index');
         // Boards Management
         Route::get('/boards', [BoardController::class , 'index'])->name('boards.index');
         Route::get('/boards/create', [BoardController::class , 'create'])->name('boards.create');
         Route::post('/boards', [BoardController::class , 'store'])->name('boards.store');
-        Route::get('/boards/{board}', [BoardController::class , 'show'])->name('boards.show');   
+        Route::get('/boards/{board}', [BoardController::class , 'show'])->name('boards.show');
         Route::delete('/boards/{board}', [BoardController::class, 'destroy'])->name('boards.destroy');
+
+        // Board Settings & Member Management
+        Route::get('/boards/{board}/settings', [BoardController::class, 'settings'])->name('boards.settings');
+        Route::post('/boards/{board}/members', [BoardController::class, 'addBoardMember'])->name('boards.members.store');
+        Route::patch('/boards/{board}/members/{user}', [BoardController::class, 'updateBoardMemberRole'])->name('boards.members.updateRole');
+        Route::delete('/boards/{board}/members/{user}', [BoardController::class, 'removeBoardMember'])->name('boards.members.destroy');
+
+        // Board Columns
         Route::post('/boards/{board}/columns', [BoardController::class, 'addColumn'])->name('boards.columns.store');
         Route::patch('/boards/{board}/columns/{column}/reorder', [BoardController::class, 'reorderColumn'])->name('boards.columns.reorder');
         Route::patch('/boards/{board}/columns/{column}', [BoardController::class, 'updateColumn'])->name('boards.columns.update');

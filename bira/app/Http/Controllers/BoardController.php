@@ -4,23 +4,33 @@ namespace App\Http\Controllers;
 
 use App\Models\Board;
 use App\Models\Team;
+use App\Models\User;
 use App\Models\WorkflowGroup;
 use App\Models\WorkflowStatus;
+use App\Http\Traits\ChecksBoardRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class BoardController extends Controller
 {
+    use ChecksBoardRole;
+
     /**
-     * Display a listing of the boards.
+     * Display a listing of the boards the user belongs to.
      */
     public function index()
     {
         $userId = Auth::user()->id;
 
         $boards = Board::with('team')
-            ->whereHas('team.members', function ($query) use ($userId) {
-                $query->where('users.id', $userId);
+            ->where(function ($query) use ($userId) {
+                $query->whereHas('members', function ($q) use ($userId) {
+                    $q->where('users.id', $userId);
+                })->orWhereHas('team.members', function ($q) use ($userId) {
+                    $q->where('users.id', $userId)
+                      ->whereIn('team_members.role_in_team', ['owner', 'Admin', 'Owner']);
+                });
             })
             ->get();
 
@@ -30,16 +40,61 @@ class BoardController extends Controller
     /**
      * Show the form for creating a new board.
      */
-    public function create()
+    public function create(Request $request)
     {
         $userId = Auth::user()->id;
 
         $teams = Team::whereHas('members', function ($query) use ($userId) {
             $query->where('users.id', $userId)
-                ->where('team_members.role_in_team', 'owner');
-        })->get();
+                ->whereIn('team_members.role_in_team', ['owner', 'Admin', 'Owner']);
+        })->with('members')->get();
 
-        return view('boards.create', compact('teams'));
+        if ($request->has('debug')) {
+            dd([
+                'user_id' => $userId,
+                'teams_count' => $teams->count(),
+                'teams_sql' => Team::whereHas('members', function ($query) use ($userId) {
+                    $query->where('users.id', $userId)
+                        ->whereIn('team_members.role_in_team', ['owner', 'Admin', 'Owner']);
+                })->toSql(),
+                'teams_bindings' => Team::whereHas('members', function ($query) use ($userId) {
+                    $query->where('users.id', $userId)
+                        ->whereIn('team_members.role_in_team', ['owner', 'Admin', 'Owner']);
+                })->getBindings()
+            ]);
+        }
+
+        $roles = self::boardRoles();
+        $preselectedTeamId = $request->query('team_id');
+
+        return view('boards.create', compact('teams', 'roles', 'preselectedTeamId'));
+    }
+
+    /**
+     * AJAX endpoint: get team members for dynamic board creation form.
+     */
+    public function getTeamMembers(Team $team)
+    {
+        $userId = Auth::user()->id;
+
+        // Ensure requesting user is a team owner
+        $isOwner = $team->members()
+            ->where('users.id', $userId)
+            ->wherePivotIn('role_in_team', ['owner', 'Admin', 'Owner'])
+            ->exists();
+
+        abort_unless($isOwner, 403);
+
+        $members = $team->members->map(function ($member) use ($userId) {
+            return [
+                'id'         => $member->id,
+                'name'       => $member->name,
+                'email'      => $member->email,
+                'is_current' => $member->id === $userId,
+            ];
+        });
+
+        return response()->json($members);
     }
 
     /**
@@ -48,48 +103,73 @@ class BoardController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'team_id' => 'required|exists:teams,id',
+            'name'              => 'required|string|max:255',
+            'team_id'           => 'required|exists:teams,id',
+            'members'           => 'required|array|min:1',
+            'members.*.user_id' => 'required|exists:users,id',
+            'members.*.role'    => 'required|string|in:' . implode(',', array_keys(self::boardRoles())),
         ]);
 
         $userId = Auth::user()->id;
 
         $team = Team::whereHas('members', function ($query) use ($userId) {
             $query->where('users.id', $userId)
-                ->where('team_members.role_in_team', 'owner');
+                ->whereIn('team_members.role_in_team', ['owner', 'Admin', 'Owner']);
         })->where('id', $validated['team_id'])->firstOrFail();
 
-        $workflowGroup = WorkflowGroup::create([
-            'name' => $validated['name'] . ' Workflow',
-            'team_id' => $team->id,
-        ]);
+        $board = null;
 
-        WorkflowStatus::create([
-            'workflow_group_id' => $workflowGroup->id,
-            'name' => 'To Do',
-            'order_index' => 1,
-            'is_done' => 0,
-        ]);
+        DB::transaction(function () use ($validated, $team, $userId, &$board) {
+            $workflowGroup = WorkflowGroup::create([
+                'name'    => $validated['name'] . ' Workflow',
+                'team_id' => $team->id,
+            ]);
 
-        WorkflowStatus::create([
-            'workflow_group_id' => $workflowGroup->id,
-            'name' => 'In Progress',
-            'order_index' => 2,
-            'is_done' => 0,
-        ]);
+            WorkflowStatus::create([
+                'workflow_group_id' => $workflowGroup->id,
+                'name'              => 'To Do',
+                'order_index'       => 1,
+                'is_done'           => 0,
+            ]);
 
-        WorkflowStatus::create([
-            'workflow_group_id' => $workflowGroup->id,
-            'name' => 'Done',
-            'order_index' => 3,
-            'is_done' => 1,
-        ]);
+            WorkflowStatus::create([
+                'workflow_group_id' => $workflowGroup->id,
+                'name'              => 'In Progress',
+                'order_index'       => 2,
+                'is_done'           => 0,
+            ]);
 
-        $board = Board::create([
-            'name' => $validated['name'],
-            'team_id' => $team->id,
-            'workflow_group_id' => $workflowGroup->id,
-        ]);
+            WorkflowStatus::create([
+                'workflow_group_id' => $workflowGroup->id,
+                'name'              => 'Done',
+                'order_index'       => 3,
+                'is_done'           => 1,
+            ]);
+
+            $board = Board::create([
+                'name'              => $validated['name'],
+                'team_id'           => $team->id,
+                'workflow_group_id' => $workflowGroup->id,
+            ]);
+
+            // Add selected members with their roles
+            $creatorIncluded = false;
+            foreach ($validated['members'] as $memberData) {
+                $board->members()->attach($memberData['user_id'], [
+                    'role' => $memberData['role'],
+                ]);
+                if ((int) $memberData['user_id'] === $userId) {
+                    $creatorIncluded = true;
+                }
+            }
+
+            // Ensure creator is always on the board as product_owner
+            if (!$creatorIncluded) {
+                $board->members()->attach($userId, [
+                    'role' => 'product_owner',
+                ]);
+            }
+        });
 
         return redirect()->route('boards.show', $board->id)
             ->with('success', 'Board created successfully!');
@@ -100,28 +180,116 @@ class BoardController extends Controller
      */
     public function show($id)
     {
-        $userId = Auth::user()->id;
-
         $board = Board::with('team.members')->findOrFail($id);
 
-        $isMember = $board->team
-            && $board->team->members()
-                ->where('users.id', $userId)
-                ->exists();
+        $permissionLevel = $this->ensureBoardPermission($board, 'viewer');
+        $userRole = $this->getBoardRole($board);
 
-        abort_unless($isMember, 403);
-
-        $isOwner = $board->team
-            && $board->team->members()
-                ->where('users.id', $userId)
-                ->where('team_members.role_in_team', 'owner')
-                ->exists();
+        if (!$userRole && $permissionLevel === 'admin') {
+            $userRole = 'team_owner';
+        }
 
         $statuses = WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
+            ->where('is_backlog', 0)
             ->orderBy('order_index')
             ->get();
 
-        return view('boards.show', compact('board', 'statuses', 'isOwner'));
+        $backlogStatus = WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
+            ->where('is_backlog', 1)
+            ->first();
+
+        return view('boards.show', compact('board', 'statuses', 'permissionLevel', 'userRole', 'backlogStatus'));
+    }
+
+    /**
+     * Board settings page — manage members and roles.
+     */
+    public function settings(Board $board)
+    {
+        $this->ensureBoardPermission($board, 'admin');
+
+        $board->load('team.members', 'members');
+
+        $roles = self::boardRoles();
+
+        // Team members not yet on this board
+        $boardMemberIds = $board->members->pluck('id')->toArray();
+        $availableMembers = $board->team->members->filter(function ($member) use ($boardMemberIds) {
+            return !in_array($member->id, $boardMemberIds);
+        });
+
+        return view('boards.settings', compact('board', 'roles', 'availableMembers'));
+    }
+
+    /**
+     * Add a team member to the board.
+     */
+    public function addBoardMember(Request $request, Board $board)
+    {
+        $this->ensureBoardPermission($board, 'admin');
+
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'role'    => 'required|string|in:' . implode(',', array_keys(self::boardRoles())),
+        ]);
+
+        // Ensure user is a member of the team
+        $isTeamMember = $board->team->members()->where('users.id', $validated['user_id'])->exists();
+        abort_unless($isTeamMember, 422, 'User must be a member of the team first.');
+
+        // Check not already on board
+        $alreadyOnBoard = $board->members()->where('users.id', $validated['user_id'])->exists();
+        if ($alreadyOnBoard) {
+            return back()->withErrors(['user_id' => 'This user is already on the board.']);
+        }
+
+        $board->members()->attach($validated['user_id'], [
+            'role' => $validated['role'],
+        ]);
+
+        return redirect()->route('boards.settings', $board->id)
+            ->with('success', 'Member added to board.');
+    }
+
+    /**
+     * Update a board member's role.
+     */
+    public function updateBoardMemberRole(Request $request, Board $board, User $user)
+    {
+        $this->ensureBoardPermission($board, 'admin');
+
+        $validated = $request->validate([
+            'role' => 'required|string|in:' . implode(',', array_keys(self::boardRoles())),
+        ]);
+
+        $board->members()->updateExistingPivot($user->id, [
+            'role' => $validated['role'],
+        ]);
+
+        return redirect()->route('boards.settings', $board->id)
+            ->with('success', 'Role updated.');
+    }
+
+    /**
+     * Remove a member from the board.
+     */
+    public function removeBoardMember(Board $board, User $user)
+    {
+        $this->ensureBoardPermission($board, 'admin');
+
+        // Prevent removing yourself if you're the only admin
+        $adminCount = $board->members->filter(function ($m) {
+            return in_array($m->pivot->role, ['product_owner', 'techlead', 'teamlead']);
+        })->count();
+
+        if ($user->id === Auth::user()->id && $adminCount <= 1) {
+            return back()->withErrors(['user_id' => 'Cannot remove the last admin from the board.']);
+        }
+
+        $board->members()->detach($user->id);
+
+        return redirect()->route('boards.settings', $board->id)
+            ->with('success', 'Member removed from board.');
     }
 
     /**
@@ -133,25 +301,16 @@ class BoardController extends Controller
             'name' => 'required|string|max:255',
         ]);
 
-        $userId = Auth::user()->id;
+        $this->ensureBoardPermission($board, 'admin');
 
-        // Check if user is a member of the team
-        $isMember = $board->team
-            && $board->team->members()
-                ->where('users.id', $userId)
-                ->exists();
-
-        abort_unless($isMember, 403);
-
-        // Get the last order index
         $lastOrder = WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
             ->max('order_index') ?? 0;
 
         WorkflowStatus::create([
             'workflow_group_id' => $board->workflow_group_id,
-            'name' => $validated['name'],
-            'order_index' => $lastOrder + 1,
-            'is_done' => 0,
+            'name'              => $validated['name'],
+            'order_index'       => $lastOrder + 1,
+            'is_done'           => 0,
         ]);
 
         return redirect()->route('boards.show', $board->id)
@@ -167,17 +326,9 @@ class BoardController extends Controller
             'new_index' => 'required|integer|min:0',
         ]);
 
-        $userId = Auth::user()->id;
+        $this->ensureBoardPermission($board, 'admin');
 
-        // Check if user is a member of the team
-        $isMember = $board->team
-            && $board->team->members()
-                ->where('users.id', $userId)
-                ->exists();
-
-        abort_unless($isMember, 403);
-
-        $newIndex = $validated['new_index'] + 1; // Frontend is 0-indexed, Backend is 1-indexed (order_index)
+        $newIndex = $validated['new_index'] + 1;
         $oldIndex = $column->order_index;
 
         if ($newIndex == $oldIndex) {
@@ -185,12 +336,10 @@ class BoardController extends Controller
         }
 
         if ($newIndex > $oldIndex) {
-            // Moving down (to the right)
             WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
                 ->whereBetween('order_index', [$oldIndex + 1, $newIndex])
                 ->decrement('order_index');
         } else {
-            // Moving up (to the left)
             WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
                 ->whereBetween('order_index', [$newIndex, $oldIndex - 1])
                 ->increment('order_index');
@@ -210,15 +359,13 @@ class BoardController extends Controller
             'name' => 'required|string|max:255',
         ]);
 
-        $userId = Auth::user()->id;
+        $this->ensureBoardPermission($board, 'admin');
 
-        // Check if user is a member of the team
-        $isMember = $board->team
-            && $board->team->members()
-                ->where('users.id', $userId)
-                ->exists();
+        abort_unless($column->workflow_group_id === $board->workflow_group_id, 404);
 
-        abort_unless($isMember, 403);
+        if ($column->is_backlog) {
+            return response()->json(['success' => false, 'message' => 'Backlog column cannot be renamed.'], 403);
+        }
 
         $column->update(['name' => $validated['name']]);
 
@@ -230,21 +377,19 @@ class BoardController extends Controller
      */
     public function deleteColumn(Request $request, Board $board, WorkflowStatus $column)
     {
-        $userId = Auth::user()->id;
+        $this->ensureBoardPermission($board, 'admin');
 
-        $isMember = $board->team
-            && $board->team->members()
-                ->where('users.id', $userId)
-                ->exists();
+        abort_unless($column->workflow_group_id === $board->workflow_group_id, 404);
 
-        abort_unless($isMember, 403);
+        if ($column->is_backlog) {
+            return response()->json(['success' => false, 'message' => 'Backlog column cannot be deleted.'], 403);
+        }
 
-        // Block deletion if the column still has tasks
         $taskCount = $column->workItems()->count();
         if ($taskCount > 0) {
             return response()->json([
-                'success' => false,
-                'message' => 'This column still has ' . $taskCount . ' task(s). Please move or delete all tasks before removing the column.',
+                'success'   => false,
+                'message'   => 'This column still has ' . $taskCount . ' task(s). Please move or delete all tasks before removing the column.',
                 'has_tasks' => true,
             ], 422);
         }
@@ -259,18 +404,9 @@ class BoardController extends Controller
      */
     public function destroy($id)
     {
-        $userId = Auth::user()->id;
+        $board = Board::with('members')->findOrFail($id);
 
-        $board = Board::with('team.members')->findOrFail($id);
-
-        // Check if user is an owner of the team
-        $isOwner = $board->team
-            && $board->team->members()
-                ->where('users.id', $userId)
-                ->where('team_members.role_in_team', 'owner')
-                ->exists();
-
-        abort_unless($isOwner, 403, 'Only team owners can delete boards.');
+        $this->ensureBoardPermission($board, 'admin');
 
         $board->delete();
 

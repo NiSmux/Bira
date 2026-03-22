@@ -6,11 +6,14 @@ use Illuminate\Http\Request;
 use App\Models\WorkItem;
 use App\Models\Board;
 use App\Models\WorkflowStatus;
+use App\Http\Traits\ChecksBoardRole;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class WorkItemController extends Controller
 {
+    use ChecksBoardRole;
+
     /**
      * Rodyti visas lentas arba pagrindinį puslapį
      */
@@ -25,6 +28,9 @@ class WorkItemController extends Controller
      */
     public function show(Board $board, WorkItem $task)
     {
+        $this->ensureTaskBelongsToBoard($board, $task);
+        $this->ensureBoardPermission($board, 'viewer');
+
         $task->load(['status', 'type', 'priority', 'creator']);
         return view('boards.tasks.showTask', compact('board', 'task'));
     }
@@ -35,12 +41,12 @@ class WorkItemController extends Controller
     public function create($board_id)
     {
         $board = Board::findOrFail($board_id);
-        
-        // Paimame duomenis pasirinkimo laukams (selects)
+
+        $this->ensureBoardPermission($board, 'member');
+
         $itemTypes = DB::table('item_types')->get();
         $priorities = DB::table('priorities')->get();
-        
-        // Svarbu: paimame statusus (stulpelius), kurie priklauso šios lentos procesui
+
         $statuses = WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
             ->orderBy('order_index')
             ->get();
@@ -51,14 +57,16 @@ class WorkItemController extends Controller
     /**
      * Išsaugoti naują užduotį duomenų bazėje
      */
-   public function store(Request $request, Board $board)
+    public function store(Request $request, Board $board)
     {
+        $this->ensureBoardPermission($board, 'member');
+
         $validated = $request->validate([
-            'title' => 'required|max:200',
-            'description' => 'nullable|string',
-            'status_id' => 'required|exists:workflow_statuses,id',
+            'title'        => 'required|max:200',
+            'description'  => 'nullable|string',
+            'status_id'    => 'required|exists:workflow_statuses,id',
             'item_type_id' => 'required|exists:item_types,id',
-            'priority_id' => 'nullable|exists:priorities,id',
+            'priority_id'  => 'nullable|exists:priorities,id',
             'story_points' => 'nullable|integer|min:0|max:100',
         ]);
 
@@ -92,6 +100,9 @@ class WorkItemController extends Controller
 
     public function destroy(Board $board, WorkItem $task)
     {
+        $this->ensureTaskBelongsToBoard($board, $task);
+        $this->ensureBoardPermission($board, 'admin');
+
         // Atjungiam nuo lentos
         $task->boards()->detach($board->id);
 
@@ -107,6 +118,9 @@ class WorkItemController extends Controller
 
     public function edit(Board $board, WorkItem $task)
     {
+        $this->ensureTaskBelongsToBoard($board, $task);
+        $this->ensureBoardPermission($board, 'member');
+
         $itemTypes = \DB::table('item_types')->get();
         $priorities = \DB::table('priorities')->get();
 
@@ -122,23 +136,27 @@ class WorkItemController extends Controller
             'statuses'
         ));
     }
+
     public function update(Request $request, Board $board, WorkItem $task)
     {
+        $this->ensureTaskBelongsToBoard($board, $task);
+        $this->ensureBoardPermission($board, 'member');
+
         $validated = $request->validate([
-            'title' => 'required|max:200',
-            'description' => 'nullable|string',
-            'status_id' => 'required|exists:workflow_statuses,id',
+            'title'        => 'required|max:200',
+            'description'  => 'nullable|string',
+            'status_id'    => 'required|exists:workflow_statuses,id',
             'item_type_id' => 'required|exists:item_types,id',
-            'priority_id' => 'nullable|exists:priorities,id',
+            'priority_id'  => 'nullable|exists:priorities,id',
             'story_points' => 'nullable|integer|min:0|max:100',
         ]);
 
         $task->update([
-            'title' => $request->title,
-            'description' => $request->description,
-            'status_id' => $request->status_id,
+            'title'        => $request->title,
+            'description'  => $request->description,
+            'status_id'    => $request->status_id,
             'item_type_id' => $request->item_type_id,
-            'priority_id' => $request->priority_id,
+            'priority_id'  => $request->priority_id,
             'story_points' => $request->story_points,
         ]);
 
@@ -149,6 +167,9 @@ class WorkItemController extends Controller
 
     public function updateStatus(Request $request, Board $board, WorkItem $task)
     {
+        $this->ensureTaskBelongsToBoard($board, $task);
+        $this->ensureBoardPermission($board, 'member');
+
         $validated = $request->validate([
             'status_id' => 'required|exists:workflow_statuses,id',
         ]);
@@ -158,5 +179,10 @@ class WorkItemController extends Controller
         ]);
 
         return response()->json(['success' => true]);
+    }
+
+    private function ensureTaskBelongsToBoard(Board $board, WorkItem $task)
+    {
+        abort_unless($task->boards()->where('boards.id', $board->id)->exists(), 404, 'Task not found on this board.');
     }
 }

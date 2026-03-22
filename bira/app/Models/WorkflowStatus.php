@@ -9,7 +9,7 @@ class WorkflowStatus extends Model
     protected $table = 'workflow_statuses'; 
     public $timestamps = false; // Kadangi SQL schemoje nėra created_at/updated_at laukų šioje lentelėje
 
-    protected $fillable = ['workflow_group_id', 'name', 'order_index', 'is_done'];
+    protected $fillable = ['workflow_group_id', 'name', 'order_index', 'is_done', 'is_backlog'];
 
     /**
      * Ryšys su grupėmis (kiekvienas statusas priklauso kažkokiai grupei)
