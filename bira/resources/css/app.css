@@ -51,3 +51,18 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
+
+/* Task Card Layout Toggling */
+.column-tasks .task-card-column { 
+    display: flex !important; 
+}
+.column-tasks .task-card-backlog { 
+    display: none !important; 
+}
+
+.backlog-tasks .task-card-column { 
+    display: none !important; 
+}
+.backlog-tasks .task-card-backlog { 
+    display: flex !important; 
+}

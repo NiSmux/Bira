@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Board;
+use App\Models\Team;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Traits\ChecksBoardRole;
@@ -14,12 +15,14 @@ class BacklogController extends Controller
     /**
      * Display a listing of all backlogs across all boards the user has access to.
      */
-    public function index()
+    public function index(Request $request)
     {
         $userId = Auth::user()->id;
+        $teamId = $request->query('team_id');
+        $boardIdQuery = $request->query('board_id');
 
         // Fetch all boards the user belongs to (directly or via team owner override)
-        $boards = Board::with(['team', 'items' => function ($query) {
+        $boardsQuery = Board::with(['team', 'items' => function ($query) {
                 // Pre-load only items that belong to a backlog status
                 $query->whereHas('status', function ($q) {
                     $q->where('is_backlog', 1);
@@ -32,9 +35,21 @@ class BacklogController extends Controller
                     $q->where('users.id', $userId)
                       ->whereIn('team_members.role_in_team', ['owner', 'Admin', 'Owner']);
                 });
-            })
-            ->get();
+            });
 
-        return view('backlog.index', compact('boards'));
+        if ($teamId) {
+            $boardsQuery->where('team_id', $teamId);
+        }
+
+        if ($boardIdQuery) {
+            $boardsQuery->where('id', $boardIdQuery);
+        }
+
+        $boards = $boardsQuery->get();
+
+        $team = $teamId ? Team::find($teamId) : null;
+        $board = $boardIdQuery ? Board::find($boardIdQuery) : null;
+
+        return view('backlog.index', compact('boards', 'team', 'board'));
     }
 }
