@@ -53,7 +53,16 @@
                 @else
                     <div class="flex flex-col gap-3">
                         @foreach($backlogTasks as $item)
-                        <div class="group bg-card border border-border-subtle rounded-2xl p-4 hover:border-primary/50 transition-all flex flex-col md:flex-row md:items-center justify-between shadow-sm hover:shadow-md">
+                        @php
+                            $typeName = mb_strtolower($item->type->name ?? '');
+                            $blCardBorder = match(true) {
+                                $typeName === 'istorija' || $typeName === 'user story' || $typeName === 'story' => 'border-l-[3px] border-l-emerald-500',
+                                $typeName === 'užduotis' || $typeName === 'task' => 'border-l-[3px] border-l-blue-500',
+                                $typeName === 'klaida' || $typeName === 'bug' => 'border-l-[3px] border-l-red-500',
+                                default => 'border-l-[3px] border-l-transparent'
+                            };
+                        @endphp
+                        <div class="group bg-card border border-border-subtle {{ $blCardBorder }} rounded-2xl p-4 hover:border-primary/50 transition-all flex flex-col md:flex-row md:items-center justify-between shadow-sm hover:shadow-md">
                             
                             <!-- Left: Core info -->
                             <div class="flex items-center gap-4 flex-1 min-w-0">

@@ -68,7 +68,7 @@
                         @else
                             <h4 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">{{ $status->name }}</h4>
                         @endif
-                        <span class="px-2 py-0.5 rounded-full bg-white/5 text-[10px] font-bold text-muted-foreground">
+                        <span class="px-2 py-0.5 rounded-full bg-white/5 text-[10px] font-bold text-muted-foreground mr-2">
                             {{ $board->items->where('status_id', $status->id)->count() }}
                         </span>
                     </div>
@@ -86,7 +86,16 @@
 
                 <div class="kanban-tasks space-y-4 flex-1 min-h-[500px]" data-status-id="{{ $status->id }}">
                     @foreach($board->items->where('status_id', $status->id) as $item)
-                        <div class="group bg-card border border-border-subtle rounded-2xl p-5 hover:border-primary/50 transition-all {{ $permissionLevel !== 'viewer' ? 'cursor-move' : '' }} shadow-sm active:scale-[0.98]" data-id="{{ $item->id }}">
+                        @php
+                            $typeName = mb_strtolower($item->type->name ?? '');
+                            $cardBorder = match(true) {
+                                $typeName === 'istorija' || $typeName === 'user story' || $typeName === 'story' => 'border-l-[3px] border-l-emerald-500',
+                                $typeName === 'užduotis' || $typeName === 'task' => 'border-l-[3px] border-l-blue-500',
+                                $typeName === 'klaida' || $typeName === 'bug' => 'border-l-[3px] border-l-red-500',
+                                default => 'border-l-[3px] border-l-transparent'
+                            };
+                        @endphp
+                        <div class="group bg-card border border-border-subtle {{ $cardBorder }} rounded-2xl p-5 hover:border-primary/50 transition-all {{ $permissionLevel !== 'viewer' ? 'cursor-move' : '' }} shadow-sm active:scale-[0.98]" data-id="{{ $item->id }}">
                             <div class="flex items-start justify-between mb-2">
                                 <h5 class="text-white font-semibold line-clamp-2 leading-tight">{{ $item->title }}</h5>
                                 @if($permissionLevel !== 'viewer')
@@ -176,14 +185,37 @@
                 </div>
                 Backlog
             </h3>
-            <span class="px-2.5 py-1 rounded-full bg-white/5 text-xs font-bold text-muted-foreground">
+            <span class="px-2.5 py-1 rounded-full bg-white/5 text-xs font-bold text-muted-foreground mr-3">
                 {{ $board->items->where('status_id', $backlogStatus->id)->count() }} Items
             </span>
+
+            @php
+                $backlogItems = $board->items->where('status_id', $backlogStatus->id);
+                $blStoryPoints = $backlogItems->filter(fn($i) => mb_strtolower($i->type->name ?? '') === 'istorija' || mb_strtolower($i->type->name ?? '') === 'user story' || mb_strtolower($i->type->name ?? '') === 'story')->sum('story_points');
+                $blTaskPoints = $backlogItems->filter(fn($i) => mb_strtolower($i->type->name ?? '') === 'užduotis' || mb_strtolower($i->type->name ?? '') === 'task')->sum('story_points');
+                $blBugPoints = $backlogItems->filter(fn($i) => mb_strtolower($i->type->name ?? '') === 'klaida' || mb_strtolower($i->type->name ?? '') === 'bug')->sum('story_points');
+                $blTotalPoints = $backlogItems->sum('story_points');
+            @endphp
+            <div class="flex items-center gap-1 border-l border-white/10 pl-3">
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-red-500 text-white shadow-sm" title="Bug points">{{ $blBugPoints }}</span>
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-500 text-white shadow-sm" title="Task points">{{ $blTaskPoints }}</span>
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500 text-white shadow-sm" title="Story points">{{ $blStoryPoints }}</span>
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-gray-500/50 text-white shadow-sm ml-1" title="Total backlog points">{{ $blTotalPoints }}</span>
+            </div>
         </div>
         
         <div class="kanban-tasks w-full bg-white/[0.01] border border-dashed border-border-subtle rounded-3xl p-6 flex flex-col gap-3 min-h-[150px] transition-colors hover:bg-white/[0.02]" data-status-id="{{ $backlogStatus->id }}">
             @foreach($board->items->where('status_id', $backlogStatus->id) as $item)
-                <div class="flex flex-col md:flex-row md:items-center justify-between group bg-card border border-border-subtle rounded-2xl p-4 hover:border-primary/50 transition-all {{ $permissionLevel !== 'viewer' ? 'cursor-move' : '' }} shadow-sm active:scale-[0.99] gap-4" data-id="{{ $item->id }}">
+                @php
+                    $typeName = mb_strtolower($item->type->name ?? '');
+                    $blCardBorder = match(true) {
+                        $typeName === 'istorija' || $typeName === 'user story' || $typeName === 'story' => 'border-l-[3px] border-l-emerald-500',
+                        $typeName === 'užduotis' || $typeName === 'task' => 'border-l-[3px] border-l-blue-500',
+                        $typeName === 'klaida' || $typeName === 'bug' => 'border-l-[3px] border-l-red-500',
+                        default => 'border-l-[3px] border-l-transparent'
+                    };
+                @endphp
+                <div class="flex flex-col md:flex-row md:items-center justify-between group bg-card border border-border-subtle {{ $blCardBorder }} rounded-2xl p-4 hover:border-primary/50 transition-all {{ $permissionLevel !== 'viewer' ? 'cursor-move' : '' }} shadow-sm active:scale-[0.99] gap-4" data-id="{{ $item->id }}">
                     <!-- Left Side: Title & Priority -->
                     <div class="flex items-center gap-4 flex-1 min-w-0">
                         @php
