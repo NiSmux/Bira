@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Board;
+use App\Models\Sprint;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\WorkflowGroup;
@@ -103,11 +104,18 @@ class BoardController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'              => 'required|string|max:255',
+            'name'              => [
+                'required', 'string', 'max:255',
+                \Illuminate\Validation\Rule::unique('boards')->where(fn ($query) =>
+                    $query->where('team_id', $request->input('team_id'))
+                ),
+            ],
             'team_id'           => 'required|exists:teams,id',
             'members'           => 'required|array|min:1',
             'members.*.user_id' => 'required|exists:users,id',
             'members.*.role'    => 'required|string|in:' . implode(',', array_keys(self::boardRoles())),
+        ], [
+            'name.unique' => 'A board with this name already exists in this team.',
         ]);
 
         $userId = Auth::user()->id;
@@ -123,6 +131,14 @@ class BoardController extends Controller
             $workflowGroup = WorkflowGroup::create([
                 'name'    => $validated['name'] . ' Workflow',
                 'team_id' => $team->id,
+            ]);
+
+            WorkflowStatus::create([
+                'workflow_group_id' => $workflowGroup->id,
+                'name'              => 'Backlog',
+                'order_index'       => 0,
+                'is_done'           => 0,
+                'is_backlog'        => 1,
             ]);
 
             WorkflowStatus::create([
@@ -198,7 +214,20 @@ class BoardController extends Controller
             ->where('is_backlog', 1)
             ->first();
 
-        return view('boards.show', compact('board', 'statuses', 'permissionLevel', 'userRole', 'backlogStatus'));
+        $sprints = Sprint::where('board_id', $board->id)
+            ->with(['items' => fn($q) => $q->with(['type', 'priority', 'status'])])
+            ->orderByRaw("FIELD(status, 'active', 'planned', 'completed')")
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $activeSprint    = $sprints->firstWhere('status', 'active');
+        $plannedSprints  = $sprints->where('status', 'planned');
+        $completedSprints = $sprints->where('status', 'completed');
+
+        return view('boards.show', compact(
+            'board', 'statuses', 'permissionLevel', 'userRole',
+            'backlogStatus', 'activeSprint', 'plannedSprints', 'completedSprints'
+        ));
     }
 
     /**

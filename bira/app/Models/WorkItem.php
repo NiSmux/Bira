@@ -66,4 +66,9 @@ class WorkItem extends Model
     {
         return $this->belongsTo(Priority::class, 'priority_id');
     }
+
+    public function sprint()
+    {
+        return $this->belongsTo(Sprint::class, 'release_id');
+    }
 }

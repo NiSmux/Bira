@@ -9,6 +9,7 @@ use App\Http\Controllers\BacklogController;
 use App\Http\Controllers\TeamController;
 
 use App\Http\Controllers\PlanningPokerController;
+use App\Http\Controllers\SprintController;
 
 // --- PUBLIC ROUTES ---
 Route::get('/login', [VartotojasController::class , 'showLoginForm'])->name('login');
@@ -55,6 +56,15 @@ Route::middleware(['mano_apsauga'])->group(function () {
         Route::post('/boards/{board}/members', [BoardController::class, 'addBoardMember'])->name('boards.members.store');
         Route::patch('/boards/{board}/members/{user}', [BoardController::class, 'updateBoardMemberRole'])->name('boards.members.updateRole');
         Route::delete('/boards/{board}/members/{user}', [BoardController::class, 'removeBoardMember'])->name('boards.members.destroy');
+
+        // Sprints
+        Route::post('/boards/{board}/sprints', [SprintController::class, 'store'])->name('boards.sprints.store');
+        Route::patch('/boards/{board}/sprints/{sprint}', [SprintController::class, 'update'])->name('boards.sprints.update');
+        Route::delete('/boards/{board}/sprints/{sprint}', [SprintController::class, 'destroy'])->name('boards.sprints.destroy');
+        Route::post('/boards/{board}/sprints/{sprint}/start', [SprintController::class, 'start'])->name('boards.sprints.start');
+        Route::post('/boards/{board}/sprints/{sprint}/complete', [SprintController::class, 'complete'])->name('boards.sprints.complete');
+        Route::post('/boards/{board}/sprints/{sprint}/items', [SprintController::class, 'addItem'])->name('boards.sprints.items.store');
+        Route::delete('/boards/{board}/sprints/{sprint}/items/{item}', [SprintController::class, 'removeItem'])->name('boards.sprints.items.destroy');
 
         // Board Columns
         Route::post('/boards/{board}/columns', [BoardController::class, 'addColumn'])->name('boards.columns.store');

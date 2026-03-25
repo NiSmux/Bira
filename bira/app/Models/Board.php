@@ -30,4 +30,9 @@ class Board extends Model
         return $this->belongsToMany(User::class, 'board_members', 'board_id', 'user_id')
             ->withPivot('role', 'assigned_at');
     }
+
+    public function sprints()
+    {
+        return $this->hasMany(Sprint::class);
+    }
 }
