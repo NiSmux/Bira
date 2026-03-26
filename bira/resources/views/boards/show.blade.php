@@ -214,9 +214,12 @@
             $totalPoints   = $sprintItems->sum('story_points');
             $donePoints    = $sprintItems->whereIn('status_id', $doneIds->toArray())->sum('story_points');
 
-            // Backlog items available to add (no sprint, in backlog status)
+            // Backlog items available to add: in backlog status AND not already
+            // in an active or planned sprint (items from completed sprints are fair game).
+            $activePlannedIds = collect([$activeSprint])->filter()->concat($plannedSprints)->pluck('id')->toArray();
             $availableBacklogItems = isset($backlogStatus)
-                ? $board->items->where('status_id', $backlogStatus->id)->whereNull('release_id')
+                ? $board->items->where('status_id', $backlogStatus->id)
+                    ->filter(fn($i) => !in_array($i->release_id, $activePlannedIds))
                 : collect();
         @endphp
 
@@ -494,7 +497,8 @@
         
         {{-- Sprint action bar (shown when items are checked) --}}
         @php
-            $sprintsForBacklog = collect([$activeSprint])->filter()->concat($plannedSprints);
+            $sprintsForBacklog  = collect([$activeSprint])->filter()->concat($plannedSprints);
+            $blActivePlannedIds = $sprintsForBacklog->pluck('id')->toArray();
         @endphp
         @if($permissionLevel !== 'viewer' && $sprintsForBacklog->isNotEmpty())
         <div id="backlog-action-bar" class="hidden mb-3 flex items-center gap-3 px-4 py-2.5 bg-violet-500/10 border border-violet-500/20 rounded-xl">
@@ -529,8 +533,10 @@
                 };
             @endphp
             <div data-id="{{ $item->id }}" class="backlog-row group flex items-center gap-3 px-4 py-2.5 border-b border-white/[0.04] last:border-0 hover:bg-white/[0.03] transition-colors {{ $permissionLevel !== 'viewer' ? 'cursor-move' : '' }}">
-                @if($permissionLevel !== 'viewer' && $sprintsForBacklog->isNotEmpty())
+                @if($permissionLevel !== 'viewer' && $sprintsForBacklog->isNotEmpty() && !in_array($item->release_id, $blActivePlannedIds))
                 <input type="checkbox" class="backlog-sprint-checkbox shrink-0 rounded accent-violet-500 cursor-pointer" data-item-id="{{ $item->id }}">
+                @elseif($item->release_id && in_array($item->release_id, $blActivePlannedIds))
+                <span class="w-4 h-4 shrink-0" title="Already in sprint"></span>
                 @endif
                 <div class="w-2 h-2 rounded-full {{ $blDot }} shrink-0"></div>
                 <span class="text-white text-sm font-medium flex-1 truncate">{{ $item->title }}</span>

@@ -120,27 +120,10 @@ class SprintController extends Controller
         $backlogStatus = WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
             ->where('is_backlog', 1)->first();
 
-        // Items in a status where is_done=1 are considered finished — clear their
-        // sprint link but leave them in their current column.
-        // Everything else (To Do, In Progress, any custom non-done column) goes back to backlog.
-        $doneStatusIds = WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
-            ->where('is_done', 1)
-            ->pluck('id');
-
-        // Finished items: just unlink from sprint, stay in their done column
-        $sprint->items()
-            ->whereIn('status_id', $doneStatusIds)
-            ->update(['release_id' => null]);
-
-        // Unfinished items: return to backlog
+        // All items move to backlog (clears the kanban board).
+        // release_id is kept so the completed sprint still shows its item history.
         if ($backlogStatus) {
-            $sprint->items()
-                ->whereNotIn('status_id', $doneStatusIds)
-                ->update(['release_id' => null, 'status_id' => $backlogStatus->id]);
-        } else {
-            $sprint->items()
-                ->whereNotIn('status_id', $doneStatusIds)
-                ->update(['release_id' => null]);
+            $sprint->items()->update(['status_id' => $backlogStatus->id]);
         }
 
         $sprint->update([
