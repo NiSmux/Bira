@@ -11,6 +11,7 @@ class PokerSession extends Model
 
     protected $fillable = [
         'team_id',
+        'board_id',
         'title',
         'time_limit',
         'status',
@@ -26,6 +27,11 @@ class PokerSession extends Model
     public function team()
     {
         return $this->belongsTo(Team::class, 'team_id');
+    }
+
+    public function board()
+    {
+        return $this->belongsTo(Board::class, 'board_id');
     }
 
     public function creator()

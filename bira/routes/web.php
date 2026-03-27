@@ -112,5 +112,5 @@ Route::middleware(['mano_apsauga'])->group(function () {
         Route::post('/poker/{session}/complete', [PlanningPokerController::class, 'complete'])->name('poker.complete');
         Route::get('/poker/{session}/results', [PlanningPokerController::class, 'results'])->name('poker.results');
         Route::post('/poker/{session}/save-points', [PlanningPokerController::class, 'savePoints'])->name('poker.savePoints');
-        Route::get('/poker/team/{team}/items', [PlanningPokerController::class, 'teamItems'])->name('poker.teamItems');
+        Route::get('/poker/board/{board}/items', [PlanningPokerController::class, 'boardItems'])->name('poker.boardItems');
 });

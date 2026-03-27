@@ -6,7 +6,7 @@
 <div class="p-8 max-w-2xl mx-auto">
     {{-- Header --}}
     <div class="mb-8">
-        <a href="{{ route('poker.index', ['team_id' => $selectedTeamId]) }}" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors mb-4">
+        <a href="{{ route('poker.index', array_filter(['team_id' => $selectedTeamId, 'board_id' => $boardId ?? null])) }}" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors mb-4">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
             Back to Sessions
         </a>
@@ -25,11 +25,11 @@
         </div>
     @endif
 
-    {{-- No team context guard --}}
-    @if(!$selectedTeamId)
+    {{-- No board context guard --}}
+    @if(!$boardId && !$selectedTeamId)
         <div class="p-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm">
-            <p class="font-semibold mb-1">No team selected</p>
-            <p>Please open a board first, then use the Planning Poker link from the sidebar to create a session for that team.</p>
+            <p class="font-semibold mb-1">No board selected</p>
+            <p>Please open a board first, then use the Planning Poker link from the sidebar to create a session for that board.</p>
         </div>
     @else
 
@@ -37,8 +37,9 @@
     <form action="{{ route('poker.store') }}" method="POST" class="space-y-6">
         @csrf
 
-        {{-- Hidden team_id --}}
+        {{-- Hidden team_id and board_id --}}
         <input type="hidden" name="team_id" value="{{ $selectedTeamId }}">
+        <input type="hidden" name="board_id" value="{{ $boardId ?? '' }}">
 
         {{-- Team display (read-only) --}}
         @php $selectedTeam = $teams->firstWhere('id', $selectedTeamId); @endphp
@@ -90,15 +91,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const container = document.getElementById('work-items-list');
     const placeholder = document.getElementById('work-items-placeholder');
     const teamId = {{ $selectedTeamId ?? 'null' }};
+    const boardId = {{ $boardId ?? 'null' }};
 
-    function loadItems(teamId) {
-        if (!teamId) return;
+    function loadItems(boardId) {
+        if (!boardId) {
+            // fallback: nothing to load without a board
+            placeholder.textContent = 'No board selected.';
+            return;
+        }
 
         placeholder.textContent = 'Loading work items...';
         placeholder.classList.remove('hidden');
         container.classList.add('hidden');
 
-        fetch(`/poker/team/${teamId}/items`)
+        fetch(`/poker/board/${boardId}/items`)
             .then(res => res.json())
             .then(items => {
                 container.innerHTML = '';
@@ -134,9 +140,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    // Auto-load on page load since team is already known
-    if (teamId) {
-        loadItems(teamId);
+    // Auto-load on page load since board is already known
+    if (boardId) {
+        loadItems(boardId);
+    } else if (teamId) {
+        // Legacy fallback if only team_id is supplied
+        placeholder.textContent = 'No board selected. Please go back and open a board first.';
     }
 });
 </script>

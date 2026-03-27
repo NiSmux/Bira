@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Board;
 use App\Models\PokerSession;
 use App\Models\PokerSessionItem;
 use App\Models\PokerVote;
@@ -13,26 +14,36 @@ use Illuminate\Support\Facades\Auth;
 class PlanningPokerController extends Controller
 {
     /**
-     * List all poker sessions for the user's teams
+     * List all poker sessions for the current board
      */
     public function index(Request $request)
     {
         $user = Auth::user();
-        $teamIds = $user->teams()->pluck('teams.id');
-        $selectedTeamId = $request->query('team_id');
+        $boardId = $request->query('board_id');
 
-        $query = PokerSession::whereIn('team_id', $teamIds)
-            ->with(['team', 'creator', 'items'])
-            ->orderByDesc('created_at');
+        if ($boardId) {
+            // Show sessions for the specific board
+            $board = Board::findOrFail($boardId);
 
-        // Filter to specific team if provided
-        if ($selectedTeamId && $teamIds->contains($selectedTeamId)) {
-            $query->where('team_id', $selectedTeamId);
+            // Verify the user belongs to the board's team
+            if (!$board->team->members()->where('users.id', $user->id)->exists()) {
+                abort(403);
+            }
+
+            $sessions = PokerSession::where('board_id', $boardId)
+                ->with(['team', 'creator', 'items'])
+                ->orderByDesc('created_at')
+                ->get();
+        } else {
+            // Fallback: show sessions across all user teams
+            $teamIds = $user->teams()->pluck('teams.id');
+            $sessions = PokerSession::whereIn('team_id', $teamIds)
+                ->with(['team', 'creator', 'items'])
+                ->orderByDesc('created_at')
+                ->get();
         }
 
-        $sessions = $query->get();
-
-        return view('poker.index', compact('sessions', 'selectedTeamId'));
+        return view('poker.index', compact('sessions', 'boardId'));
     }
 
     /**
@@ -43,26 +54,27 @@ class PlanningPokerController extends Controller
         $user = Auth::user();
         $teams = $user->teams()->with('boards')->get();
         $selectedTeamId = $request->query('team_id');
+        $boardId = $request->query('board_id');
 
-        return view('poker.create', compact('teams', 'selectedTeamId'));
+        return view('poker.create', compact('teams', 'selectedTeamId', 'boardId'));
     }
 
     /**
-     * Get work items for a team (AJAX endpoint for dynamic form)
+     * Get work items for a board (AJAX endpoint for dynamic form)
      */
-    public function teamItems(Team $team)
+    public function boardItems(Board $board)
     {
         $user = Auth::user();
 
-        // Check user is member of this team
-        if (!$team->members()->where('users.id', $user->id)->exists()) {
+        // Check user is member of the board's team
+        if (!$board->team->members()->where('users.id', $user->id)->exists()) {
             return response()->json([], 403);
         }
 
-        $items = WorkItem::where('team_id', $team->id)
+        $items = $board->items()
             ->where('is_deleted', 0)
-            ->select('id', 'title', 'story_points')
-            ->orderBy('title')
+            ->select('work_items.id', 'work_items.title', 'work_items.story_points')
+            ->orderBy('work_items.title')
             ->get();
 
         return response()->json($items);
@@ -74,8 +86,9 @@ class PlanningPokerController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'team_id' => 'required|integer|exists:teams,id',
-            'title' => 'required|string|max:200',
+            'team_id'    => 'required|integer|exists:teams,id',
+            'board_id'   => 'nullable|integer|exists:boards,id',
+            'title'      => 'required|string|max:200',
             'time_limit' => 'required|integer|min:1|max:120',
             'work_items' => 'required|array|min:1',
             'work_items.*' => 'integer|exists:work_items,id',
@@ -91,20 +104,21 @@ class PlanningPokerController extends Controller
 
         // Create the session (time_limit stored in seconds)
         $session = PokerSession::create([
-            'team_id' => $request->team_id,
-            'title' => $request->title,
+            'team_id'  => $request->team_id,
+            'board_id' => $request->board_id ?: null,
+            'title'    => $request->title,
             'time_limit' => $request->time_limit * 60, // convert minutes to seconds
-            'status' => 'active',
+            'status'     => 'active',
             'created_by' => $user->id,
-            'created_at' => now(), // Force Laravel's current time
+            'created_at' => now(),
         ]);
 
         // Attach work items
         foreach ($request->work_items as $index => $itemId) {
             PokerSessionItem::create([
-                'session_id' => $session->id,
+                'session_id'   => $session->id,
                 'work_item_id' => $itemId,
-                'order_index' => $index,
+                'order_index'  => $index,
             ]);
         }
 
