@@ -14,17 +14,22 @@ class WorkItem extends Model
 
     // 2. Pridėti visi pildomi laukai
     protected $fillable = [
-        'title', 
-        'description', 
-        'item_type_id', 
-        'priority_id', 
-        'story_points', 
-        'status_id', 
-        'team_id', 
-        'assignee_id', 
-        'release_id', 
-        'parent_item_id', 
-        'created_by'
+        'title',
+        'description',
+        'item_type_id',
+        'priority_id',
+        'story_points',
+        'status_id',
+        'team_id',
+        'assignee_id',
+        'release_id',
+        'parent_item_id',
+        'created_by',
+        'completed_at',
+    ];
+
+    protected $casts = [
+        'completed_at' => 'datetime',
     ];
 
     /**

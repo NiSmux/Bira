@@ -10,6 +10,7 @@ use App\Http\Controllers\TeamController;
 
 use App\Http\Controllers\PlanningPokerController;
 use App\Http\Controllers\SprintController;
+use App\Http\Controllers\ReportController;
 
 // --- PUBLIC ROUTES ---
 Route::get('/login', [VartotojasController::class , 'showLoginForm'])->name('login');
@@ -102,6 +103,11 @@ Route::middleware(['mano_apsauga'])->group(function () {
         })->name('profilis.slaptazodis');
         Route::put('/profile/password', [ProfilisController::class, 'keistiSlaptazodi'])->name('profilis.slaptazodis.keisti');
         Route::delete('/profile', [ProfilisController::class, 'destroy'])->name('profilis.trinti');
+
+        // Reports
+        Route::get('/boards/{board}/reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/boards/{board}/reports/burndown/{sprint?}', [ReportController::class, 'burndown'])->name('reports.burndown');
+        Route::get('/boards/{board}/reports/velocity', [ReportController::class, 'velocity'])->name('reports.velocity');
 
         // Planning Poker
         Route::get('/poker', [PlanningPokerController::class, 'index'])->name('poker.index');

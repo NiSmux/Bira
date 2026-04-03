@@ -151,6 +151,11 @@ class WorkItemController extends Controller
             'story_points' => 'nullable|integer|min:0|max:100',
         ]);
 
+        $newStatus = WorkflowStatus::find($request->status_id);
+        $completedAt = ($newStatus && $newStatus->is_done)
+            ? ($task->completed_at ?? now())
+            : null;
+
         $task->update([
             'title'        => $request->title,
             'description'  => $request->description,
@@ -158,6 +163,7 @@ class WorkItemController extends Controller
             'item_type_id' => $request->item_type_id,
             'priority_id'  => $request->priority_id,
             'story_points' => $request->story_points,
+            'completed_at' => $completedAt,
         ]);
 
         return redirect()
@@ -174,8 +180,15 @@ class WorkItemController extends Controller
             'status_id' => 'required|exists:workflow_statuses,id',
         ]);
 
+        $newStatus = WorkflowStatus::find($request->status_id);
+        // Preserve the original completed_at if moving to done again; clear it when leaving done
+        $completedAt = ($newStatus && $newStatus->is_done)
+            ? ($task->completed_at ?? now())
+            : null;
+
         $task->update([
-            'status_id' => $request->status_id,
+            'status_id'    => $request->status_id,
+            'completed_at' => $completedAt,
         ]);
 
         return response()->json(['success' => true]);

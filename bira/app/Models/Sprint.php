@@ -12,11 +12,14 @@ class Sprint extends Model
 
     protected $fillable = [
         'board_id', 'name', 'goal', 'start_date', 'end_date', 'status', 'created_by',
+        'completed_points', 'total_points',
     ];
 
     protected $casts = [
-        'start_date' => 'date',
-        'end_date'   => 'date',
+        'start_date'       => 'date',
+        'end_date'         => 'date',
+        'completed_points' => 'integer',
+        'total_points'     => 'integer',
     ];
 
     public function board()
