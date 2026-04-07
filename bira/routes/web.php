@@ -95,12 +95,12 @@ Route::middleware(['mano_apsauga'])->group(function () {
 
 
         // Profile
-        Route::get('/profile', [ProfilisController::class, 'show'])->name('profilis.rodyti');
         Route::get('/profile/edit', [ProfilisController::class, 'edit'])->name('profilis.redaguoti');
-        Route::put('/profile', [ProfilisController::class, 'update'])->name('profilis.atnaujinti');
         Route::get('/profile/password', function () {
             return view('profilis.slaptazodis');
         })->name('profilis.slaptazodis');
+        Route::get('/profile/{id?}', [ProfilisController::class, 'show'])->name('profilis.rodyti');
+        Route::put('/profile', [ProfilisController::class, 'update'])->name('profilis.atnaujinti');
         Route::put('/profile/password', [ProfilisController::class, 'keistiSlaptazodi'])->name('profilis.slaptazodis.keisti');
         Route::delete('/profile', [ProfilisController::class, 'destroy'])->name('profilis.trinti');
 

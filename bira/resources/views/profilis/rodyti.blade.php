@@ -1,11 +1,18 @@
 @extends('layouts.app')
 
-@section('title', 'My Profile – Bira')
+@section('title', ($isOwnProfile ? 'My Profile' : $user->name . "'s Profile") . ' – Bira')
 
 @section('hide_sidebar', true)
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="flex items-center justify-between mb-8">
+        <h2 class="text-2xl font-bold text-white">{{ $isOwnProfile ? 'My Profile' : $user->name . "'s Profile" }}</h2>
+        <a href="javascript:history.back()" class="inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg font-medium transition-all border border-white/10">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Back
+        </a>
+    </div>
     
     @if(session('success'))
         <div class="alert-container mb-8 p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 flex items-center justify-between transition-opacity duration-300">
@@ -147,30 +154,41 @@
             <!-- Teams -->
             <div class="bg-card border border-border-subtle rounded-2xl overflow-hidden shadow-sm">
                 <div class="px-6 py-4 border-b border-border-subtle bg-white/2">
-                    <h4 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">My teams</h4>
+                    <h4 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">{{ $isOwnProfile ? 'My teams' : 'Teams' }}</h4>
                 </div>
                 <div class="p-6 space-y-4">
                     @forelse($teams as $team)
-                        <a href="{{ route('teams.show', $team->id) }}" class="flex items-start gap-3 p-3 rounded-xl bg-white/2 border border-white/5 hover:border-primary/30 transition-colors group/team">
-                            <div class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary group-hover/team:scale-110 transition-transform">
+                        @if($isOwnProfile)
+                            <a href="{{ route('teams.show', $team->id) }}" class="flex items-start gap-3 p-3 rounded-xl bg-white/2 border border-white/5 hover:border-primary/30 transition-colors group/team">
+                        @else
+                            <div class="flex items-start gap-3 p-3 rounded-xl bg-white/2 border border-white/5 group/team">
+                        @endif
+                            <div class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary {{ $isOwnProfile ? 'group-hover/team:scale-110' : '' }} transition-transform">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                             </div>
                             <div class="min-w-0 flex-1">
-                                <p class="text-sm font-semibold text-white truncate group-hover/team:text-primary transition-colors">{{ $team->name }}</p>
+                                <p class="text-sm font-semibold text-white truncate {{ $isOwnProfile ? 'group-hover/team:text-primary' : '' }} transition-colors">{{ $team->name }}</p>
                                 @if($team->role_in_team)
                                     <p class="text-xs text-muted-foreground mt-0.5">{{ $team->role_in_team }}</p>
                                 @endif
                             </div>
-                            <div class="self-center opacity-0 group-hover/team:opacity-100 transition-opacity">
-                                <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            @if($isOwnProfile)
+                                <div class="self-center opacity-0 group-hover/team:opacity-100 transition-opacity">
+                                    <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                </div>
+                            @endif
+                        @if($isOwnProfile)
+                            </a>
+                        @else
                             </div>
-                        </a>
+                        @endif
                     @empty
-                        <p class="text-xs text-muted-foreground text-center py-4 italic">You are not a member of any team.</p>
+                        <p class="text-xs text-muted-foreground text-center py-4 italic">{{ $isOwnProfile ? 'You are' : $user->name . ' is' }} not a member of any team.</p>
                     @endforelse
                 </div>
             </div>
 
+            @if($isOwnProfile)
             <!-- Actions -->
             <div class="bg-white/2 border border-border-subtle rounded-3xl p-6">
                 <h4 class="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-6 text-center">Profile settings</h4>
@@ -195,6 +213,7 @@
                     </div>
                 </div>
             </div>
+            @endif
         </div>
 
         <!-- Recent Tasks Main Content -->

@@ -10,11 +10,21 @@ use Illuminate\Support\Facades\DB;
 class ProfilisController extends Controller
 {
     /**
-     * Rodyti prisijungusio vartotojo profilio puslapį
+     * Rodyti vartotojo profilio puslapį
      */
-    public function show()
+    public function show($id = null)
     {
-        $user = Auth::user();
+        // Jei ID nepateiktas, žiūrime savo profilį, jei pateiktas - konkretų vartotoją
+        if ($id) {
+            $user = DB::table('users')->where('id', $id)->first();
+            if (!$user) {
+                return redirect()->route('pagrindinis')->with('error', 'User not found');
+            }
+        } else {
+            $user = Auth::user();
+        }
+
+        $isOwnProfile = Auth::check() && Auth::user()->id == $user->id;
 
         // Rolės pavadinimas
         $role = DB::table('roles')->where('id', $user->role_id)->first();
@@ -39,7 +49,6 @@ class ProfilisController extends Controller
             ->count();
 
         // Statistika: atliktų užduočių skaičius (statusas is_done = 1)
-        // Skaičiuojame užduotis, kurias vartotojas sukūrė ARBA jam priskirtas
         $atliktaUzduociu = DB::table('work_items')
             ->join('workflow_statuses', 'work_items.status_id', '=', 'workflow_statuses.id')
             ->where(function ($q) use ($user) {
@@ -70,7 +79,8 @@ class ProfilisController extends Controller
                 'workflow_statuses.name as statusas',
                 'workflow_statuses.is_done',
                 'item_types.name as tipas',
-                'priorities.name as prioritetas'
+                'priorities.name as prioritetas',
+                'work_items.team_id'
             )
             ->get();
 
@@ -78,6 +88,7 @@ class ProfilisController extends Controller
             'user',
             'role',
             'teams',
+            'isOwnProfile',
             'sukurtuUzduociu',
             'priskirtuUzduociu',
             'atliktaUzduociu',
