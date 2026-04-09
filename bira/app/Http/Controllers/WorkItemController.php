@@ -9,6 +9,7 @@ use App\Models\WorkflowStatus;
 use App\Http\Traits\ChecksBoardRole;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Models\BoardSubTeam;
 
 class WorkItemController extends Controller
 {
@@ -40,7 +41,7 @@ class WorkItemController extends Controller
      */
     public function create($board_id)
     {
-        $board = Board::findOrFail($board_id);
+        $board = Board::with('members', 'subTeams.members')->findOrFail($board_id);
 
         $this->ensureBoardPermission($board, 'member');
 
@@ -51,7 +52,10 @@ class WorkItemController extends Controller
             ->orderBy('order_index')
             ->get();
 
-        return view('boards.tasks.createTask', compact('board', 'itemTypes', 'priorities', 'statuses'));
+        $boardMembers = $board->members;
+        $subTeams     = $board->subTeams;
+
+        return view('boards.tasks.createTask', compact('board', 'itemTypes', 'priorities', 'statuses', 'boardMembers', 'subTeams'));
     }
 
     /**
@@ -68,29 +72,37 @@ class WorkItemController extends Controller
             'item_type_id' => 'required|exists:item_types,id',
             'priority_id'  => 'nullable|exists:priorities,id',
             'story_points' => 'nullable|integer|min:0|max:100',
+            'assignee_type' => 'nullable|in:user,sub_team',
+            'assignee_id'   => 'nullable|exists:users,id',
+            'sub_team_id'   => 'nullable|exists:board_sub_teams,id',
         ]);
 
-        $item = new WorkItem();
-        $item->title = $request->title;
-        $item->description = $request->description;
-        $item->item_type_id = $request->item_type_id;
-        $item->status_id = $request->status_id;
-        $item->priority_id = $request->priority_id;
-        $item->story_points = $request->story_points;
-        $item->team_id = $board->team_id;
-
-        $user = auth()->user();
-
-        if (is_numeric($user->id)) {
-            $item->created_by = $user->id;
-        } else {
-            $item->created_by = \DB::table('users')
-                ->where('email', $user->email)
-                ->value('id');
+        // Tik vienas gali būti priskirtas
+        $assigneeId = null;
+        $subTeamId  = null;
+        if ($request->assignee_type === 'user') {
+            $assigneeId = $request->assignee_id ?: null;
+        } elseif ($request->assignee_type === 'sub_team') {
+            $subTeamId = $request->sub_team_id ?: null;
         }
 
-        $item->save();
+        $item = new WorkItem();
+        $item->title        = $request->title;
+        $item->description  = $request->description;
+        $item->item_type_id = $request->item_type_id;
+        $item->status_id    = $request->status_id;
+        $item->priority_id  = $request->priority_id;
+        $item->story_points = $request->story_points;
+        $item->team_id      = $board->team_id;
+        $item->assignee_id  = $assigneeId;
+        $item->sub_team_id  = $subTeamId;
 
+        $user = auth()->user();
+        $item->created_by = is_numeric($user->id)
+            ? $user->id
+            : \DB::table('users')->where('email', $user->email)->value('id');
+
+        $item->save();
         $item->boards()->attach($board->id);
 
         return redirect()
@@ -121,19 +133,27 @@ class WorkItemController extends Controller
         $this->ensureTaskBelongsToBoard($board, $task);
         $this->ensureBoardPermission($board, 'member');
 
-        $itemTypes = \DB::table('item_types')->get();
+        $board->load('members', 'subTeams.members');
+        $task->load('assignee', 'subTeam');
+
+        $itemTypes  = \DB::table('item_types')->get();
         $priorities = \DB::table('priorities')->get();
 
         $statuses = WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
             ->orderBy('order_index')
             ->get();
 
+        $boardMembers = $board->members;
+        $subTeams     = $board->subTeams;
+
         return view('boards.tasks.editTask', compact(
             'board',
             'task',
             'itemTypes',
             'priorities',
-            'statuses'
+            'statuses',
+            'boardMembers',
+            'subTeams'
         ));
     }
 
@@ -149,9 +169,21 @@ class WorkItemController extends Controller
             'item_type_id' => 'required|exists:item_types,id',
             'priority_id'  => 'nullable|exists:priorities,id',
             'story_points' => 'nullable|integer|min:0|max:100',
+            'assignee_type' => 'nullable|in:user,sub_team',
+            'assignee_id'   => 'nullable|exists:users,id',
+            'sub_team_id'   => 'nullable|exists:board_sub_teams,id',
         ]);
 
-        $newStatus = WorkflowStatus::find($request->status_id);
+        // Tik vienas gali būti priskirtas
+        $assigneeId = null;
+        $subTeamId  = null;
+        if ($request->assignee_type === 'user') {
+            $assigneeId = $request->assignee_id ?: null;
+        } elseif ($request->assignee_type === 'sub_team') {
+            $subTeamId = $request->sub_team_id ?: null;
+        }
+
+        $newStatus   = WorkflowStatus::find($request->status_id);
         $completedAt = ($newStatus && $newStatus->is_done)
             ? ($task->completed_at ?? now())
             : null;
@@ -164,6 +196,8 @@ class WorkItemController extends Controller
             'priority_id'  => $request->priority_id,
             'story_points' => $request->story_points,
             'completed_at' => $completedAt,
+            'assignee_id'  => $assigneeId,
+            'sub_team_id'  => $subTeamId,
         ]);
 
         return redirect()

@@ -8,9 +8,8 @@ class WorkItem extends Model
 {
     protected $table = 'work_items';
 
-    // 1. SVARBU: Tavo SQL lentelėje nėra 'updated_at' stulpelio.
-    // Pasakome Laravel, kad naudotų tik 'created_at'.
-    const UPDATED_AT = null; 
+    // UPDATED_AT yra nustatytas, tačiau jei lentelė jo neturi – nekeisk
+    const UPDATED_AT = 'updated_at';
 
     // 2. Pridėti visi pildomi laukai
     protected $fillable = [
@@ -22,6 +21,7 @@ class WorkItem extends Model
         'status_id',
         'team_id',
         'assignee_id',
+        'sub_team_id',
         'release_id',
         'parent_item_id',
         'created_by',
@@ -75,5 +75,15 @@ class WorkItem extends Model
     public function sprint()
     {
         return $this->belongsTo(Sprint::class, 'release_id');
+    }
+
+    public function assignee()
+    {
+        return $this->belongsTo(User::class, 'assignee_id');
+    }
+
+    public function subTeam()
+    {
+        return $this->belongsTo(BoardSubTeam::class, 'sub_team_id');
     }
 }

@@ -164,5 +164,179 @@
             </div>
         </div>
     </div>
+
+    {{-- ═══════════════════════════════════════════════════════
+         SUB-TEAMS SECTION (admin only)
+    ═══════════════════════════════════════════════════════ --}}
+    @if($isBoardAdmin)
+    <div class="mt-10 border-t border-white/5 pt-10">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold tracking-tight text-white flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center text-violet-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.768-.231-1.48-.628-2.143M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.768.231-1.48.628-2.143M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                </div>
+                Sub-Teams
+            </h3>
+            <span class="px-2 py-0.5 rounded-lg bg-violet-500/10 text-violet-400 text-[10px] font-bold uppercase tracking-wider border border-violet-500/20">{{ $board->subTeams->count() }} teams</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {{-- Sidebar: Create sub-team --}}
+            <div class="space-y-6">
+                <div class="bg-card border border-border-subtle rounded-2xl p-6 shadow-sm">
+                    <h4 class="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-5 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                        New Sub-Team
+                    </h4>
+                    <form action="{{ route('boards.sub-teams.store', $board->id) }}" method="POST" class="space-y-4">
+                        @csrf
+                        <div>
+                            <label for="sub_team_name" class="block text-[10px] font-bold text-muted-foreground uppercase mb-2">Team name</label>
+                            <input type="text" name="name" id="sub_team_name" required maxlength="120"
+                                class="w-full bg-background border border-border-subtle rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all"
+                                placeholder="e.g. Frontend Team">
+                        </div>
+                        <button type="submit" class="w-full bg-violet-600 hover:bg-violet-700 text-white py-2.5 rounded-xl font-bold transition-all active:scale-[0.98]">
+                            Create Sub-Team
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            {{-- Main: Sub-teams list --}}
+            <div class="lg:col-span-2 space-y-4">
+                @forelse($board->subTeams as $subTeam)
+                <div class="bg-card border border-border-subtle rounded-2xl shadow-sm overflow-hidden">
+                    {{-- Sub-team header --}}
+                    <div class="px-5 py-4 bg-white/[0.03] border-b border-border-subtle flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-violet-500/15 flex items-center justify-center text-[10px] font-bold text-violet-400">
+                                {{ strtoupper(substr($subTeam->name, 0, 2)) }}
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-white">{{ $subTeam->name }}</p>
+                                <p class="text-[10px] text-muted-foreground">{{ $subTeam->members->count() }} members</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            {{-- Edit button --}}
+                            <button
+                                class="st-edit-btn p-1.5 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-white transition-colors"
+                                data-id="{{ $subTeam->id }}"
+                                data-name="{{ $subTeam->name }}"
+                                title="Rename sub-team">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            </button>
+                            {{-- Delete button --}}
+                            <form action="{{ route('boards.sub-teams.destroy', [$board->id, $subTeam->id]) }}" method="POST"
+                                onsubmit="return confirm('Delete sub-team {{ addslashes($subTeam->name) }}? Tasks assigned to it will be unassigned.')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="p-1.5 rounded-lg hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors" title="Delete sub-team">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    {{-- Members --}}
+                    <div class="px-5 py-3">
+                        @if($subTeam->members->isEmpty())
+                            <p class="text-xs text-muted-foreground italic py-2">No members yet.</p>
+                        @else
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            @foreach($subTeam->members as $stMember)
+                            <div class="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-full px-2.5 py-1 text-xs font-medium text-white group/chip">
+                                <div class="w-4 h-4 rounded-full bg-violet-500/20 flex items-center justify-center text-[9px] font-bold text-violet-400">
+                                    {{ strtoupper(substr($stMember->name, 0, 1)) }}
+                                </div>
+                                <span>{{ $stMember->name }}</span>
+                                <form action="{{ route('boards.sub-teams.members.destroy', [$board->id, $subTeam->id, $stMember->id]) }}" method="POST" class="inline">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="text-muted-foreground/40 hover:text-red-400 transition-colors ml-0.5" title="Remove from sub-team">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                </form>
+                            </div>
+                            @endforeach
+                        </div>
+                        @endif
+
+                        {{-- Add member form --}}
+                        @php
+                            $stMemberIds = $subTeam->members->pluck('id')->toArray();
+                            $availableForSt = $board->members->filter(fn($m) => !in_array($m->id, $stMemberIds));
+                        @endphp
+                        @if($availableForSt->isNotEmpty())
+                        <form action="{{ route('boards.sub-teams.members.store', [$board->id, $subTeam->id]) }}" method="POST" class="flex items-center gap-2">
+                            @csrf
+                            <select name="user_id" required class="flex-1 bg-background border border-border-subtle rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 appearance-none">
+                                <option value="">Add member...</option>
+                                @foreach($availableForSt as $availMember)
+                                    <option value="{{ $availMember->id }}">{{ $availMember->name }}</option>
+                                @endforeach
+                            </select>
+                            <button type="submit" class="px-3 py-1.5 bg-violet-600/80 hover:bg-violet-600 text-white text-xs font-bold rounded-lg transition-colors">
+                                Add
+                            </button>
+                        </form>
+                        @endif
+                    </div>
+                </div>
+                @empty
+                <div class="py-10 flex flex-col items-center justify-center text-muted-foreground text-sm opacity-50 bg-white/[0.01] border border-dashed border-white/10 rounded-2xl">
+                    No sub-teams yet. Create one to organize your board members into groups.
+                </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+    @endif
 </div>
+
+{{-- Edit Sub-Team Modal --}}
+<div id="st-edit-modal" class="fixed inset-0 z-50 items-center justify-center" style="display:none;">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="st-edit-backdrop"></div>
+    <div class="relative bg-[#1a1a2e] border border-white/10 rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl">
+        <h3 class="text-white font-bold text-lg mb-5">Rename Sub-Team</h3>
+        <form id="st-edit-form" method="POST" class="space-y-4">
+            @csrf @method('PATCH')
+            <div>
+                <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">New name</label>
+                <input type="text" name="name" id="st-edit-name" required maxlength="120"
+                    class="w-full bg-background border border-border-subtle rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-sm">
+            </div>
+            <div class="flex gap-3 justify-end">
+                <button type="button" id="st-edit-cancel" class="px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-sm font-medium rounded-lg transition-colors">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold rounded-lg transition-colors">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modal    = document.getElementById('st-edit-modal');
+    const form     = document.getElementById('st-edit-form');
+    const nameInp  = document.getElementById('st-edit-name');
+    const cancel   = document.getElementById('st-edit-cancel');
+    const backdrop = document.getElementById('st-edit-backdrop');
+
+    document.querySelectorAll('.st-edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id   = btn.dataset.id;
+            const name = btn.dataset.name;
+            nameInp.value = name;
+            form.action = `/boards/{{ $board->id }}/sub-teams/${id}`;
+            modal.style.display = 'flex';
+            nameInp.focus();
+        });
+    });
+
+    const closeModal = () => { modal.style.display = 'none'; };
+    cancel?.addEventListener('click', closeModal);
+    backdrop?.addEventListener('click', closeModal);
+});
+</script>
+@endpush
 @endsection

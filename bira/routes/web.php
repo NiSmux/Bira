@@ -7,6 +7,7 @@ use App\Http\Controllers\WorkItemController;
 use App\Http\Controllers\BoardController;
 use App\Http\Controllers\BacklogController;
 use App\Http\Controllers\TeamController;
+use App\Http\Controllers\BoardSubTeamController;
 
 use App\Http\Controllers\PlanningPokerController;
 use App\Http\Controllers\SprintController;
@@ -57,6 +58,13 @@ Route::middleware(['mano_apsauga'])->group(function () {
         Route::post('/boards/{board}/members', [BoardController::class, 'addBoardMember'])->name('boards.members.store');
         Route::patch('/boards/{board}/members/{user}', [BoardController::class, 'updateBoardMemberRole'])->name('boards.members.updateRole');
         Route::delete('/boards/{board}/members/{user}', [BoardController::class, 'removeBoardMember'])->name('boards.members.destroy');
+
+        // Board Sub-Teams
+        Route::post('/boards/{board}/sub-teams', [BoardSubTeamController::class, 'store'])->name('boards.sub-teams.store');
+        Route::patch('/boards/{board}/sub-teams/{subTeam}', [BoardSubTeamController::class, 'update'])->name('boards.sub-teams.update');
+        Route::delete('/boards/{board}/sub-teams/{subTeam}', [BoardSubTeamController::class, 'destroy'])->name('boards.sub-teams.destroy');
+        Route::post('/boards/{board}/sub-teams/{subTeam}/members', [BoardSubTeamController::class, 'addMember'])->name('boards.sub-teams.members.store');
+        Route::delete('/boards/{board}/sub-teams/{subTeam}/members/{user}', [BoardSubTeamController::class, 'removeMember'])->name('boards.sub-teams.members.destroy');
 
         // Sprints
         Route::post('/boards/{board}/sprints', [SprintController::class, 'store'])->name('boards.sprints.store');

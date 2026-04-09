@@ -231,15 +231,16 @@ class BoardController extends Controller
     }
 
     /**
-     * Board settings page — manage members and roles.
+     * Board settings page — manage members, roles, and sub-teams.
      */
     public function settings(Board $board)
     {
         $this->ensureBoardPermission($board, 'admin');
 
-        $board->load('team.members', 'members');
+        $board->load('team.members', 'members', 'subTeams.members');
 
         $roles = self::boardRoles();
+        $isBoardAdmin = true; // ensureBoardPermission above already guarantees admin
 
         // Team members not yet on this board
         $boardMemberIds = $board->members->pluck('id')->toArray();
@@ -247,7 +248,7 @@ class BoardController extends Controller
             return !in_array($member->id, $boardMemberIds);
         });
 
-        return view('boards.settings', compact('board', 'roles', 'availableMembers'));
+        return view('boards.settings', compact('board', 'roles', 'availableMembers', 'isBoardAdmin'));
     }
 
     /**

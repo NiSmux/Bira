@@ -101,6 +101,62 @@
                            min="0" 
                            max="100">
                 </div>
+                </div>
+            </div>
+
+            {{-- Assignee Section --}}
+            @php
+                $currentAssigneeType = 'none';
+                if ($task->assignee_id) $currentAssigneeType = 'user';
+                elseif ($task->sub_team_id) $currentAssigneeType = 'sub_team';
+            @endphp
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-border-subtle">
+                <div class="col-span-full">
+                    <label class="block text-sm font-semibold text-white mb-3">Assign to</label>
+                    <div class="flex gap-2 mb-3">
+                        <button type="button" class="assignee-type-btn px-3 py-1.5 rounded-lg text-xs font-bold border transition-all {{ $currentAssigneeType === 'none' ? 'bg-white/10 border-white/20 text-white' : 'bg-white/5 border-white/10 text-muted-foreground' }}" data-type="none">None</button>
+                        <button type="button" class="assignee-type-btn px-3 py-1.5 rounded-lg text-xs font-bold border transition-all {{ $currentAssigneeType === 'user' ? 'bg-white/10 border-white/20 text-white' : 'bg-white/5 border-white/10 text-muted-foreground' }}" data-type="user">
+                            <span class="flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                User
+                            </span>
+                        </button>
+                        @if(isset($subTeams) && $subTeams->isNotEmpty())
+                        <button type="button" class="assignee-type-btn px-3 py-1.5 rounded-lg text-xs font-bold border transition-all {{ $currentAssigneeType === 'sub_team' ? 'bg-violet-600/20 border-violet-500/30 text-violet-400' : 'bg-white/5 border-white/10 text-muted-foreground' }}" data-type="sub_team">
+                            <span class="flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.768-.231-1.48-.628-2.143M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.768.231-1.48.628-2.143M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                Sub-Team
+                            </span>
+                        </button>
+                        @endif
+                    </div>
+
+                    <input type="hidden" name="assignee_type" id="assignee_type_input" value="{{ $currentAssigneeType === 'none' ? '' : $currentAssigneeType }}">
+
+                    <div id="assign-user-select" class="{{ $currentAssigneeType === 'user' ? '' : 'hidden' }}">
+                        <select name="assignee_id" id="assignee_id"
+                            class="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
+                            <option value="">-- Select user --</option>
+                            @if(isset($boardMembers))
+                                @foreach($boardMembers as $member)
+                                    <option value="{{ $member->id }}" {{ $task->assignee_id == $member->id ? 'selected' : '' }}>{{ $member->name }}</option>
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
+
+                    @if(isset($subTeams) && $subTeams->isNotEmpty())
+                    <div id="assign-subteam-select" class="{{ $currentAssigneeType === 'sub_team' ? '' : 'hidden' }}">
+                        <select name="sub_team_id" id="sub_team_id"
+                            class="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all">
+                            <option value="">-- Select sub-team --</option>
+                            @foreach($subTeams as $st)
+                                <option value="{{ $st->id }}" {{ $task->sub_team_id == $st->id ? 'selected' : '' }}>{{ $st->name }} ({{ $st->members->count() }} members)</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @endif
+                </div>
             </div>
 
             <div class="pt-6 border-t border-border-subtle flex items-center justify-between">
@@ -114,4 +170,35 @@
         </form>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const typeInput  = document.getElementById('assignee_type_input');
+    const userDiv    = document.getElementById('assign-user-select');
+    const subTeamDiv = document.getElementById('assign-subteam-select');
+    const buttons    = document.querySelectorAll('.assignee-type-btn');
+
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const type = btn.dataset.type;
+            buttons.forEach(b => {
+                b.classList.remove('bg-white/10', 'border-white/20', 'text-white', 'bg-violet-600/20', 'border-violet-500/30', 'text-violet-400');
+                b.classList.add('bg-white/5', 'border-white/10', 'text-muted-foreground');
+            });
+            if (type === 'sub_team') {
+                btn.classList.add('bg-violet-600/20', 'border-violet-500/30', 'text-violet-400');
+            } else {
+                btn.classList.add('bg-white/10', 'border-white/20', 'text-white');
+            }
+            btn.classList.remove('bg-white/5', 'border-white/10', 'text-muted-foreground');
+            
+            typeInput.value = type === 'none' ? '' : type;
+            if(userDiv) userDiv.classList.toggle('hidden', type !== 'user');
+            if(subTeamDiv) subTeamDiv.classList.toggle('hidden', type !== 'sub_team');
+        });
+    });
+});
+</script>
+@endpush
 @endsection

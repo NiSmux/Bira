@@ -44,8 +44,17 @@
 
         <div class="flex items-center justify-between mt-auto">
             <div class="flex -space-x-2">
-                <div class="w-7 h-7 rounded-full border-2 border-card bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary" title="Assignee Code">SC</div>
-                <div class="w-7 h-7 rounded-full border-2 border-card bg-purple-500/20 flex items-center justify-center text-[10px] font-bold text-purple-400">MJ</div>
+                @if($item->assignee)
+                    <div class="w-7 h-7 rounded-full border-2 border-card bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary" title="Assigned to {{ $item->assignee->name }}">
+                        {{ strtoupper(substr($item->assignee->name, 0, 1)) }}{{ strtoupper(substr(strstr($item->assignee->name, ' ') ?: '', 1, 1)) }}
+                    </div>
+                @elseif($item->subTeam)
+                    <div class="w-7 h-7 rounded-full border-2 border-card bg-violet-500/20 flex items-center justify-center text-[10px] font-bold text-violet-400" title="Assigned to sub-team: {{ $item->subTeam->name }}">
+                        {{ strtoupper(substr($item->subTeam->name, 0, 2)) }}
+                    </div>
+                @else
+                    <div class="w-7 h-7 rounded-full border-2 border-card bg-white/5 flex items-center justify-center text-[10px] font-bold text-muted-foreground" title="Unassigned">--</div>
+                @endif
             </div>
             <a href="{{ route('boards.tasks.show', [$board->id ?? $backlogBoard->id, $item->id]) }}" class="text-muted-foreground hover:text-white">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
@@ -73,7 +82,17 @@
             @endif
 
             <div class="flex -space-x-2">
-                <div class="w-8 h-8 rounded-full border-2 border-card bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary" title="Assignee Code">SC</div>
+                @if($item->assignee)
+                    <div class="w-8 h-8 rounded-full border-2 border-card bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary" title="Assigned to {{ $item->assignee->name }}">
+                        {{ strtoupper(substr($item->assignee->name, 0, 1)) }}{{ strtoupper(substr(strstr($item->assignee->name, ' ') ?: '', 1, 1)) }}
+                    </div>
+                @elseif($item->subTeam)
+                    <div class="w-8 h-8 rounded-full border-2 border-card bg-violet-500/20 flex items-center justify-center text-[10px] font-bold text-violet-400" title="Assigned to sub-team: {{ $item->subTeam->name }}">
+                        {{ strtoupper(substr($item->subTeam->name, 0, 2)) }}
+                    </div>
+                @else
+                    <div class="w-8 h-8 rounded-full border-2 border-card bg-white/5 flex items-center justify-center text-[10px] font-bold text-muted-foreground" title="Unassigned">--</div>
+                @endif
             </div>
 
             <div class="flex items-center gap-2 border-l border-white/5 pl-6">

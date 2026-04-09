@@ -35,4 +35,9 @@ class Board extends Model
     {
         return $this->hasMany(Sprint::class);
     }
+
+    public function subTeams()
+    {
+        return $this->hasMany(BoardSubTeam::class, 'board_id');
+    }
 }
