@@ -90,7 +90,9 @@ class ReportController extends Controller
             ];
         }
 
-        return view('reports.burndown', compact('board', 'sprints', 'sprint', 'chartData'));
+        $sprintItems = $sprint ? $sprint->items()->with(['assignee', 'subTeam', 'priority', 'status', 'type'])->get() : collect();
+
+        return view('reports.burndown', compact('board', 'sprints', 'sprint', 'chartData', 'sprintItems'));
     }
 
     public function velocity(Board $board)
