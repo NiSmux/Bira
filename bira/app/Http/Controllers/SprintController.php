@@ -31,7 +31,7 @@ class SprintController extends Controller
             'goal'       => $validated['goal'] ?? null,
             'start_date' => $validated['start_date'] ?? null,
             'end_date'   => $validated['end_date'] ?? null,
-            'status'     => 'planned',
+            'status'     => 'new',
             'created_by' => Auth::user()->id,
         ]);
 
@@ -62,9 +62,9 @@ class SprintController extends Controller
         $this->ensureBoardPermission($board, 'admin');
         abort_unless($sprint->board_id === $board->id, 404);
 
-        if ($sprint->status === 'active') {
+        if ($sprint->status === 'in_progress') {
             return redirect()->route('boards.show', $board->id)
-                ->withErrors(['sprint' => 'Cannot delete an active sprint. Complete it first.']);
+                ->withErrors(['sprint' => 'Cannot delete an in-progress sprint. Complete it first.']);
         }
 
         $backlogStatus = WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
@@ -82,24 +82,46 @@ class SprintController extends Controller
             ->with('success', 'Sprint deleted. Items returned to backlog.');
     }
 
+    /**
+     * Transition a new sprint to planned status.
+     */
+    public function plan(Board $board, Sprint $sprint)
+    {
+        $this->ensureBoardPermission($board, 'admin');
+        abort_unless($sprint->board_id === $board->id, 404);
+
+        if ($sprint->status !== 'new') {
+            return redirect()->route('boards.show', $board->id)
+                ->withErrors(['sprint' => 'Only new sprints can be marked as planned.']);
+        }
+
+        $sprint->update(['status' => 'planned']);
+
+        return redirect()->route('boards.show', $board->id)
+            ->with('success', "Sprint \"{$sprint->name}\" marked as planned.");
+    }
+
+    /**
+     * Start a sprint (new or planned → in_progress).
+     */
     public function start(Board $board, Sprint $sprint)
     {
         $this->ensureBoardPermission($board, 'admin');
         abort_unless($sprint->board_id === $board->id, 404);
 
-        if ($sprint->status !== 'planned') {
+        if (!in_array($sprint->status, ['new', 'planned'])) {
             return redirect()->route('boards.show', $board->id)
                 ->withErrors(['sprint' => 'Sprint cannot be started.']);
         }
 
-        $hasActive = Sprint::where('board_id', $board->id)->where('status', 'active')->exists();
+        $hasActive = Sprint::where('board_id', $board->id)->where('status', 'in_progress')->exists();
         if ($hasActive) {
             return redirect()->route('boards.show', $board->id)
                 ->withErrors(['sprint' => 'There is already an active sprint on this board.']);
         }
 
         $sprint->update([
-            'status'     => 'active',
+            'status'     => 'in_progress',
             'start_date' => $sprint->start_date ?? now()->toDateString(),
         ]);
 
@@ -107,14 +129,18 @@ class SprintController extends Controller
             ->with('success', "Sprint \"{$sprint->name}\" started.");
     }
 
+    /**
+     * Complete a sprint (in_progress → to_be_released).
+     * Snapshots points. Unfinished items return to backlog; done items stay in place.
+     */
     public function complete(Board $board, Sprint $sprint)
     {
         $this->ensureBoardPermission($board, 'admin');
         abort_unless($sprint->board_id === $board->id, 404);
 
-        if ($sprint->status !== 'active') {
+        if ($sprint->status !== 'in_progress') {
             return redirect()->route('boards.show', $board->id)
-                ->withErrors(['sprint' => 'Sprint is not active.']);
+                ->withErrors(['sprint' => 'Sprint is not in progress.']);
         }
 
         // Snapshot point totals BEFORE moving items to backlog so velocity data is accurate
@@ -127,28 +153,51 @@ class SprintController extends Controller
         $backlogStatus = WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
             ->where('is_backlog', 1)->first();
 
-        // All items move to backlog (clears the kanban board).
-        // release_id is kept so the completed sprint still shows its item history.
-        if ($backlogStatus) {
+        // Only unfinished items return to backlog. Done items keep their status
+        // so they remain visible in the sprint history as completed work.
+        if ($backlogStatus && $doneStatusIds->isNotEmpty()) {
+            $sprint->items()
+                ->whereNotIn('status_id', $doneStatusIds)
+                ->update(['status_id' => $backlogStatus->id]);
+        } elseif ($backlogStatus) {
             $sprint->items()->update(['status_id' => $backlogStatus->id]);
         }
 
         $sprint->update([
-            'status'           => 'completed',
+            'status'           => 'to_be_released',
             'end_date'         => $sprint->end_date ?? now()->toDateString(),
             'total_points'     => $totalPoints,
             'completed_points' => $completedPoints,
         ]);
 
         return redirect()->route('boards.show', $board->id)
-            ->with('success', "Sprint \"{$sprint->name}\" completed. Unfinished items returned to backlog.");
+            ->with('success', "Sprint \"{$sprint->name}\" completed. Ready for release.");
+    }
+
+    /**
+     * Mark a sprint as delivered (to_be_released → delivered).
+     */
+    public function deliver(Board $board, Sprint $sprint)
+    {
+        $this->ensureBoardPermission($board, 'admin');
+        abort_unless($sprint->board_id === $board->id, 404);
+
+        if ($sprint->status !== 'to_be_released') {
+            return redirect()->route('boards.show', $board->id)
+                ->withErrors(['sprint' => 'Sprint is not in "To be Released" state.']);
+        }
+
+        $sprint->update(['status' => 'delivered']);
+
+        return redirect()->route('boards.show', $board->id)
+            ->with('success', "Sprint \"{$sprint->name}\" marked as delivered.");
     }
 
     public function addItem(Request $request, Board $board, Sprint $sprint)
     {
         $this->ensureBoardPermission($board, 'member');
         abort_unless($sprint->board_id === $board->id, 404);
-        abort_unless(in_array($sprint->status, ['planned', 'active']), 422);
+        abort_unless(in_array($sprint->status, ['new', 'planned', 'in_progress']), 422);
 
         $validated = $request->validate([
             'item_id' => 'required|exists:work_items,id',
@@ -186,5 +235,21 @@ class SprintController extends Controller
         ]);
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Sprint history page — all sprints for a board with expandable task lists.
+     */
+    public function history(Board $board)
+    {
+        $permissionLevel = $this->ensureBoardPermission($board, 'viewer');
+
+        $sprints = Sprint::where('board_id', $board->id)
+            ->with(['items' => fn($q) => $q->with(['type', 'priority', 'status', 'assignee'])])
+            ->orderByRaw("FIELD(status, 'in_progress', 'to_be_released', 'planned', 'new', 'delivered')")
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('boards.sprints.history', compact('board', 'sprints', 'permissionLevel'));
     }
 }

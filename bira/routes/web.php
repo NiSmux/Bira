@@ -67,11 +67,14 @@ Route::middleware(['mano_apsauga'])->group(function () {
         Route::delete('/boards/{board}/sub-teams/{subTeam}/members/{user}', [BoardSubTeamController::class, 'removeMember'])->name('boards.sub-teams.members.destroy');
 
         // Sprints
+        Route::get('/boards/{board}/sprints/history', [SprintController::class, 'history'])->name('boards.sprints.history');
         Route::post('/boards/{board}/sprints', [SprintController::class, 'store'])->name('boards.sprints.store');
         Route::patch('/boards/{board}/sprints/{sprint}', [SprintController::class, 'update'])->name('boards.sprints.update');
         Route::delete('/boards/{board}/sprints/{sprint}', [SprintController::class, 'destroy'])->name('boards.sprints.destroy');
+        Route::post('/boards/{board}/sprints/{sprint}/plan', [SprintController::class, 'plan'])->name('boards.sprints.plan');
         Route::post('/boards/{board}/sprints/{sprint}/start', [SprintController::class, 'start'])->name('boards.sprints.start');
         Route::post('/boards/{board}/sprints/{sprint}/complete', [SprintController::class, 'complete'])->name('boards.sprints.complete');
+        Route::post('/boards/{board}/sprints/{sprint}/deliver', [SprintController::class, 'deliver'])->name('boards.sprints.deliver');
         Route::post('/boards/{board}/sprints/{sprint}/items', [SprintController::class, 'addItem'])->name('boards.sprints.items.store');
         Route::delete('/boards/{board}/sprints/{sprint}/items/{item}', [SprintController::class, 'removeItem'])->name('boards.sprints.items.destroy');
 

@@ -42,7 +42,7 @@
                     <option value="{{ route('reports.burndown', [$board->id, $s->id]) }}"
                         {{ $sprint && $sprint->id === $s->id ? 'selected' : '' }}>
                         {{ $s->name }}
-                        @if($s->status === 'active') (Active) @endif
+                        @if($s->status === 'in_progress') (Active) @endif
                     </option>
                 @endforeach
             </select>

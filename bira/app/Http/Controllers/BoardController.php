@@ -214,19 +214,22 @@ class BoardController extends Controller
             ->where('is_backlog', 1)
             ->first();
 
+        // Only show active/upcoming sprints on the board page.
+        // Completed sprints (to_be_released, delivered) are in the history page.
         $sprints = Sprint::where('board_id', $board->id)
+            ->whereIn('status', ['new', 'planned', 'in_progress'])
             ->with(['items' => fn($q) => $q->with(['type', 'priority', 'status'])])
-            ->orderByRaw("FIELD(status, 'active', 'planned', 'completed')")
+            ->orderByRaw("FIELD(status, 'in_progress', 'planned', 'new')")
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $activeSprint    = $sprints->firstWhere('status', 'active');
-        $plannedSprints  = $sprints->where('status', 'planned');
-        $completedSprints = $sprints->where('status', 'completed');
+        $activeSprint   = $sprints->firstWhere('status', 'in_progress');
+        $plannedSprints = $sprints->where('status', 'planned');
+        $newSprints     = $sprints->where('status', 'new');
 
         return view('boards.show', compact(
             'board', 'statuses', 'permissionLevel', 'userRole',
-            'backlogStatus', 'activeSprint', 'plannedSprints', 'completedSprints'
+            'backlogStatus', 'activeSprint', 'plannedSprints', 'newSprints'
         ));
     }
 

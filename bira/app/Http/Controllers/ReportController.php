@@ -28,14 +28,14 @@ class ReportController extends Controller
 
         // Sprints that have data worth showing (started or completed)
         $sprints = Sprint::where('board_id', $board->id)
-            ->whereIn('status', ['active', 'completed'])
-            ->orderByRaw("FIELD(status, 'active', 'completed')")
+            ->whereIn('status', ['in_progress', 'to_be_released', 'delivered'])
+            ->orderByRaw("FIELD(status, 'in_progress', 'to_be_released', 'delivered')")
             ->orderBy('created_at', 'desc')
             ->get();
 
         // Default to active sprint, then most recent completed
         if (!$sprint) {
-            $sprint = $sprints->firstWhere('status', 'active') ?? $sprints->first();
+            $sprint = $sprints->firstWhere('status', 'in_progress') ?? $sprints->first();
         }
 
         $chartData = null;
@@ -100,7 +100,7 @@ class ReportController extends Controller
         $this->ensureBoardPermission($board, 'viewer');
 
         $sprints = Sprint::where('board_id', $board->id)
-            ->where('status', 'completed')
+            ->whereIn('status', ['to_be_released', 'delivered'])
             ->orderBy('created_at', 'asc')
             ->get();
 
