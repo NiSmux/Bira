@@ -84,6 +84,16 @@ Route::middleware(['mano_apsauga'])->group(function () {
         Route::patch('/boards/{board}/columns/{column}', [BoardController::class, 'updateColumn'])->name('boards.columns.update');
         Route::delete('/boards/{board}/columns/{column}', [BoardController::class, 'deleteColumn'])->name('boards.columns.destroy');
 
+        // Board Tags
+        Route::post('/boards/{board}/tags', [\App\Http\Controllers\TagController::class, 'store'])->name('boards.tags.store');
+        Route::delete('/boards/{board}/tags/{tag}', [\App\Http\Controllers\TagController::class, 'destroy'])->name('boards.tags.destroy');
+        Route::post('/boards/{board}/tasks/{task}/tags', [\App\Http\Controllers\TagController::class, 'attach'])->name('boards.tasks.tags.attach');
+        Route::delete('/boards/{board}/tasks/{task}/tags/{tag}', [\App\Http\Controllers\TagController::class, 'detach'])->name('boards.tasks.tags.detach');
+
+        // Task Comments
+        Route::post('/boards/{board}/tasks/{task}/comments', [\App\Http\Controllers\WorkItemCommentController::class, 'store'])->name('boards.tasks.comments.store');
+        Route::delete('/boards/{board}/tasks/{task}/comments/{comment}', [\App\Http\Controllers\WorkItemCommentController::class, 'destroy'])->name('boards.tasks.comments.destroy');
+
         // Forma naujai užduočiai
         Route::get('/boards/{board}/tasks/create', [WorkItemController::class , 'create'])
             ->name('boards.tasks.createTask');

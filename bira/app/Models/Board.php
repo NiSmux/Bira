@@ -40,4 +40,9 @@ class Board extends Model
     {
         return $this->hasMany(BoardSubTeam::class, 'board_id');
     }
+
+    public function tags()
+    {
+        return $this->hasMany(Tag::class);
+    }
 }

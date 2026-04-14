@@ -40,6 +40,13 @@
             <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider {{ $priorityStyles }}">
                 {{ $item->priority->name ?? 'None' }}
             </span>
+            @if(isset($item->tags) && $item->tags->count() > 0)
+                @foreach($item->tags as $tag)
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold border" style="background-color: {{ $tag->color }}1a; color: {{ $tag->color }}; border-color: {{ $tag->color }}4d;" title="{{ $tag->name }}">
+                        {{ substr($tag->name, 0, 10) }}{{ strlen($tag->name) > 10 ? '...' : '' }}
+                    </span>
+                @endforeach
+            @endif
         </div>
 
         <div class="flex items-center justify-between mt-auto">

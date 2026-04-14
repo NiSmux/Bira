@@ -40,9 +40,58 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Main Content (Description) -->
         <div class="lg:col-span-2 space-y-8">
-            <div class="bg-card border border-border-subtle rounded-2xl p-8 shadow-sm h-full">
+            <div class="bg-card border border-border-subtle rounded-2xl p-8 shadow-sm">
                 <h3 class="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-4">Description</h3>
                 <div class="text-white text-lg leading-relaxed whitespace-pre-wrap text-left">@if($task->description){!! nl2br(e($task->description)) !!}@else<p class="text-muted-foreground italic">No description.</p>@endif</div>
+            </div>
+
+            <div class="bg-card border border-border-subtle rounded-2xl p-8 shadow-sm">
+                <h3 class="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-6">Comments ({{ $task->comments->count() }})</h3>
+                
+                <div class="space-y-6 mb-8">
+                    @forelse($task->comments as $comment)
+                        <div class="flex gap-4">
+                            <div class="w-10 h-10 shrink-0 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs border border-primary/20">
+                                {{ strtoupper(substr($comment->user->name ?? 'S', 0, 1)) }}{{ strtoupper(substr(strstr($comment->user->name ?? '', ' ') ?: '', 1, 1)) }}
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between mb-1">
+                                    <div class="flex items-center gap-2">
+                                        <p class="font-medium text-white text-sm">{{ $comment->user->name }}</p>
+                                        <span class="text-xs text-muted-foreground">{{ $comment->created_at->diffForHumans() }}</span>
+                                    </div>
+                                    @if(Auth::id() === $comment->user_id || $permissionLevel === 'admin')
+                                        <form action="{{ route('boards.tasks.comments.destroy', [$board->id, $task->id, $comment->id]) }}" method="POST" onsubmit="return confirm('Delete this comment?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-xs text-red-400 hover:text-red-300 transition-colors">Delete</button>
+                                        </form>
+                                    @endif
+                                </div>
+                                <div class="text-muted-foreground text-sm leading-relaxed bg-white/5 p-4 rounded-xl border border-white/5">
+                                    {!! nl2br(e($comment->body)) !!}
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-muted-foreground italic text-sm">No comments yet. Be the first to start the discussion!</p>
+                    @endforelse
+                </div>
+
+                <div class="pt-6 border-t border-border-subtle">
+                    <form action="{{ route('boards.tasks.comments.store', [$board->id, $task->id]) }}" method="POST">
+                        @csrf
+                        <div class="mb-4">
+                            <label for="body" class="sr-only">New comment</label>
+                            <textarea id="body" name="body" rows="3" required class="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all resize-none" placeholder="Write a comment..."></textarea>
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit" class="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-xl font-bold transition-all shadow-lg shadow-primary/20 active:scale-[0.98] text-sm">
+                                Post comment
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
 
@@ -83,6 +132,19 @@
                             {{ $task->priority->name ?? 'None' }}
                         </span>
                     </div>
+
+                    @if($task->tags && $task->tags->count() > 0)
+                    <div>
+                        <p class="text-[10px] font-bold text-muted-foreground uppercase mb-2">Tags</p>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach($task->tags as $tag)
+                                <span class="px-2 py-1 rounded-md text-[10px] font-bold border" style="background-color: {{ $tag->color }}1a; color: {{ $tag->color }}; border-color: {{ $tag->color }}4d;">
+                                    {{ $tag->name }}
+                                </span>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
 
                     <div class="pt-6 border-t border-border-subtle">
                         <div class="flex items-center gap-3">

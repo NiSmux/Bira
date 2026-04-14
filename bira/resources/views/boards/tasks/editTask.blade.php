@@ -104,6 +104,49 @@
                 </div>
             </div>
 
+            {{-- Tags Section --}}
+            <style>
+                .tag-checkbox:checked + .tag-label {
+                    opacity: 1 !important;
+                    filter: none !important;
+                    background-color: var(--tag-bg) !important;
+                    border-color: var(--tag-color) !important;
+                }
+                .tag-checkbox:not(:checked) + .tag-label {
+                    opacity: 0.4 !important;
+                    filter: grayscale(80%) !important;
+                    background-color: transparent !important;
+                    border-color: rgba(255,255,255,0.1) !important;
+                }
+            </style>
+            <div class="pt-6 border-t border-border-subtle">
+                <label class="block text-sm font-semibold text-white mb-3">Tags</label>
+                <div class="flex flex-wrap gap-2 mb-3 items-center" id="tags-container">
+                    @php $taskTags = $task->tags->pluck('id')->toArray(); @endphp
+                    @foreach($board->tags as $tag)
+                        <div>
+                            <input type="checkbox" id="tag_{{ $tag->id }}" name="tags[]" value="{{ $tag->id }}" class="hidden tag-checkbox" {{ (is_array(old('tags')) && in_array($tag->id, old('tags'))) || (!old('tags') && in_array($tag->id, $taskTags)) ? 'checked' : '' }}>
+                            <label for="tag_{{ $tag->id }}" class="tag-label px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer flex items-center gap-1.5 hover:opacity-80 border-transparent shadow-sm"
+                                   style="--tag-bg: {{ $tag->color }}1a; --tag-color: {{ $tag->color }}; color: {{ $tag->color }};">
+                                <div class="w-2.5 h-2.5 rounded-full" style="background-color: {{ $tag->color }}"></div>
+                                {{ $tag->name }}
+                            </label>
+                        </div>
+                    @endforeach
+                    <button type="button" id="show-custom-tag-btn" onclick="toggleCustomTagForm()" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-dashed border-white/20 text-muted-foreground hover:text-white hover:border-white/40 transition-all flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Custom Tag
+                    </button>
+
+                    <div id="custom-tag-form" class="hidden items-center gap-2 bg-white/5 p-1.5 rounded-lg border border-white/10">
+                        <input type="text" id="new_tag_name" placeholder="Tag name" class="bg-background border border-border-subtle rounded-md px-2 py-1 text-xs text-white focus:outline-none focus:border-primary w-24">
+                        <input type="color" id="new_tag_color" value="#3b82f6" class="w-6 h-6 rounded cursor-pointer border-0 p-0 bg-transparent">
+                        <button type="button" onclick="saveCustomTag()" class="bg-primary hover:bg-primary/90 text-white px-3 py-1 rounded-md text-xs font-bold transition-all">Add</button>
+                        <button type="button" onclick="toggleCustomTagForm()" class="text-muted-foreground hover:text-white px-2">✕</button>
+                    </div>
+                </div>
+            </div>
+
             {{-- Assignee Section --}}
             @php
                 $currentAssigneeType = 'none';
@@ -199,6 +242,64 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+
+function toggleCustomTagForm() {
+    const btn = document.getElementById('show-custom-tag-btn');
+    const form = document.getElementById('custom-tag-form');
+    if (form.classList.contains('hidden')) {
+        form.classList.remove('hidden');
+        form.classList.add('flex');
+        btn.classList.add('hidden');
+    } else {
+        form.classList.add('hidden');
+        form.classList.remove('flex');
+        btn.classList.remove('hidden');
+    }
+}
+
+function saveCustomTag() {
+    const nameInput = document.getElementById('new_tag_name');
+    const colorInput = document.getElementById('new_tag_color');
+    const name = nameInput.value.trim();
+    const color = colorInput.value;
+
+    if (!name) return alert('Tag name cannot be empty');
+
+    fetch(`{{ route('boards.tags.store', $board->id) }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ name, color })
+    }).then(res => res.json()).then(data => {
+        if (data.success) {
+            const tag = data.tag;
+            const container = document.getElementById('tags-container');
+            const btn = document.getElementById('show-custom-tag-btn');
+            
+            const div = document.createElement('div');
+            div.innerHTML = `
+                <input type="checkbox" id="tag_${tag.id}" name="tags[]" value="${tag.id}" class="hidden tag-checkbox" checked>
+                <label for="tag_${tag.id}" class="tag-label px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer flex items-center gap-1.5 hover:opacity-80 border-transparent shadow-sm"
+                       style="--tag-bg: ${tag.color}1a; --tag-color: ${tag.color}; color: ${tag.color};">
+                    <div class="w-2.5 h-2.5 rounded-full" style="background-color: ${tag.color}"></div>
+                    ${tag.name}
+                </label>
+            `;
+            container.insertBefore(div, btn);
+
+            nameInput.value = '';
+            toggleCustomTagForm();
+        } else {
+            alert('Failed to save tag');
+        }
+    }).catch(err => {
+        console.error(err);
+        alert('Error saving tag');
+    });
+}
 </script>
 @endpush
 @endsection

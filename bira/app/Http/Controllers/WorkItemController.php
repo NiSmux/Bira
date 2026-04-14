@@ -30,10 +30,10 @@ class WorkItemController extends Controller
     public function show(Board $board, WorkItem $task)
     {
         $this->ensureTaskBelongsToBoard($board, $task);
-        $this->ensureBoardPermission($board, 'viewer');
+        $permissionLevel = $this->ensureBoardPermission($board, 'viewer');
 
-        $task->load(['status', 'type', 'priority', 'creator']);
-        return view('boards.tasks.showTask', compact('board', 'task'));
+        $task->load(['status', 'type', 'priority', 'creator', 'tags', 'comments.user']);
+        return view('boards.tasks.showTask', compact('board', 'task', 'permissionLevel'));
     }
 
     /**
@@ -75,6 +75,8 @@ class WorkItemController extends Controller
             'assignee_type' => 'nullable|in:user,sub_team',
             'assignee_id'   => 'nullable|exists:users,id',
             'sub_team_id'   => 'nullable|exists:board_sub_teams,id',
+            'tags'          => 'nullable|array',
+            'tags.*'        => 'exists:tags,id',
         ]);
 
         // Tik vienas gali būti priskirtas
@@ -104,6 +106,10 @@ class WorkItemController extends Controller
 
         $item->save();
         $item->boards()->attach($board->id);
+
+        if ($request->has('tags')) {
+            $item->tags()->sync($request->tags);
+        }
 
         return redirect()
             ->route('boards.show', $board->id)
@@ -172,6 +178,8 @@ class WorkItemController extends Controller
             'assignee_type' => 'nullable|in:user,sub_team',
             'assignee_id'   => 'nullable|exists:users,id',
             'sub_team_id'   => 'nullable|exists:board_sub_teams,id',
+            'tags'          => 'nullable|array',
+            'tags.*'        => 'exists:tags,id',
         ]);
 
         // Tik vienas gali būti priskirtas
@@ -199,6 +207,12 @@ class WorkItemController extends Controller
             'assignee_id'  => $assigneeId,
             'sub_team_id'  => $subTeamId,
         ]);
+
+        if ($request->has('tags')) {
+            $task->tags()->sync($request->tags);
+        } else {
+            $task->tags()->sync([]);
+        }
 
         return redirect()
             ->route('boards.show', $board->id)

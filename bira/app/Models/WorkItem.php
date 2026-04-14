@@ -86,4 +86,14 @@ class WorkItem extends Model
     {
         return $this->belongsTo(BoardSubTeam::class, 'sub_team_id');
     }
+
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class, 'work_item_tags', 'work_item_id', 'tag_id');
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(WorkItemComment::class, 'work_item_id');
+    }
 }
