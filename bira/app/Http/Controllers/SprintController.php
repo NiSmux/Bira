@@ -35,7 +35,7 @@ class SprintController extends Controller
             'created_by' => Auth::user()->id,
         ]);
 
-        return redirect()->route('boards.show', $board->id)
+        return redirect($request->input('redirect_to', route('boards.show', $board->id)))
             ->with('success', 'Sprint created.');
     }
 
@@ -53,7 +53,7 @@ class SprintController extends Controller
 
         $sprint->update($validated);
 
-        return redirect()->route('boards.show', $board->id)
+        return redirect($request->input('redirect_to', route('boards.show', $board->id)))
             ->with('success', 'Sprint updated.');
     }
 
@@ -63,7 +63,7 @@ class SprintController extends Controller
         abort_unless($sprint->board_id === $board->id, 404);
 
         if ($sprint->status === 'in_progress') {
-            return redirect()->route('boards.show', $board->id)
+            return redirect(request('redirect_to', route('boards.show', $board->id)))
                 ->withErrors(['sprint' => 'Cannot delete an in-progress sprint. Complete it first.']);
         }
 
@@ -78,7 +78,7 @@ class SprintController extends Controller
 
         $sprint->delete();
 
-        return redirect()->route('boards.show', $board->id)
+        return redirect(request('redirect_to', route('boards.show', $board->id)))
             ->with('success', 'Sprint deleted. Items returned to backlog.');
     }
 
@@ -91,13 +91,13 @@ class SprintController extends Controller
         abort_unless($sprint->board_id === $board->id, 404);
 
         if ($sprint->status !== 'new') {
-            return redirect()->route('boards.show', $board->id)
+            return redirect(request('redirect_to', route('boards.show', $board->id)))
                 ->withErrors(['sprint' => 'Only new sprints can be marked as planned.']);
         }
 
         $sprint->update(['status' => 'planned']);
 
-        return redirect()->route('boards.show', $board->id)
+        return redirect(request('redirect_to', route('boards.show', $board->id)))
             ->with('success', "Sprint \"{$sprint->name}\" marked as planned.");
     }
 
@@ -110,13 +110,13 @@ class SprintController extends Controller
         abort_unless($sprint->board_id === $board->id, 404);
 
         if (!in_array($sprint->status, ['new', 'planned'])) {
-            return redirect()->route('boards.show', $board->id)
+            return redirect(request('redirect_to', route('boards.show', $board->id)))
                 ->withErrors(['sprint' => 'Sprint cannot be started.']);
         }
 
         $hasActive = Sprint::where('board_id', $board->id)->where('status', 'in_progress')->exists();
         if ($hasActive) {
-            return redirect()->route('boards.show', $board->id)
+            return redirect(request('redirect_to', route('boards.show', $board->id)))
                 ->withErrors(['sprint' => 'There is already an active sprint on this board.']);
         }
 
@@ -125,7 +125,7 @@ class SprintController extends Controller
             'start_date' => $sprint->start_date ?? now()->toDateString(),
         ]);
 
-        return redirect()->route('boards.show', $board->id)
+        return redirect(request('redirect_to', route('boards.show', $board->id)))
             ->with('success', "Sprint \"{$sprint->name}\" started.");
     }
 
@@ -139,7 +139,7 @@ class SprintController extends Controller
         abort_unless($sprint->board_id === $board->id, 404);
 
         if ($sprint->status !== 'in_progress') {
-            return redirect()->route('boards.show', $board->id)
+            return redirect(request('redirect_to', route('boards.show', $board->id)))
                 ->withErrors(['sprint' => 'Sprint is not in progress.']);
         }
 
@@ -153,14 +153,20 @@ class SprintController extends Controller
         $backlogStatus = WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
             ->where('is_backlog', 1)->first();
 
-        // Only unfinished items return to backlog. Done items keep their status
-        // so they remain visible in the sprint history as completed work.
+        // Only incomplete items return to backlog and are removed from the sprint.
+        // Done items stay in the completed sprint history.
         if ($backlogStatus && $doneStatusIds->isNotEmpty()) {
             $sprint->items()
                 ->whereNotIn('status_id', $doneStatusIds)
-                ->update(['status_id' => $backlogStatus->id]);
+                ->update([
+                    'status_id' => $backlogStatus->id,
+                    'release_id' => null
+                ]);
         } elseif ($backlogStatus) {
-            $sprint->items()->update(['status_id' => $backlogStatus->id]);
+            $sprint->items()->update([
+                'status_id' => $backlogStatus->id,
+                'release_id' => null
+            ]);
         }
 
         $sprint->update([
@@ -170,7 +176,7 @@ class SprintController extends Controller
             'completed_points' => $completedPoints,
         ]);
 
-        return redirect()->route('boards.show', $board->id)
+        return redirect(request('redirect_to', route('boards.show', $board->id)))
             ->with('success', "Sprint \"{$sprint->name}\" completed. Ready for release.");
     }
 
@@ -183,13 +189,13 @@ class SprintController extends Controller
         abort_unless($sprint->board_id === $board->id, 404);
 
         if ($sprint->status !== 'to_be_released') {
-            return redirect()->route('boards.show', $board->id)
+            return redirect(request('redirect_to', route('boards.show', $board->id)))
                 ->withErrors(['sprint' => 'Sprint is not in "To be Released" state.']);
         }
 
         $sprint->update(['status' => 'delivered']);
 
-        return redirect()->route('boards.show', $board->id)
+        return redirect(request('redirect_to', route('boards.show', $board->id)))
             ->with('success', "Sprint \"{$sprint->name}\" marked as delivered.");
     }
 

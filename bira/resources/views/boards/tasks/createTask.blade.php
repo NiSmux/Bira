@@ -5,9 +5,9 @@
 @section('content')
 <div class="max-w-3xl mx-auto px-8 py-12">
     <div class="mb-8">
-        <a href="{{ route('boards.show', $board->id) }}" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors mb-4">
+        <a href="{{ $redirectTo ?? route('boards.show', $board->id) }}" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors mb-4">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            Back to board
+            {{ isset($redirectTo) && str_contains($redirectTo, 'backlog') ? 'Back to backlog' : 'Back to board' }}
         </a>
         <h2 class="text-3xl font-bold tracking-tight text-white">New task</h2>
         <p class="text-muted-foreground mt-1">Create a new task for the board: <span class="text-white font-medium">{{ $board->name }}</span></p>
@@ -26,6 +26,9 @@
 
         <form action="{{ route('boards.tasks.store', $board->id) }}" method="POST" class="space-y-6">
             @csrf
+            @if(isset($redirectTo))
+                <input type="hidden" name="redirect_to" value="{{ $redirectTo }}">
+            @endif
 
             <div>
                 <label for="title" class="block text-sm font-semibold text-white mb-2">Task title</label>
@@ -91,20 +94,6 @@
                            placeholder="e.g.: 5">
                 </div>
 
-                <div>
-                    <label for="status_id" class="block text-sm font-semibold text-white mb-2">Status (Column)</label>
-                    <select id="status_id" 
-                            name="status_id" 
-                            class="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
-                            required>
-                        <option disabled selected>Select column...</option>
-                        @foreach($statuses as $status)
-                            <option value="{{ $status->id }}" {{ old('status_id') == $status->id ? 'selected' : '' }}>
-                                {{ $status->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
             </div>
 
             {{-- Tags Section --}}
@@ -198,7 +187,7 @@
             </div>
 
             <div class="pt-6 border-t border-border-subtle flex items-center justify-between">
-                <a href="{{ route('boards.show', $board->id) }}" class="px-6 py-2.5 rounded-xl text-white font-medium hover:bg-white/5 transition-colors">
+                <a href="{{ $redirectTo ?? route('boards.show', $board->id) }}" class="px-6 py-2.5 rounded-xl text-white font-medium hover:bg-white/5 transition-colors">
                     Cancel
                 </a>
                 <button type="submit" class="bg-primary hover:bg-primary/90 text-white px-8 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-primary/20 active:scale-[0.98]">

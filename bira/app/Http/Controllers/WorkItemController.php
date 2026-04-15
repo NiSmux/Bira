@@ -54,8 +54,9 @@ class WorkItemController extends Controller
 
         $boardMembers = $board->members;
         $subTeams     = $board->subTeams;
+        $redirectTo   = request()->query('redirect_to');
 
-        return view('boards.tasks.createTask', compact('board', 'itemTypes', 'priorities', 'statuses', 'boardMembers', 'subTeams'));
+        return view('boards.tasks.createTask', compact('board', 'itemTypes', 'priorities', 'statuses', 'boardMembers', 'subTeams', 'redirectTo'));
     }
 
     /**
@@ -68,7 +69,6 @@ class WorkItemController extends Controller
         $validated = $request->validate([
             'title'        => 'required|max:200',
             'description'  => 'nullable|string',
-            'status_id'    => 'required|exists:workflow_statuses,id',
             'item_type_id' => 'required|exists:item_types,id',
             'priority_id'  => 'nullable|exists:priorities,id',
             'story_points' => 'nullable|integer|min:0|max:100',
@@ -78,6 +78,18 @@ class WorkItemController extends Controller
             'tags'          => 'nullable|array',
             'tags.*'        => 'exists:tags,id',
         ]);
+
+        // Always assign to backlog status
+        $backlogStatus = WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
+            ->where('is_backlog', 1)
+            ->first();
+
+        if (!$backlogStatus) {
+            // Fallback to first status if no backlog status is defined
+            $backlogStatus = WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
+                ->orderBy('order_index')
+                ->first();
+        }
 
         // Tik vienas gali būti priskirtas
         $assigneeId = null;
@@ -92,7 +104,7 @@ class WorkItemController extends Controller
         $item->title        = $request->title;
         $item->description  = $request->description;
         $item->item_type_id = $request->item_type_id;
-        $item->status_id    = $request->status_id;
+        $item->status_id    = $backlogStatus->id;
         $item->priority_id  = $request->priority_id;
         $item->story_points = $request->story_points;
         $item->team_id      = $board->team_id;
@@ -109,6 +121,10 @@ class WorkItemController extends Controller
 
         if ($request->has('tags')) {
             $item->tags()->sync($request->tags);
+        }
+
+        if ($request->has('redirect_to')) {
+            return redirect($request->redirect_to)->with('success', 'Task created successfully!');
         }
 
         return redirect()
