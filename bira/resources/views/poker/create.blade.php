@@ -25,30 +25,39 @@
         </div>
     @endif
 
-    {{-- No board context guard --}}
-    @if(!$boardId && !$selectedTeamId)
-        <div class="p-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm">
-            <p class="font-semibold mb-1">No board selected</p>
-            <p>Please open a board first, then use the Planning Poker link from the sidebar to create a session for that board.</p>
-        </div>
-    @else
-
     {{-- Form --}}
     <form action="{{ route('poker.store') }}" method="POST" class="space-y-6">
         @csrf
 
         {{-- Hidden team_id and board_id --}}
-        <input type="hidden" name="team_id" value="{{ $selectedTeamId }}">
-        <input type="hidden" name="board_id" value="{{ $boardId ?? '' }}">
+        <input type="hidden" name="team_id" id="team_id" value="{{ $selectedTeamId }}">
+        <input type="hidden" name="board_id" id="board_id" value="{{ $boardId }}">
 
-        {{-- Team display (read-only) --}}
-        @php $selectedTeam = $teams->firstWhere('id', $selectedTeamId); @endphp
-        @if($selectedTeam)
-            <div class="flex items-center gap-3 px-4 py-3 bg-primary/10 border border-primary/20 rounded-2xl">
+        {{-- Context Display --}}
+        <div class="space-y-4 px-4 py-5 bg-primary/10 border border-primary/20 rounded-2xl">
+            @php 
+                $selectedTeam = $teams->firstWhere('id', $selectedTeamId);
+                $selectedBoard = $selectedTeam ? $selectedTeam->boards->firstWhere('id', $boardId) : null;
+            @endphp
+            
+            <div class="flex items-center gap-3">
                 <svg class="w-5 h-5 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                <span class="text-white font-semibold">{{ $selectedTeam->name }}</span>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-bold text-primary uppercase tracking-widest">Team</span>
+                    <span class="text-white font-semibold">{{ $selectedTeam->name ?? 'Unknown Team' }}</span>
+                </div>
             </div>
-        @endif
+
+            @if($selectedBoard)
+            <div class="pt-4 border-t border-primary/10 flex items-center gap-3">
+                <svg class="w-5 h-5 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-bold text-primary uppercase tracking-widest">Board</span>
+                    <span class="text-white font-semibold">{{ $selectedBoard->name }}</span>
+                </div>
+            </div>
+            @endif
+        </div>
 
         {{-- Session Title --}}
         <div class="space-y-2">
@@ -69,7 +78,7 @@
         <div class="space-y-2">
             <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider pl-1">Work Items to Estimate</label>
             <div id="work-items-container" class="bg-white/5 border border-white/10 rounded-2xl p-4 min-h-[120px]">
-                <p id="work-items-placeholder" class="text-muted-foreground/50 text-sm text-center py-6">Loading work items...</p>
+                <p id="work-items-placeholder" class="text-muted-foreground/50 text-sm text-center py-6">Select a board to load items.</p>
                 <div id="work-items-list" class="space-y-2 hidden"></div>
             </div>
         </div>
@@ -81,22 +90,21 @@
             </button>
         </div>
     </form>
-    @endif
 </div>
 @endsection
 
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const boardId = document.getElementById('board_id').value;
     const container = document.getElementById('work-items-list');
     const placeholder = document.getElementById('work-items-placeholder');
-    const teamId = {{ $selectedTeamId ?? 'null' }};
-    const boardId = {{ $boardId ?? 'null' }};
 
     function loadItems(boardId) {
         if (!boardId) {
-            // fallback: nothing to load without a board
-            placeholder.textContent = 'No board selected.';
+            placeholder.textContent = 'No board selected. Please create a session from a board page.';
+            placeholder.classList.remove('hidden');
+            container.classList.add('hidden');
             return;
         }
 
@@ -110,7 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 container.innerHTML = '';
 
                 if (items.length === 0) {
-                    placeholder.textContent = 'No work items found for this team.';
+                    placeholder.textContent = 'No work items found for this board.';
                     placeholder.classList.remove('hidden');
                     container.classList.add('hidden');
                     return;
@@ -140,13 +148,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    // Auto-load on page load since board is already known
-    if (boardId) {
-        loadItems(boardId);
-    } else if (teamId) {
-        // Legacy fallback if only team_id is supplied
-        placeholder.textContent = 'No board selected. Please go back and open a board first.';
-    }
+    // Initial load
+    loadItems(boardId);
 });
 </script>
 @endpush

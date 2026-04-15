@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Global Backlog')
+@section('title', (isset($board) ? $board->name . ' - Backlog' : (isset($team) ? $team->name . ' - Team Backlog' : 'Global Backlog')))
 
 @section('content')
     <div class="px-8 py-8 max-w-7xl mx-auto">
@@ -17,9 +17,16 @@
                                 </path>
                             </svg>
                         </div>
-                        Global Backlog
+                        {{ isset($board) ? $board->name . ' Backlog' : (isset($team) ? $team->name . ' Backlog' : 'Global Backlog') }}
                     </h2>
-                    <p class="text-sm text-muted-foreground mt-2">View and manage unassigned items across all your boards.
+                    <p class="text-sm text-muted-foreground mt-2">
+                        @if(isset($board))
+                            Manage backlog items for the <strong>{{ $board->name }}</strong> board.
+                        @elseif(isset($team))
+                            View and manage unassigned items across all <strong>{{ $team->name }}</strong> boards.
+                        @else
+                            View and manage unassigned items across all your boards.
+                        @endif
                     </p>
                 </div>
             </div>

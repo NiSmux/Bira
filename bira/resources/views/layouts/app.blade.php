@@ -29,75 +29,87 @@
             </a>
             
             <nav class="flex-1 px-4 space-y-1 mt-4">
+                @php
+                    // Resolve context objects for sidebar if they are missing from the view
+                    $_board = isset($board) ? $board : (request()->query('board_id') ? \App\Models\Board::find(request()->query('board_id')) : null);
+                    
+                    // If still no board, check if there's a poker session context
+                    if (!$_board && isset($session) && $session instanceof \App\Models\PokerSession && $session->board_id) {
+                        $_board = $session->board;
+                    }
+
+                    $_team = isset($team) ? $team : (isset($_board) ? $_board->team : (request()->query('team_id') ? \App\Models\Team::find(request()->query('team_id')) : null));
+                    
+                    // If still no team, check if there's a poker session context
+                    if (!$_team && isset($session) && $session instanceof \App\Models\PokerSession) {
+                        $_team = $session->team;
+                    }
+
+                    $effectiveBoardId = $_board->id ?? null;
+                    $currentTeam = $_team;
+                    $teamBoards = $currentTeam ? $currentTeam->boards : collect();
+
+                    $boardUrl = $effectiveBoardId
+                        ? route('boards.show', $effectiveBoardId)
+                        : route('boards.index');
+                @endphp
+                
                 <div>
-                    @php
-                        $boardUrl = isset($board)
-                            ? route('boards.show', $board->id)
-                            : (request()->query('board_id')
-                                ? route('boards.show', request()->query('board_id'))
-                                : route('boards.index'));
-                    @endphp
-                    <a href="{{ $boardUrl }}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-white/5 hover:text-white transition-colors {{ request()->is('boards*') ? 'active' : '' }}">
+                    <a href="{{ $boardUrl }}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-white/5 hover:text-white transition-colors {{ request()->is('boards*') && !request()->is('boards/*/reports*') ? 'active' : '' }}">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
                         <span>Board</span>
                     </a>
-
-                    @php
-                        $currentTeam = isset($board) ? $board->team : (isset($team) ? $team : null);
-                        $teamBoards = $currentTeam ? $currentTeam->boards : collect();
-                    @endphp
-
-                    @if($teamBoards->count() > 1)
-                        <div class="ml-9 mt-2 space-y-1.5 border-l border-white/5 pl-4">
-                            @foreach($teamBoards as $tb)
-                                <a href="{{ route('boards.show', $tb->id) }}" class="block text-xs font-medium transition-colors {{ (request()->routeIs('boards.show') && isset($board) && $board->id == $tb->id) ? 'text-primary' : 'text-muted-foreground hover:text-white' }}">
-                                    {{ $tb->name }}
-                                </a>
-                            @endforeach
-                        </div>
-                    @endif
                 </div>
-                @php
-                    $backlogParams = [];
-                    if (isset($board)) {
-                        $backlogParams = ['team_id' => $board->team_id];
-                    } elseif (isset($team)) {
-                        $backlogParams = ['team_id' => $team->id];
-                    } elseif (request()->query('team_id')) {
-                        $backlogParams = ['team_id' => request()->query('team_id')];
-                    }
-                @endphp
-                <a href="{{ route('backlog.index', $backlogParams) }}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-white/5 hover:text-white transition-colors {{ request()->routeIs('backlog.*') ? 'active' : '' }}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                    <span>Backlog</span>
-                </a>
-                <a href="{{ isset($board) ? route('teams.show', $board->team_id) : (isset($team) ? route('teams.show', $team->id) : route('teams.index')) }}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-white/5 hover:text-white transition-colors {{ request()->is('teams*') ? 'active' : '' }}">
+
+                @if($currentTeam)
+                    <div class="pt-2">
+                        @php
+                            $backlogParams = ['team_id' => $currentTeam->id];
+                            if ($effectiveBoardId) {
+                                $backlogParams['board_id'] = $effectiveBoardId;
+                            }
+                        @endphp
+                        <a href="{{ route('backlog.index', $backlogParams) }}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-white/5 hover:text-white transition-colors {{ request()->routeIs('backlog.*') ? 'active' : '' }}">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                            <span>Backlog</span>
+                        </a>
+                    </div>
+                @endif
+
+                <a href="{{ $currentTeam ? route('teams.show', array_merge(['team' => $currentTeam->id], $effectiveBoardId ? ['board_id' => $effectiveBoardId] : [])) : route('teams.index') }}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-white/5 hover:text-white transition-colors {{ request()->is('teams*') ? 'active' : '' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                     <span>Team</span>
                 </a>
+
                 @php
-                    $reportsUrl = isset($board)
-                        ? route('reports.index', $board->id)
+                    $reportsUrl = $effectiveBoardId
+                        ? route('reports.index', $effectiveBoardId)
                         : route('boards.index');
                 @endphp
-                <a href="{{ $reportsUrl }}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-white/5 hover:text-white transition-colors {{ request()->is('boards/*/reports*') ? 'active' : '' }}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                    <span>Reports</span>
-                </a>
+                @if($effectiveBoardId)
+                    <a href="{{ $reportsUrl }}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-white/5 hover:text-white transition-colors {{ request()->is('boards/*/reports*') ? 'active' : '' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                        <span>Reports</span>
+                    </a>
+                @endif
+
                 @php
                     $pokerParams = [];
-                    if (isset($board)) {
-                        $pokerParams = ['team_id' => $board->team_id, 'board_id' => $board->id];
-                    } elseif (isset($team)) {
-                        $pokerParams = ['team_id' => $team->id];
-                    } elseif (request()->query('board_id')) {
-                        $pokerParams = ['team_id' => request()->query('team_id'), 'board_id' => request()->query('board_id')];
+                    if ($currentTeam) {
+                        $pokerParams['team_id'] = $currentTeam->id;
+                        if ($effectiveBoardId) {
+                            $pokerParams['board_id'] = $effectiveBoardId;
+                        }
+                    } elseif ($effectiveBoardId && $_board) {
+                        $pokerParams = ['team_id' => $_board->team_id, 'board_id' => $effectiveBoardId];
                     }
                 @endphp
-                <a href="{{ route('poker.index', $pokerParams) }}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-white/5 hover:text-white transition-colors {{ request()->is('poker*') ? 'active' : '' }}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                    <span>Planning Poker</span>
-                </a>
+                @if($currentTeam || $effectiveBoardId)
+                    <a href="{{ route('poker.index', $pokerParams) }}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-white/5 hover:text-white transition-colors {{ request()->is('poker*') ? 'active' : '' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <span>Planning Poker</span>
+                    </a>
+                @endif
             </nav>
 
             
