@@ -92,15 +92,24 @@
                 </div>
 
                 <div>
-                    <label for="story_points" class="block text-sm font-semibold text-white mb-2">Story Points</label>
-                    <input type="number" 
-                           id="story_points"
-                           name="story_points" 
-                           class="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
-                           value="{{ old('story_points', $task->story_points) }}" 
-                           min="0" 
-                           max="100">
-                </div>
+                    @if($board->estimation_mode === 'hours')
+                        <label for="estimated_hours" class="block text-sm font-semibold text-white mb-2">Estimated Hours</label>
+                        <input type="number" 
+                               step="0.5"
+                               id="estimated_hours"
+                               name="estimated_hours" 
+                               min="0" max="1000"
+                               value="{{ old('estimated_hours', $task->estimated_hours) }}" 
+                               class="w-full bg-background border border-border-subtle rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium">
+                    @else
+                        <label for="story_points" class="block text-sm font-semibold text-white mb-2">Story Points</label>
+                        <input type="number" 
+                               id="story_points"
+                               name="story_points" 
+                               min="0" max="100"
+                               value="{{ old('story_points', $task->story_points) }}" 
+                               class="w-full bg-background border border-border-subtle rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium">
+                    @endif
                 </div>
             </div>
 
@@ -118,18 +127,48 @@
                     background-color: transparent !important;
                     border-color: rgba(255,255,255,0.1) !important;
                 }
+                
+                /* Management Modes */
+                .tag-container-managing-delete .tag-label {
+                    cursor: pointer !important;
+                }
+                .tag-container-managing-delete .tag-label:hover {
+                    border-color: #ef4444 !important;
+                    background-color: rgba(239, 68, 68, 0.1) !important;
+                }
+                .tag-container-managing-delete .tag-to-delete .tag-label {
+                    border-color: #ef4444 !important;
+                    background-color: rgba(239, 68, 68, 0.2) !important;
+                    opacity: 1 !important;
+                    filter: none !important;
+                    box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+                }
+                .tag-container-managing-edit .tag-label:hover {
+                    border-color: #3b82f6 !important;
+                    background-color: rgba(59, 130, 246, 0.1) !important;
+                }
             </style>
             <div class="pt-6 border-t border-border-subtle">
-                <label class="block text-sm font-semibold text-white mb-3">Tags</label>
+                <div class="flex items-center justify-between mb-3">
+                    <label class="block text-sm font-semibold text-white">Tags</label>
+                    <div class="flex items-center gap-2">
+                        <button type="button" id="tag-manage-edit-btn" onclick="toggleTagManagement('edit')" class="p-1.5 rounded-lg hover:bg-white/5 text-muted-foreground hover:text-white transition-all border border-transparent hover:border-white/10" title="Edit tags">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        </button>
+                        <button type="button" id="tag-manage-delete-btn" onclick="toggleTagManagement('delete')" class="p-1.5 rounded-lg hover:bg-white/5 text-muted-foreground hover:text-red-400 transition-all border border-transparent hover:border-white/10" title="Delete tags">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                </div>
                 <div class="flex flex-wrap gap-2 mb-3 items-center" id="tags-container">
                     @php $taskTags = $task->tags->pluck('id')->toArray(); @endphp
                     @foreach($board->tags as $tag)
-                        <div>
+                        <div class="tag-wrapper" data-tag-id="{{ $tag->id }}" data-tag-name="{{ $tag->name }}" data-tag-color="{{ $tag->color }}">
                             <input type="checkbox" id="tag_{{ $tag->id }}" name="tags[]" value="{{ $tag->id }}" class="hidden tag-checkbox" {{ (is_array(old('tags')) && in_array($tag->id, old('tags'))) || (!old('tags') && in_array($tag->id, $taskTags)) ? 'checked' : '' }}>
                             <label for="tag_{{ $tag->id }}" class="tag-label px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer flex items-center gap-1.5 hover:opacity-80 border-transparent shadow-sm"
                                    style="--tag-bg: {{ $tag->color }}1a; --tag-color: {{ $tag->color }}; color: {{ $tag->color }};">
                                 <div class="w-2.5 h-2.5 rounded-full" style="background-color: {{ $tag->color }}"></div>
-                                {{ $tag->name }}
+                                <span class="tag-name">{{ $tag->name }}</span>
                             </label>
                         </div>
                     @endforeach
@@ -214,6 +253,30 @@
     </div>
 </div>
 
+{{-- Edit Tag Modal --}}
+<div id="tag-edit-modal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/60 backdrop-blur-sm" style="display:none;">
+    <div class="relative bg-[#1a1a2e] border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-in zoom-in duration-200">
+        <h3 class="text-white font-bold text-lg mb-5">Edit Tag</h3>
+        <div class="space-y-4">
+            <input type="hidden" id="edit_tag_id">
+            <div>
+                <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Tag name</label>
+                <input type="text" id="edit_tag_name" required maxlength="80"
+                    class="w-full bg-background border border-border-subtle rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Color</label>
+                <input type="color" id="edit_tag_color" required
+                    class="w-full h-12 border border-border-subtle p-1 bg-background rounded-xl cursor-pointer">
+            </div>
+            <div class="flex gap-3 justify-end mt-6">
+                <button type="button" onclick="closeTagEditModal()" class="px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-sm font-medium rounded-lg transition-colors">Cancel</button>
+                <button type="button" onclick="updateTag()" class="px-4 py-2 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg transition-colors">Save updates</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -242,6 +305,153 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+
+let tagManagementMode = 'none'; // 'none', 'edit', 'delete'
+let selectedTagsForDeletion = new Set();
+
+function toggleTagManagement(mode) {
+    const container = document.getElementById('tags-container');
+    const deleteBtn = document.getElementById('tag-manage-delete-btn');
+    const editBtn = document.getElementById('tag-manage-edit-btn');
+    
+    // If clicking the SAME mode that is already active
+    if (tagManagementMode === mode) {
+        if (mode === 'delete' && selectedTagsForDeletion.size > 0) {
+            confirmBatchDelete();
+            return;
+        }
+        exitManagementMode();
+        return;
+    }
+
+    // Enter NEW mode
+    exitManagementMode();
+    tagManagementMode = mode;
+    
+    if (mode === 'delete') {
+        container.classList.add('tag-container-managing-delete');
+        deleteBtn.classList.add('bg-red-500/20', 'border-red-500/50', 'text-red-400');
+        deleteBtn.classList.remove('text-muted-foreground');
+        // Prevent default checkbox behavior
+        document.querySelectorAll('.tag-wrapper label').forEach(label => label.addEventListener('click', handleTagManagementClick, { capture: true }));
+    } else if (mode === 'edit') {
+        container.classList.add('tag-container-managing-edit');
+        editBtn.classList.add('bg-primary/20', 'border-primary/50', 'text-white');
+        editBtn.classList.remove('text-muted-foreground');
+        document.querySelectorAll('.tag-wrapper label').forEach(label => label.addEventListener('click', handleTagManagementClick, { capture: true }));
+    }
+}
+
+function exitManagementMode() {
+    const container = document.getElementById('tags-container');
+    const deleteBtn = document.getElementById('tag-manage-delete-btn');
+    const editBtn = document.getElementById('tag-manage-edit-btn');
+
+    container.classList.remove('tag-container-managing-delete', 'tag-container-managing-edit');
+    deleteBtn.classList.remove('bg-red-500/20', 'border-red-500/50', 'text-red-400');
+    deleteBtn.classList.add('text-muted-foreground');
+    editBtn.classList.remove('bg-primary/20', 'border-primary/50', 'text-white');
+    editBtn.classList.add('text-muted-foreground');
+    
+    document.querySelectorAll('.tag-wrapper label').forEach(label => label.removeEventListener('click', handleTagManagementClick, { capture: true }));
+    document.querySelectorAll('.tag-wrapper').forEach(w => w.classList.remove('tag-to-delete'));
+    
+    selectedTagsForDeletion.clear();
+    tagManagementMode = 'none';
+}
+
+function handleTagManagementClick(e) {
+    if (tagManagementMode === 'none') return;
+    
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const wrapper = e.currentTarget.closest('.tag-wrapper');
+    const tagId = wrapper.dataset.tagId;
+    
+    if (tagManagementMode === 'delete') {
+        if (selectedTagsForDeletion.has(tagId)) {
+            selectedTagsForDeletion.delete(tagId);
+            wrapper.classList.remove('tag-to-delete');
+        } else {
+            selectedTagsForDeletion.add(tagId);
+            wrapper.classList.add('tag-to-delete');
+        }
+    } else if (tagManagementMode === 'edit') {
+        openTagEditModal(wrapper.dataset);
+    }
+}
+
+function openTagEditModal(data) {
+    document.getElementById('edit_tag_id').value = data.tagId;
+    document.getElementById('edit_tag_name').value = data.tagName;
+    document.getElementById('edit_tag_color').value = data.tagColor;
+    document.getElementById('tag-edit-modal').style.display = 'flex';
+}
+
+function closeTagEditModal() {
+    document.getElementById('tag-edit-modal').style.display = 'none';
+    exitManagementMode();
+}
+
+function updateTag() {
+    const id = document.getElementById('edit_tag_id').value;
+    const name = document.getElementById('edit_tag_name').value.trim();
+    const color = document.getElementById('edit_tag_color').value;
+    
+    if (!name) return alert('Tag name cannot be empty');
+
+    fetch(`/boards/{{ $board->id }}/tags/${id}`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ name, color })
+    }).then(res => res.json()).then(data => {
+        if (data.success) {
+            // Update UI
+            const wrapper = document.querySelector(`.tag-wrapper[data-tag-id="${id}"]`);
+            if (wrapper) {
+                wrapper.dataset.tagName = name;
+                wrapper.dataset.tagColor = color;
+                const label = wrapper.querySelector('.tag-label');
+                label.style.setProperty('--tag-color', color);
+                label.style.setProperty('--tag-bg', color + '1a');
+                label.style.color = color;
+                label.querySelector('.w-2.5').style.backgroundColor = color;
+                label.querySelector('.tag-name').textContent = name;
+            }
+            closeTagEditModal();
+        } else {
+            alert('Failed to update tag');
+        }
+    });
+}
+
+function confirmBatchDelete() {
+    if (!confirm(`Delete ${selectedTagsForDeletion.size} tags? This will remove them from all tasks.`)) return;
+
+    fetch(`/boards/{{ $board->id }}/tags/batch-delete`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ tag_ids: Array.from(selectedTagsForDeletion) })
+    }).then(res => res.json()).then(data => {
+        if (data.success) {
+            selectedTagsForDeletion.forEach(id => {
+                document.querySelector(`.tag-wrapper[data-tag-id="${id}"]`)?.remove();
+            });
+            exitManagementMode();
+        } else {
+            alert('Failed to delete tags');
+        }
+    });
+}
 
 function toggleCustomTagForm() {
     const btn = document.getElementById('show-custom-tag-btn');
@@ -280,12 +490,16 @@ function saveCustomTag() {
             const btn = document.getElementById('show-custom-tag-btn');
             
             const div = document.createElement('div');
+            div.className = 'tag-wrapper';
+            div.dataset.tagId = tag.id;
+            div.dataset.tagName = tag.name;
+            div.dataset.tagColor = tag.color;
             div.innerHTML = `
                 <input type="checkbox" id="tag_${tag.id}" name="tags[]" value="${tag.id}" class="hidden tag-checkbox" checked>
                 <label for="tag_${tag.id}" class="tag-label px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer flex items-center gap-1.5 hover:opacity-80 border-transparent shadow-sm"
                        style="--tag-bg: ${tag.color}1a; --tag-color: ${tag.color}; color: ${tag.color};">
                     <div class="w-2.5 h-2.5 rounded-full" style="background-color: ${tag.color}"></div>
-                    ${tag.name}
+                    <span class="tag-name">${tag.name}</span>
                 </label>
             `;
             container.insertBefore(div, btn);

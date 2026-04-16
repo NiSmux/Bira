@@ -147,8 +147,9 @@ class SprintController extends Controller
         $doneStatusIds = WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
             ->where('is_done', 1)->pluck('id');
 
-        $totalPoints     = (int) $sprint->items()->sum('story_points');
-        $completedPoints = (int) $sprint->items()->whereIn('status_id', $doneStatusIds)->sum('story_points');
+        $metricField     = $board->estimation_mode === 'hours' ? 'estimated_hours' : 'story_points';
+        $totalPoints     = (float) $sprint->items()->sum($metricField);
+        $completedPoints = (float) $sprint->items()->whereIn('status_id', $doneStatusIds)->sum($metricField);
 
         $backlogStatus = WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
             ->where('is_backlog', 1)->first();

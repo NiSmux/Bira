@@ -72,6 +72,7 @@ class WorkItemController extends Controller
             'item_type_id' => 'required|exists:item_types,id',
             'priority_id'  => 'nullable|exists:priorities,id',
             'story_points' => 'nullable|integer|min:0|max:100',
+            'estimated_hours' => 'nullable|numeric|min:0|max:1000',
             'assignee_type' => 'nullable|in:user,sub_team',
             'assignee_id'   => 'nullable|exists:users,id',
             'sub_team_id'   => 'nullable|exists:board_sub_teams,id',
@@ -106,8 +107,9 @@ class WorkItemController extends Controller
         $item->item_type_id = $request->item_type_id;
         $item->status_id    = $backlogStatus->id;
         $item->priority_id  = $request->priority_id;
-        $item->story_points = $request->story_points;
-        $item->team_id      = $board->team_id;
+        $item->story_points    = $request->story_points;
+        $item->estimated_hours = $request->estimated_hours;
+        $item->team_id         = $board->team_id;
         $item->assignee_id  = $assigneeId;
         $item->sub_team_id  = $subTeamId;
 
@@ -191,6 +193,7 @@ class WorkItemController extends Controller
             'item_type_id' => 'required|exists:item_types,id',
             'priority_id'  => 'nullable|exists:priorities,id',
             'story_points' => 'nullable|integer|min:0|max:100',
+            'estimated_hours' => 'nullable|numeric|min:0|max:1000',
             'assignee_type' => 'nullable|in:user,sub_team',
             'assignee_id'   => 'nullable|exists:users,id',
             'sub_team_id'   => 'nullable|exists:board_sub_teams,id',
@@ -218,8 +221,9 @@ class WorkItemController extends Controller
             'status_id'    => $request->status_id,
             'item_type_id' => $request->item_type_id,
             'priority_id'  => $request->priority_id,
-            'story_points' => $request->story_points,
-            'completed_at' => $completedAt,
+            'story_points'    => $request->story_points,
+            'estimated_hours' => $request->estimated_hours,
+            'completed_at'    => $completedAt,
             'assignee_id'  => $assigneeId,
             'sub_team_id'  => $subTeamId,
         ]);

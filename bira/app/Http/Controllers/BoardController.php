@@ -255,6 +255,41 @@ class BoardController extends Controller
     }
 
     /**
+     * Update the board's estimation mode.
+     */
+    public function updateMode(Request $request, Board $board)
+    {
+        $this->ensureBoardPermission($board, 'admin');
+
+        $validated = $request->validate([
+            'estimation_mode' => 'required|in:points,hours',
+        ]);
+
+        $oldMode = $board->estimation_mode;
+        $newMode = $validated['estimation_mode'];
+
+        if ($oldMode !== $newMode) {
+            $board->update(['estimation_mode' => $newMode]);
+            
+            $itemIds = $board->items()->pluck('work_items.id');
+            
+            if ($itemIds->isNotEmpty()) {
+                if ($newMode === 'hours') {
+                    // Changing to hours, convert existing story_points over natively 1:1
+                    \App\Models\WorkItem::whereIn('id', $itemIds)
+                        ->update(['estimated_hours' => \DB::raw('story_points')]);
+                } else {
+                    // Changing to points, convert estimated_hours back to points (rounding) 1:1
+                    \App\Models\WorkItem::whereIn('id', $itemIds)
+                        ->update(['story_points' => \DB::raw('ROUND(estimated_hours)')]);
+                }
+            }
+        }
+
+        return back()->with('success', 'Estimation mode updated successfully and metrics converted!');
+    }
+
+    /**
      * Add a team member to the board.
      */
     public function addBoardMember(Request $request, Board $board)

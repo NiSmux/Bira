@@ -14,9 +14,18 @@
         default               => 'bg-gray-500/10 text-gray-400',
     };
     $statusName = $item->status->name ?? '—';
+    $boardMode = $board->estimation_mode ?? ($item->boards->first()->estimation_mode ?? 'points');
+    $estimationValue = $boardMode === 'hours' ? $item->estimated_hours : $item->story_points;
+    $estimationSuffix = $boardMode === 'hours' ? 'h' : '';
 @endphp
 
-<div data-item-id="{{ $item->id }}" class="backlog-row group flex items-center gap-4 px-8 py-3.5 hover:bg-white/[0.03] transition-all duration-200 {{ $permissionLevel !== 'viewer' ? 'cursor-grab active:cursor-grabbing' : '' }} border-l-2 border-transparent hover:border-primary/40 relative">
+<div data-item-id="{{ $item->id }}" 
+     class="backlog-row filterable-task group flex items-center gap-4 px-8 py-3.5 hover:bg-white/[0.03] transition-all duration-200 {{ $permissionLevel !== 'viewer' ? 'cursor-grab active:cursor-grabbing' : '' }} border-l-2 border-transparent hover:border-primary/40 relative"
+     data-filter-sp="{{ $estimationValue ? $estimationValue . $estimationSuffix : '0' }}"
+     data-filter-type="{{ $item->type->name ?? 'none' }}"
+     data-filter-assignee="{{ optional($item->assignee)->name ?? (optional($item->subTeam)->name ? 'Subteam: ' . optional($item->subTeam)->name : 'Unassigned') }}"
+     data-filter-priority="{{ $item->priority->name ?? 'none' }}"
+>
     
     @if($permissionLevel !== 'viewer' && isset($inBacklog))
         <input type="checkbox" class="backlog-row-checkbox shrink-0 rounded-lg bg-white/5 border-white/10 text-primary focus:ring-primary/40 focus:ring-offset-0 w-4 h-4 cursor-pointer" data-item-id="{{ $item->id }}">
@@ -48,9 +57,9 @@
             {{ $statusName }}
         </span>
 
-        @if($item->story_points)
-            <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-[11px] font-black text-white border border-white/5 group-hover:bg-primary/20 group-hover:border-primary/30 transition-all">
-                {{ $item->story_points }}
+        @if($estimationValue)
+            <div class="min-w-[32px] w-auto h-8 px-1.5 rounded-full bg-white/5 flex items-center justify-center text-[11px] font-black text-white border border-white/5 group-hover:bg-primary/20 group-hover:border-primary/30 transition-all">
+                {{ $estimationValue }}{{ $estimationSuffix }}
             </div>
         @else
             <div class="w-8 h-8"></div>

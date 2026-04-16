@@ -8,7 +8,7 @@ class Board extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['name', 'team_id', 'workflow_group_id'];
+    protected $fillable = ['name', 'team_id', 'workflow_group_id', 'estimation_mode'];
 
     public function items()
     {

@@ -15,9 +15,18 @@
         'low', 'žemas' => 'bg-blue-500/10 text-blue-400',
         default => 'bg-gray-500/10 text-gray-400'
     };
+    $boardMode = $board->estimation_mode ?? ($item->boards->first()->estimation_mode ?? 'points');
+    $estimationValue = $boardMode === 'hours' ? $item->estimated_hours : $item->story_points;
+    $estimationSuffix = $boardMode === 'hours' ? 'h' : '';
 @endphp
 
-<div class="task-card group bg-card border border-border-subtle {{ $cardBorder }} rounded-2xl transition-all {{ $permissionLevel !== 'viewer' ? 'cursor-move' : '' }} shadow-sm active:scale-[0.98] hover:border-primary/50" data-id="{{ $item->id }}">
+<div class="task-card filterable-task group bg-card border border-border-subtle {{ $cardBorder }} rounded-2xl transition-all {{ $permissionLevel !== 'viewer' ? 'cursor-move' : '' }} shadow-sm active:scale-[0.98] hover:border-primary/50" 
+     data-id="{{ $item->id }}"
+     data-filter-sp="{{ $estimationValue ? $estimationValue . $estimationSuffix : '0' }}"
+     data-filter-type="{{ $item->type->name ?? 'none' }}"
+     data-filter-assignee="{{ optional($item->assignee)->name ?? (optional($item->subTeam)->name ? 'Subteam: ' . optional($item->subTeam)->name : 'Unassigned') }}"
+     data-filter-priority="{{ $item->priority->name ?? 'none' }}"
+>
     <!-- Column Variant Layout -->
     <div class="task-card-column flex flex-col p-5 h-full">
         <div class="flex items-start justify-between mb-2">
@@ -32,9 +41,9 @@
         </div>
 
         <div class="flex flex-wrap gap-2 mb-4">
-            @if($item->story_points)
+            @if($estimationValue)
                 <span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 text-[10px] font-bold">
-                    {{ $item->story_points }}
+                    {{ $estimationValue }}{{ $estimationSuffix }}
                 </span>
             @endif
             <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider {{ $priorityStyles }}">
@@ -79,12 +88,11 @@
             <h5 class="text-white font-medium truncate text-base">{{ $item->title }}</h5>
         </div>
 
-        <!-- Right Side: Metadata & Actions -->
         <div class="flex items-center gap-6 shrink-0">
-            @if($item->story_points)
+            @if($estimationValue)
                 <div class="flex items-center gap-2 text-muted-foreground bg-white/5 px-2 py-1 rounded-md text-xs font-semibold">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
-                    {{ $item->story_points }}
+                    {{ $estimationValue }}{{ $estimationSuffix }}
                 </div>
             @endif
 

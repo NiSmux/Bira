@@ -34,6 +34,28 @@ class TagController extends Controller
         return redirect()->back()->with('success', 'Tag created successfully!');
     }
 
+    public function update(Request $request, Board $board, Tag $tag)
+    {
+        $this->ensureBoardPermission($board, 'member');
+        abort_unless($tag->board_id === $board->id, 404);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:80',
+            'color' => 'required|string|max:20'
+        ]);
+
+        $tag->update([
+            'name' => $validated['name'],
+            'color' => $validated['color']
+        ]);
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'tag' => $tag]);
+        }
+
+        return redirect()->back()->with('success', 'Tag updated successfully!');
+    }
+
     public function destroy(Board $board, Tag $tag)
     {
         $this->ensureBoardPermission($board, 'admin');
@@ -42,6 +64,22 @@ class TagController extends Controller
         $tag->delete();
 
         return redirect()->back()->with('success', 'Tag deleted!');
+    }
+
+    public function destroyBatch(Request $request, Board $board)
+    {
+        $this->ensureBoardPermission($board, 'admin');
+        
+        $validated = $request->validate([
+            'tag_ids' => 'required|array',
+            'tag_ids.*' => 'exists:tags,id'
+        ]);
+
+        Tag::where('board_id', $board->id)
+            ->whereIn('id', $validated['tag_ids'])
+            ->delete();
+
+        return response()->json(['success' => true, 'message' => 'Tags deleted!']);
     }
 
     public function attach(Request $request, Board $board, WorkItem $task)

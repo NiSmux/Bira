@@ -55,6 +55,7 @@ Route::middleware(['mano_apsauga'])->group(function () {
 
         // Board Settings & Member Management
         Route::get('/boards/{board}/settings', [BoardController::class, 'settings'])->name('boards.settings');
+        Route::patch('/boards/{board}/settings/mode', [BoardController::class, 'updateMode'])->name('boards.update_mode');
         Route::post('/boards/{board}/members', [BoardController::class, 'addBoardMember'])->name('boards.members.store');
         Route::patch('/boards/{board}/members/{user}', [BoardController::class, 'updateBoardMemberRole'])->name('boards.members.updateRole');
         Route::delete('/boards/{board}/members/{user}', [BoardController::class, 'removeBoardMember'])->name('boards.members.destroy');
@@ -86,6 +87,8 @@ Route::middleware(['mano_apsauga'])->group(function () {
 
         // Board Tags
         Route::post('/boards/{board}/tags', [\App\Http\Controllers\TagController::class, 'store'])->name('boards.tags.store');
+        Route::patch('/boards/{board}/tags/{tag}', [\App\Http\Controllers\TagController::class, 'update'])->name('boards.tags.update');
+        Route::post('/boards/{board}/tags/batch-delete', [\App\Http\Controllers\TagController::class, 'destroyBatch'])->name('boards.tags.batch_delete');
         Route::delete('/boards/{board}/tags/{tag}', [\App\Http\Controllers\TagController::class, 'destroy'])->name('boards.tags.destroy');
         Route::post('/boards/{board}/tasks/{task}/tags', [\App\Http\Controllers\TagController::class, 'attach'])->name('boards.tasks.tags.attach');
         Route::delete('/boards/{board}/tasks/{task}/tags/{tag}', [\App\Http\Controllers\TagController::class, 'detach'])->name('boards.tasks.tags.detach');

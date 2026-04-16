@@ -65,7 +65,10 @@
                 default          => 'border-white/10',
             };
             $totalItems      = $sprint->items->count();
-            $totalPoints     = $sprint->total_points ?? $sprint->items->sum('story_points');
+            $isHours         = ($board->estimation_mode ?? 'points') === 'hours';
+            $metricField     = $isHours ? 'estimated_hours' : 'story_points';
+            $metricLabel     = $isHours ? 'h' : 'pts';
+            $totalPoints     = $sprint->total_points ?? $sprint->items->sum($metricField);
             $completedPoints = $sprint->completed_points ?? 0;
         @endphp
 
@@ -103,9 +106,9 @@
                 {{-- Story points --}}
                 <span class="text-xs font-bold text-muted-foreground hidden sm:inline w-24 text-right shrink-0">
                     @if($sprint->status === 'delivered' || $sprint->status === 'to_be_released')
-                        {{ $completedPoints }}/{{ $totalPoints }} pts
+                        {{ (float) $completedPoints }}/{{ (float) $totalPoints }} {{ $metricLabel }}
                     @else
-                        {{ $totalPoints }} pts
+                        {{ (float) $totalPoints }} {{ $metricLabel }}
                     @endif
                 </span>
 
@@ -144,7 +147,7 @@
                         <div class="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
                             <div class="h-full bg-green-500 rounded-full" style="width: {{ $pct }}%"></div>
                         </div>
-                        <span class="text-xs text-muted-foreground shrink-0">{{ $pct }}% complete &middot; {{ $completedPoints }}/{{ $totalPoints }} pts</span>
+                        <span class="text-xs text-muted-foreground shrink-0">{{ $pct }}% complete &middot; {{ (float) $completedPoints }}/{{ (float) $totalPoints }} {{ $metricLabel }}</span>
                     </div>
                 </div>
                 @endif
@@ -185,8 +188,9 @@
                         @if($item->assignee)
                         <span class="text-xs text-muted-foreground hidden md:inline">{{ $item->assignee->name }}</span>
                         @endif
-                        @if($item->story_points)
-                        <span class="text-xs font-bold text-muted-foreground w-6 text-center shrink-0">{{ $item->story_points }}</span>
+                        @php $itemMetric = $isHours ? $item->estimated_hours : $item->story_points; @endphp
+                        @if($itemMetric)
+                        <span class="text-xs font-bold text-muted-foreground w-6 text-center shrink-0">{{ (float) $itemMetric }}{{ $isHours ? 'h' : '' }}</span>
                         @else
                         <span class="w-6 shrink-0"></span>
                         @endif

@@ -18,6 +18,7 @@ class WorkItem extends Model
         'item_type_id',
         'priority_id',
         'story_points',
+        'estimated_hours',
         'status_id',
         'team_id',
         'assignee_id',

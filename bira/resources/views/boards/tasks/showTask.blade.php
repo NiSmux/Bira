@@ -13,9 +13,14 @@
             </a>
             <div class="flex items-center gap-4">
                 <h2 class="text-3xl font-bold tracking-tight text-white">{{ $task->title }}</h2>
-                @if($task->story_points)
+                @php
+                    $boardMode = $board->estimation_mode ?? 'points';
+                    $estimationValue = $boardMode === 'hours' ? $task->estimated_hours : $task->story_points;
+                    $estimationSuffix = $boardMode === 'hours' ? ' Hours' : ' SP';
+                @endphp
+                @if($estimationValue)
                     <span class="px-3 py-1 rounded-lg bg-blue-500/10 text-blue-400 text-sm font-bold border border-blue-500/20">
-                        {{ $task->story_points }} SP
+                        {{ $estimationValue }}{{ $estimationSuffix }}
                     </span>
                 @endif
             </div>
