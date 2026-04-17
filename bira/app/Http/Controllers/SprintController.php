@@ -154,8 +154,14 @@ class SprintController extends Controller
         $backlogStatus = WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
             ->where('is_backlog', 1)->first();
 
-        // Only incomplete items return to backlog and are removed from the sprint.
-        // Done items stay in the completed sprint history.
+        // 1. First, snapshot actual statuses of all items in the sprint to the history table
+        foreach ($sprint->items as $item) {
+            $sprint->historicalItems()->syncWithoutDetaching([
+                $item->id => ['status_id' => $item->status_id]
+            ]);
+        }
+
+        // 2. Then, handle incomplete items (return to backlog)
         if ($backlogStatus && $doneStatusIds->isNotEmpty()) {
             $sprint->items()
                 ->whereNotIn('status_id', $doneStatusIds)
@@ -224,6 +230,11 @@ class SprintController extends Controller
             'status_id'  => $toDoStatus ? $toDoStatus->id : $item->status_id,
         ]);
 
+        // Track in historical records (snapshot current status)
+        $sprint->historicalItems()->syncWithoutDetaching([
+            $item->id => ['status_id' => $item->status_id]
+        ]);
+
         return response()->json(['success' => true]);
     }
 
@@ -241,6 +252,11 @@ class SprintController extends Controller
             'status_id'  => $backlogStatus ? $backlogStatus->id : $item->status_id,
         ]);
 
+        // Remove from current sprint history if manually removed BEFORE sprint completion
+        if (in_array($sprint->status, ['new', 'planned', 'in_progress'])) {
+            $sprint->historicalItems()->detach($item->id);
+        }
+
         return response()->json(['success' => true]);
     }
 
@@ -252,11 +268,13 @@ class SprintController extends Controller
         $permissionLevel = $this->ensureBoardPermission($board, 'viewer');
 
         $sprints = Sprint::where('board_id', $board->id)
-            ->with(['items' => fn($q) => $q->with(['type', 'priority', 'status', 'assignee'])])
+            ->with(['historicalItems' => fn($q) => $q->with(['type', 'priority', 'status', 'assignee'])])
             ->orderByRaw("FIELD(status, 'in_progress', 'to_be_released', 'planned', 'new', 'delivered')")
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('boards.sprints.history', compact('board', 'sprints', 'permissionLevel'));
+        $statuses = WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)->get()->keyBy('id');
+
+        return view('boards.sprints.history', compact('board', 'sprints', 'permissionLevel', 'statuses'));
     }
 }

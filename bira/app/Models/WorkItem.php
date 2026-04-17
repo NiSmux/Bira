@@ -78,6 +78,13 @@ class WorkItem extends Model
         return $this->belongsTo(Sprint::class, 'release_id');
     }
 
+    public function participatedSprints()
+    {
+        return $this->belongsToMany(Sprint::class, 'sprint_work_items', 'work_item_id', 'sprint_id')
+            ->withPivot('status_id')
+            ->withTimestamps();
+    }
+
     public function assignee()
     {
         return $this->belongsTo(User::class, 'assignee_id');

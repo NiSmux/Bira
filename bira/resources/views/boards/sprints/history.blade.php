@@ -64,11 +64,11 @@
                 'delivered'      => 'border-white/5',
                 default          => 'border-white/10',
             };
-            $totalItems      = $sprint->items->count();
+            $totalItems      = $sprint->historicalItems->count();
             $isHours         = ($board->estimation_mode ?? 'points') === 'hours';
             $metricField     = $isHours ? 'estimated_hours' : 'story_points';
             $metricLabel     = $isHours ? 'h' : 'pts';
-            $totalPoints     = $sprint->total_points ?? $sprint->items->sum($metricField);
+            $totalPoints     = $sprint->total_points ?? $sprint->historicalItems->sum($metricField);
             $completedPoints = $sprint->completed_points ?? 0;
         @endphp
 
@@ -153,13 +153,13 @@
                 @endif
 
                 {{-- Task list --}}
-                @if($sprint->items->isEmpty())
+                @if($sprint->historicalItems->isEmpty())
                     <div class="px-5 py-6 text-center text-muted-foreground text-sm opacity-50">
                         No tasks in this sprint.
                     </div>
                 @else
                 <div class="divide-y divide-white/[0.03]">
-                    @foreach($sprint->items as $item)
+                    @foreach($sprint->historicalItems as $item)
                     @php
                         $iTypeName = mb_strtolower($item->type->name ?? '');
                         $dotColor  = match(true) {
@@ -175,7 +175,7 @@
                             'low', 'žemas'        => 'bg-blue-500/10 text-blue-400',
                             default               => 'bg-gray-500/10 text-gray-400',
                         };
-                        $iStatusName = $item->status->name ?? '—';
+                        $iStatusName = $statuses[$item->pivot->status_id]->name ?? $item->status->name ?? '—';
                     @endphp
                     <a href="{{ route('boards.tasks.show', [$board->id, $item->id]) }}"
                         class="flex items-center gap-3 px-5 py-3 hover:bg-white/[0.02] transition-colors group">

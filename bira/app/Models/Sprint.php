@@ -32,6 +32,16 @@ class Sprint extends Model
         return $this->hasMany(WorkItem::class, 'release_id');
     }
 
+    /**
+     * Historical record of all items that were in this sprint.
+     */
+    public function historicalItems()
+    {
+        return $this->belongsToMany(WorkItem::class, 'sprint_work_items', 'sprint_id', 'work_item_id')
+            ->withPivot('status_id')
+            ->withTimestamps();
+    }
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');

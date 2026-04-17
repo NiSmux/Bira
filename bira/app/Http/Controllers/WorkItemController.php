@@ -228,6 +228,14 @@ class WorkItemController extends Controller
             'sub_team_id'  => $subTeamId,
         ]);
 
+        // Sync with active sprint history if applicable
+        if ($task->release_id) {
+            $sprint = \App\Models\Sprint::find($task->release_id);
+            if ($sprint && in_array($sprint->status, ['new', 'planned', 'in_progress'])) {
+                $sprint->historicalItems()->updateExistingPivot($task->id, ['status_id' => $task->status_id]);
+            }
+        }
+
         if ($request->has('tags')) {
             $task->tags()->sync($request->tags);
         } else {
@@ -258,6 +266,14 @@ class WorkItemController extends Controller
             'status_id'    => $request->status_id,
             'completed_at' => $completedAt,
         ]);
+
+        // Sync with active sprint history if applicable
+        if ($task->release_id) {
+            $sprint = \App\Models\Sprint::find($task->release_id);
+            if ($sprint && in_array($sprint->status, ['new', 'planned', 'in_progress'])) {
+                $sprint->historicalItems()->updateExistingPivot($task->id, ['status_id' => $task->status_id]);
+            }
+        }
 
         return response()->json(['success' => true]);
     }
