@@ -35,7 +35,11 @@ class BoardController extends Controller
             })
             ->get();
 
-        return view('boards.index', compact('boards'));
+        $groupedBoards = $boards->groupBy(function ($board) {
+            return $board->team ? $board->team->name : 'Personal Boards';
+        });
+
+        return view('boards.index', compact('groupedBoards'));
     }
 
     /**
@@ -67,6 +71,10 @@ class BoardController extends Controller
 
         $roles = self::boardRoles();
         $preselectedTeamId = $request->query('team_id');
+
+        if ($request->ajax()) {
+            return view('boards.partials.create_board_form', compact('teams', 'roles', 'preselectedTeamId'));
+        }
 
         return view('boards.create', compact('teams', 'roles', 'preselectedTeamId'));
     }
