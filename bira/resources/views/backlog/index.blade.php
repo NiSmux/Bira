@@ -42,11 +42,11 @@
                     </button>
                     
                     @if(isset($board) && $board->permissionLevel !== 'viewer')
-                        <a href="{{ route('boards.tasks.createTask', $board->id) }}?redirect_to={{ urlencode(url()->full()) }}" 
-                           class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold transition-all border border-white/10 shadow-lg hover:scale-[1.02] active:scale-[0.98] h-[46px]">
+                        <button data-board-id="{{ $board->id }}" 
+                           class="create-task-modal-trigger flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold transition-all border border-white/10 shadow-lg hover:scale-[1.02] active:scale-[0.98] h-[46px]">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
                             Create Task
-                        </a>
+                        </button>
                     @endif
 
                     @if(isset($board) && $board->permissionLevel === 'admin')
@@ -92,11 +92,11 @@
                                         New Sprint
                                     </button>
                                 @endif
-                                <a href="{{ route('boards.tasks.createTask', $backlogBoard->id) }}?redirect_to={{ urlencode(url()->full()) }}" 
-                                   class="px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-all border border-primary/20 flex items-center gap-1.5">
+                                <button data-board-id="{{ $backlogBoard->id }}" 
+                                   class="create-task-modal-trigger px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-all border border-primary/20 flex items-center gap-1.5">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
                                     Create Task
-                                </a>
+                                </button>
                             </div>
                         </div>
                     @endif
@@ -405,6 +405,52 @@
             </form>
         </div>
     </div>
+    <!-- Create Task Modal -->
+    <div id="create-task-modal" class="fixed inset-0 z-[100] items-center justify-center hidden">
+        <div class="absolute inset-0 bg-background/80 backdrop-blur-md" id="create-task-backdrop"></div>
+        <div class="relative bg-sidebar border border-white/10 rounded-[2.5rem] p-10 w-full max-w-2xl mx-4 shadow-3xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                </div>
+                <div>
+                    <h3 class="text-white font-black text-2xl tracking-tight">Create New Task</h3>
+                    <p class="text-muted-foreground text-sm font-medium">Add a new item to your backlog</p>
+                </div>
+            </div>
+            <div id="create-task-modal-content">
+                <!-- Form moves here -->
+                <div class="flex justify-center py-12">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Tag Edit Modal (Reused for task form tags) --}}
+    <div id="tag-edit-modal" class="fixed inset-0 z-[110] items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+        <div class="relative bg-[#1a1a2e] border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-in zoom-in duration-200">
+            <h3 class="text-white font-bold text-lg mb-5">Edit Tag</h3>
+            <div class="space-y-4">
+                <input type="hidden" id="edit_tag_id">
+                <input type="hidden" id="edit_tag_board_id">
+                <div>
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Tag name</label>
+                    <input type="text" id="edit_tag_name" required maxlength="80"
+                        class="w-full bg-background border border-border-subtle rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Color</label>
+                    <input type="color" id="edit_tag_color" required
+                        class="w-full h-12 border border-border-subtle p-1 bg-background rounded-xl cursor-pointer">
+                </div>
+                <div class="flex gap-3 justify-end mt-6">
+                    <button type="button" id="close-tag-edit-btn" class="px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-sm font-medium rounded-lg transition-colors">Cancel</button>
+                    <button type="button" id="save-tag-edit-btn" class="px-4 py-2 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg transition-colors">Save updates</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -608,6 +654,354 @@
             editModal.classList.add('hidden');
             editModal.classList.remove('flex');
         });
+
+        // ── Create Task Modal ─────────────────────────────────────────────
+        const createTaskModal = document.getElementById('create-task-modal');
+        const createTaskContent = document.getElementById('create-task-modal-content');
+        
+        document.querySelectorAll('.create-task-modal-trigger').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const bId = btn.dataset.boardId;
+                createTaskModal.classList.remove('hidden');
+                createTaskModal.classList.add('flex');
+                
+                createTaskContent.innerHTML = `
+                    <div class="flex justify-center py-12">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    </div>
+                `;
+
+                try {
+                    const response = await fetch(`/boards/${bId}/tasks/create`, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    const html = await response.text();
+                    createTaskContent.innerHTML = html;
+                    
+                    // Re-initialize any JS needed for the form
+                    initTaskForm(createTaskContent);
+                } catch (error) {
+                    createTaskContent.innerHTML = `<p class="text-red-400">Failed to load form. Please try again.</p>`;
+                }
+            });
+        });
+
+
+        // ── Tag System Shared Logic ──────────────────────────────────────
+        let currentTagContext = { boardId: null, container: null };
+
+        document.getElementById('close-tag-edit-btn')?.addEventListener('click', () => {
+            const editModal = document.getElementById('tag-edit-modal');
+            editModal.classList.add('hidden');
+            editModal.classList.remove('flex');
+            if (window.exitManagementMode) window.exitManagementMode();
+        });
+
+        document.getElementById('save-tag-edit-btn')?.addEventListener('click', async () => {
+            const id = document.getElementById('edit_tag_id').value;
+            const boardId = document.getElementById('edit_tag_board_id').value;
+            const name = document.getElementById('edit_tag_name').value.trim();
+            const color = document.getElementById('edit_tag_color').value;
+            
+            if (!name || !boardId) {
+                console.error('Missing name or board context', { name, boardId });
+                return;
+            }
+
+            try {
+                const response = await fetch(`/boards/${boardId}/tags/${id}`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'X-CSRF-TOKEN': csrfToken, 
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ 
+                        _method: 'PATCH',
+                        name: name, 
+                        color: color 
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Server error response:', errorText);
+                    // If we got HTML back, it's likely a redirect or a fatal error
+                    if (errorText.includes('<!DOCTYPE html>')) {
+                        alert('Server error: Received a web page instead of a data response. The change might have saved, please refresh.');
+                    } else {
+                        alert('Server error (' + response.status + '): ' + errorText.substring(0, 50));
+                    }
+                    throw new Error(`Server returned ${response.status}`);
+                }
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Non-JSON response:', text);
+                    alert('Server error: Response was not JSON. Please refresh.');
+                    return;
+                }
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update ALL instances of this tag on the page
+                    document.querySelectorAll(`.tag-wrapper[data-tag-id="${id}"]`).forEach(wrapper => {
+                        wrapper.dataset.tagName = name;
+                        wrapper.dataset.tagColor = color;
+                        const label = wrapper.querySelector('.tag-label');
+                        if (label) {
+                            label.style.setProperty('--tag-color', color);
+                            label.style.setProperty('--tag-bg', color + '1a');
+                            label.style.color = color;
+                            const dot = label.querySelector('div');
+                            if (dot) dot.style.backgroundColor = color;
+                            const nameSpan = label.querySelector('.tag-name');
+                            if (nameSpan) nameSpan.textContent = name;
+                        }
+                    });
+
+                    // Close the modal
+                    const modal = document.getElementById('tag-edit-modal');
+                    if (modal) {
+                        modal.classList.add('hidden');
+                        modal.classList.remove('flex');
+                    }
+                    
+                    // Exit management mode safely - handle potential closure issues
+                    if (typeof window.exitManagementMode === 'function') {
+                        try {
+                            window.exitManagementMode();
+                        } catch (cleanupError) {
+                            console.warn('Cleanup warning:', cleanupError);
+                            // We don't alert here because the tag is already saved and updated
+                        }
+                    }
+                } else {
+                    alert('Server returned success: false. Message: ' + (data.message || 'No message provided'));
+                }
+            } catch (error) {
+                console.error('Full Error Details:', error);
+                alert('An error occurred during UI update: ' + error.name + ': ' + error.message);
+            }
+        });
+
+        function initTaskForm(container) {
+            const boardId = container.querySelector('form').action.split('/').slice(-2)[0];
+
+            // Close modal logic
+            container.querySelectorAll('.cancel-modal-btn').forEach(btn => {
+                btn.addEventListener('click', closeModal);
+            });
+
+            // Assignee type buttons
+            const typeInput  = container.querySelector('#assignee_type_input');
+            const userDiv    = container.querySelector('#assign-user-select');
+            const subTeamDiv = container.querySelector('#assign-subteam-select');
+            const buttons    = container.querySelectorAll('.assignee-type-btn');
+
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const type = btn.dataset.type;
+                    buttons.forEach(b => {
+                        b.classList.remove('bg-white/10', 'border-white/20', 'text-white', 'bg-violet-600/20', 'border-violet-500/30', 'text-violet-400');
+                        b.classList.add('bg-white/5', 'border-white/10', 'text-muted-foreground');
+                    });
+                    if (type === 'sub_team') {
+                        btn.classList.add('bg-violet-600/20', 'border-violet-500/30', 'text-violet-400');
+                    } else {
+                        btn.classList.add('bg-white/10', 'border-white/20', 'text-white');
+                    }
+                    btn.classList.remove('bg-white/5', 'border-white/10', 'text-muted-foreground');
+                    
+                    typeInput.value = type === 'none' ? '' : type;
+                    if(userDiv) userDiv.classList.toggle('hidden', type !== 'user');
+                    if(subTeamDiv) subTeamDiv.classList.toggle('hidden', type !== 'sub_team');
+                });
+            });
+
+            // ── Tag Management Logic ──────────────────────────────────────
+            let tagManagementMode = 'none';
+            let selectedTagsForDeletion = new Set();
+            const tagsContainer = container.querySelector('#tags-container');
+
+            window.toggleTagManagement = (mode) => {
+                const deleteBtn = container.querySelector('#tag-manage-delete-btn');
+                const editBtn = container.querySelector('#tag-manage-edit-btn');
+                
+                if (tagManagementMode === mode) {
+                    if (mode === 'delete' && selectedTagsForDeletion.size > 0) {
+                        confirmBatchDelete();
+                        return;
+                    }
+                    exitManagementMode();
+                    return;
+                }
+
+                exitManagementMode();
+                tagManagementMode = mode;
+                
+                if (mode === 'delete') {
+                    tagsContainer.classList.add('tag-container-managing-delete');
+                    deleteBtn.classList.add('bg-red-500/20', 'border-red-500/50', 'text-red-400');
+                    deleteBtn.classList.remove('text-muted-foreground');
+                    container.querySelectorAll('.tag-wrapper label').forEach(label => label.addEventListener('click', handleTagManagementClick, { capture: true }));
+                } else if (mode === 'edit') {
+                    tagsContainer.classList.add('tag-container-managing-edit');
+                    editBtn.classList.add('bg-primary/20', 'border-primary/50', 'text-white');
+                    editBtn.classList.remove('text-muted-foreground');
+                    container.querySelectorAll('.tag-wrapper label').forEach(label => label.addEventListener('click', handleTagManagementClick, { capture: true }));
+                }
+            };
+
+            window.exitManagementMode = () => {
+                const deleteBtn = container.querySelector('#tag-manage-delete-btn');
+                const editBtn = container.querySelector('#tag-manage-edit-btn');
+
+                tagsContainer.classList.remove('tag-container-managing-delete', 'tag-container-managing-edit');
+                deleteBtn?.classList.remove('bg-red-500/20', 'border-red-500/50', 'text-red-400');
+                deleteBtn?.classList.add('text-muted-foreground');
+                editBtn?.classList.remove('bg-primary/20', 'border-primary/50', 'text-white');
+                editBtn?.classList.add('text-muted-foreground');
+                
+                container.querySelectorAll('.tag-wrapper label').forEach(label => label.removeEventListener('click', handleTagManagementClick, { capture: true }));
+                container.querySelectorAll('.tag-wrapper').forEach(w => w.classList.remove('tag-to-delete'));
+                
+                selectedTagsForDeletion.clear();
+                tagManagementMode = 'none';
+            };
+
+            const handleTagManagementClick = (e) => {
+                if (tagManagementMode === 'none') return;
+                e.preventDefault(); e.stopPropagation();
+                
+                const wrapper = e.currentTarget.closest('.tag-wrapper');
+                const tagId = wrapper.dataset.tagId;
+                
+                if (tagManagementMode === 'delete') {
+                    if (selectedTagsForDeletion.has(tagId)) {
+                        selectedTagsForDeletion.delete(tagId);
+                        wrapper.classList.remove('tag-to-delete');
+                    } else {
+                        selectedTagsForDeletion.add(tagId);
+                        wrapper.classList.add('tag-to-delete');
+                    }
+                } else if (tagManagementMode === 'edit') {
+                    const boardId = wrapper.dataset.boardId;
+                    const tagEditModal = document.getElementById('tag-edit-modal');
+                    document.getElementById('edit_tag_id').value = tagId;
+                    document.getElementById('edit_tag_board_id').value = boardId;
+                    document.getElementById('edit_tag_name').value = wrapper.dataset.tagName;
+                    document.getElementById('edit_tag_color').value = wrapper.dataset.tagColor;
+                    tagEditModal.classList.remove('hidden');
+                    tagEditModal.classList.add('flex');
+                }
+            };
+
+            window.toggleCustomTagForm = () => {
+                const btn = container.querySelector('#show-custom-tag-btn');
+                const form = container.querySelector('#custom-tag-form');
+                if (form.classList.contains('hidden')) {
+                    form.classList.remove('hidden'); form.classList.add('flex'); btn.classList.add('hidden');
+                } else {
+                    form.classList.add('hidden'); form.classList.remove('flex'); btn.classList.remove('hidden');
+                }
+            };
+
+            window.saveCustomTag = () => {
+                const nameInput = container.querySelector('#new_tag_name');
+                const colorInput = container.querySelector('#new_tag_color');
+                const name = nameInput.value.trim();
+                const color = colorInput.value;
+
+                if (!name) return alert('Tag name cannot be empty');
+
+                fetch(`/boards/${boardId}/tags`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                    body: JSON.stringify({ name, color })
+                }).then(res => res.json()).then(data => {
+                    if (data.success) {
+                        const tag = data.tag;
+                        const btn = container.querySelector('#show-custom-tag-btn');
+                        const div = document.createElement('div');
+                        div.className = 'tag-wrapper';
+                        div.dataset.tagId = tag.id; div.dataset.tagName = tag.name; div.dataset.tagColor = tag.color;
+                        div.innerHTML = `
+                            <input type="checkbox" id="tag_${tag.id}" name="tags[]" value="${tag.id}" class="hidden tag-checkbox" checked>
+                            <label for="tag_${tag.id}" class="tag-label px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer flex items-center gap-1.5 hover:opacity-80 border-transparent shadow-sm"
+                                   style="--tag-bg: ${tag.color}1a; --tag-color: ${tag.color}; color: ${tag.color};">
+                                <div class="w-2.5 h-2.5 rounded-full" style="background-color: ${tag.color}"></div>
+                                <span class="tag-name">${tag.name}</span>
+                            </label>
+                        `;
+                        tagsContainer.insertBefore(div, btn);
+                        nameInput.value = '';
+                        toggleCustomTagForm();
+                    }
+                });
+            };
+
+            const confirmBatchDelete = () => {
+                if (!confirm(`Delete ${selectedTagsForDeletion.size} tags?`)) return;
+                fetch(`/boards/${boardId}/tags/batch-delete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                    body: JSON.stringify({ tag_ids: Array.from(selectedTagsForDeletion) })
+                }).then(res => res.json()).then(data => {
+                    if (data.success) {
+                        selectedTagsForDeletion.forEach(id => {
+                            container.querySelector(`.tag-wrapper[data-tag-id="${id}"]`)?.remove();
+                        });
+                        exitManagementMode();
+                    }
+                });
+            };
+
+            // Form submission
+            const form = container.querySelector('#create-task-form');
+            if (form) {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Creating...';
+
+                    try {
+                        const response = await fetch(form.action, {
+                            method: 'POST',
+                            headers: { 
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': csrfToken
+                            },
+                            body: formData
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            location.reload();
+                        } else {
+                            alert('Error: ' + (result.message || 'Failed to create task'));
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = 'Create task';
+                        }
+                    } catch (error) {
+                        alert('System error.');
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Create task';
+                    }
+                });
+            }
+        }
+
+        function closeModal() {
+            createTaskModal.classList.add('hidden');
+            createTaskModal.classList.remove('flex');
+        }
+
+        document.getElementById('create-task-backdrop').addEventListener('click', closeModal);
     });
 </script>
 @endpush

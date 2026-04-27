@@ -27,7 +27,7 @@ class TagController extends Controller
             'is_custom' => true,
         ]);
 
-        if ($request->wantsJson()) {
+        if ($request->expectsJson() || $request->ajax()) {
             return response()->json(['success' => true, 'tag' => $tag]);
         }
 
@@ -49,7 +49,7 @@ class TagController extends Controller
             'color' => $validated['color']
         ]);
 
-        if ($request->wantsJson()) {
+        if ($request->expectsJson() || $request->ajax()) {
             return response()->json(['success' => true, 'tag' => $tag]);
         }
 

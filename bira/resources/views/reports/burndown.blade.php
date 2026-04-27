@@ -162,7 +162,7 @@
                             </div>
                         @endif
                         <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-white/5 text-muted-foreground">
-                            {{ $item->status->name ?? 'No status' }}
+                            {{ $statuses[$item->pivot->status_id]->name ?? $item->status->name ?? 'No status' }}
                         </span>
                         <div class="flex -space-x-2 pl-2 border-l border-white/5">
                             @if($item->assignee)

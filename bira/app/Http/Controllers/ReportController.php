@@ -41,7 +41,7 @@ class ReportController extends Controller
         $chartData = null;
 
         if ($sprint && $sprint->start_date) {
-            $items = $sprint->items()->get();
+            $items = $sprint->historicalItems()->get();
             $totalPoints = (int) $items->sum('story_points');
 
             $startDate = $sprint->start_date->copy()->startOfDay();
@@ -90,9 +90,10 @@ class ReportController extends Controller
             ];
         }
 
-        $sprintItems = $sprint ? $sprint->items()->with(['assignee', 'subTeam', 'priority', 'status', 'type'])->get() : collect();
+        $sprintItems = $sprint ? $sprint->historicalItems()->with(['assignee', 'subTeam', 'priority', 'status', 'type'])->get() : collect();
+        $statuses = WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)->get()->keyBy('id');
 
-        return view('reports.burndown', compact('board', 'sprints', 'sprint', 'chartData', 'sprintItems'));
+        return view('reports.burndown', compact('board', 'sprints', 'sprint', 'chartData', 'sprintItems', 'statuses'));
     }
 
     public function velocity(Board $board)

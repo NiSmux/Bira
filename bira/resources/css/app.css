@@ -53,16 +53,56 @@ body {
 }
 
 /* Task Card Layout Toggling */
-.column-tasks .task-card-column { 
-    display: flex !important; 
-}
-.column-tasks .task-card-backlog { 
-    display: none !important; 
+.column-tasks .task-card-column {
+    display: flex !important;
 }
 
-.backlog-tasks .task-card-column { 
-    display: none !important; 
+.column-tasks .task-card-backlog {
+    display: none !important;
 }
-.backlog-tasks .task-card-backlog { 
-    display: flex !important; 
+
+.backlog-tasks .task-card-column {
+    display: none !important;
+}
+
+.backlog-tasks .task-card-backlog {
+    display: flex !important;
+}
+
+/* Tag System Styles */
+.tag-checkbox:checked + .tag-label {
+    opacity: 1 !important;
+    filter: none !important;
+    background-color: var(--tag-bg) !important;
+    border-color: var(--tag-color) !important;
+}
+
+.tag-checkbox:not(:checked) + .tag-label {
+    opacity: 0.4 !important;
+    filter: grayscale(80%) !important;
+    background-color: transparent !important;
+    border-color: rgba(255,255,255,0.1) !important;
+}
+
+/* Management Modes */
+.tag-container-managing-delete .tag-label {
+    cursor: pointer !important;
+}
+
+.tag-container-managing-delete .tag-label:hover {
+    border-color: #ef4444 !important;
+    background-color: rgba(239, 68, 68, 0.1) !important;
+}
+
+.tag-container-managing-delete .tag-to-delete .tag-label {
+    border-color: #ef4444 !important;
+    background-color: rgba(239, 68, 68, 0.2) !important;
+    opacity: 1 !important;
+    filter: none !important;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+.tag-container-managing-edit .tag-label:hover {
+    border-color: #3b82f6 !important;
+    background-color: rgba(59, 130, 246, 0.1) !important;
 }

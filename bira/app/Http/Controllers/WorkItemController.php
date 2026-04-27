@@ -56,6 +56,10 @@ class WorkItemController extends Controller
         $subTeams     = $board->subTeams;
         $redirectTo   = request()->query('redirect_to');
 
+        if (request()->ajax()) {
+            return view('boards.tasks._task_form', compact('board', 'itemTypes', 'priorities', 'statuses', 'boardMembers', 'subTeams', 'redirectTo'));
+        }
+
         return view('boards.tasks.createTask', compact('board', 'itemTypes', 'priorities', 'statuses', 'boardMembers', 'subTeams', 'redirectTo'));
     }
 
@@ -123,6 +127,10 @@ class WorkItemController extends Controller
 
         if ($request->has('tags')) {
             $item->tags()->sync($request->tags);
+        }
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Task created successfully!']);
         }
 
         if ($request->has('redirect_to')) {
