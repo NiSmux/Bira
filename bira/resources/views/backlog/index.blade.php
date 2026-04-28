@@ -10,11 +10,7 @@
                 <div>
                     <h2 class="text-3xl font-extrabold tracking-tight text-white flex items-center gap-4">
                         <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-lg border border-primary/20 backdrop-blur-sm">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
-                                </path>
-                            </svg>
+                            <x-lucide-layers class="w-6 h-6" />
                         </div>
                         @if(isset($board))
                             <span class="bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">{{ $board->name }}</span> <span class="text-primary font-light">Backlog</span>
@@ -37,23 +33,21 @@
 
                 <div class="flex items-center gap-3">
                     <button id="toggle-filters-btn" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold transition-all border border-white/10 shadow-lg hover:scale-[1.02] active:scale-[0.98] h-[46px]">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                        <x-lucide-filter class="w-5 h-5" />
                         Filters
                     </button>
                     
                     @if(isset($board) && $board->permissionLevel !== 'viewer')
                         <button data-board-id="{{ $board->id }}" 
                            class="create-task-modal-trigger flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold transition-all border border-white/10 shadow-lg hover:scale-[1.02] active:scale-[0.98] h-[46px]">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                            <x-lucide-plus class="w-5 h-5" />
                             Create Task
                         </button>
                     @endif
 
                     @if(isset($board) && $board->permissionLevel === 'admin')
                         <button id="new-sprint-trigger-global" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold transition-all shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] h-[46px]">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                            </svg>
+                            <x-lucide-plus-circle class="w-5 h-5" />
                             Create Sprint
                         </button>
                     @endif
@@ -94,7 +88,7 @@
                                 @endif
                                 <button data-board-id="{{ $backlogBoard->id }}" 
                                    class="create-task-modal-trigger px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-all border border-primary/20 flex items-center gap-1.5">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                                    <x-lucide-plus class="w-3.5 h-3.5" />
                                     Create Task
                                 </button>
                             </div>
@@ -106,7 +100,7 @@
                     <div id="new-sprint-form-{{ $backlogBoard->id }}" class="hidden mb-6 bg-white/[0.02] border border-white/10 rounded-3xl p-8 backdrop-blur-md shadow-2xl sprint-creation-card animate-in fade-in slide-in-from-top-4 duration-300">
                         <div class="flex items-center gap-3 mb-6">
                             <div class="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center text-violet-400">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                <x-lucide-zap class="w-5 h-5" />
                             </div>
                             <h4 class="text-white text-lg font-bold">Launch New Sprint</h4>
                         </div>
@@ -174,7 +168,7 @@
                                 <!-- Sprint Header -->
                                 <div class="flex items-center gap-4 px-6 py-5 cursor-pointer hover:bg-white/[0.02] transition-colors" onclick="toggleSprintCollapse('{{ $sprint->id }}')">
                                     <button class="sprint-toggle-btn text-muted-foreground hover:text-white transition-transform duration-300" id="chevron-{{ $sprint->id }}">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
+                                        <x-lucide-chevron-down class="w-5 h-5" />
                                     </button>
 
                                     <div class="flex flex-col">
@@ -233,7 +227,7 @@
                                                     data-goal="{{ $sprint->goal }}"
                                                     data-start="{{ $sprint->start_date?->format('Y-m-d') }}"
                                                     data-end="{{ $sprint->end_date?->format('Y-m-d') }}">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                                    <x-lucide-square-pen class="w-4 h-4" />
                                                 </button>
                                             </div>
                                         @endif
@@ -263,7 +257,7 @@
                                     @if($permissionLevel !== 'viewer')
                                         <div class="px-8 py-4 bg-white/[0.01]">
                                             <button class="add-task-to-sprint-btn flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-white transition-colors" data-sprint-id="{{ $sprint->id }}" data-board-id="{{ $backlogBoard->id }}">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                                <x-lucide-plus class="w-4 h-4" />
                                                 Add from backlog
                                             </button>
                                             
@@ -332,7 +326,7 @@
                                 @include('boards.tasks._task_row', ['item' => $item, 'board' => $backlogBoard, 'permissionLevel' => $permissionLevel, 'inBacklog' => true])
                             @empty
                                 <div class="w-full py-16 flex flex-col items-center justify-center text-muted-foreground/30">
-                                    <svg class="w-12 h-12 mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                                    <x-lucide-package class="w-12 h-12 mb-4 opacity-20" />
                                     <p class="text-sm font-bold uppercase tracking-widest">Clean Slate</p>
                                     <p class="text-xs mt-1">No items in the backlog for this board.</p>
                                 </div>
@@ -343,17 +337,14 @@
             @empty
                 <div class="w-full py-32 flex flex-col items-center justify-center bg-white/[0.02] border border-dashed border-white/10 rounded-[3rem] text-center px-10">
                     <div class="w-24 h-24 rounded-[2.5rem] bg-white/5 flex items-center justify-center text-muted-foreground/20 mb-8 border border-white/5">
-                        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
-                        </svg>
+                        <x-lucide-archive class="w-12 h-12" />
                     </div>
                     <h3 class="text-2xl font-black text-white mb-3">Your workspace is quiet</h3>
                     <p class="text-muted-foreground max-w-md mx-auto mb-10 leading-relaxed">No backlog items are available. Start by adding tasks to your boards or creating new sprints to organize your work.</p>
                     <a href="{{ route('boards.index') }}"
                         class="inline-flex items-center gap-3 px-10 py-4 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black transition-all shadow-2xl shadow-primary/30 hover:scale-[1.05] active:scale-95">
                         Explorer Boards
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        <x-lucide-arrow-right class="w-5 h-5" />
                     </a>
                 </div>
             @endforelse
@@ -366,7 +357,7 @@
         <div class="relative bg-sidebar border border-white/10 rounded-[2.5rem] p-10 w-full max-w-xl mx-4 shadow-3xl animate-in zoom-in-95 duration-200">
             <div class="flex items-center gap-4 mb-8">
                 <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                    <x-lucide-square-pen class="w-6 h-6" />
                 </div>
                 <div>
                     <h3 class="text-white font-black text-2xl tracking-tight">Configure Sprint</h3>
@@ -411,7 +402,7 @@
         <div class="relative bg-sidebar border border-white/10 rounded-[2.5rem] p-10 w-full max-w-2xl mx-4 shadow-3xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div class="flex items-center gap-4 mb-8">
                 <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                    <x-lucide-plus class="w-6 h-6" />
                 </div>
                 <div>
                     <h3 class="text-white font-black text-2xl tracking-tight">Create New Task</h3>

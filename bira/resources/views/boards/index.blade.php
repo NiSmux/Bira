@@ -13,7 +13,7 @@
             <p class="text-muted-foreground mt-1">View and manage all your projects</p>
         </div>
         <button id="create-board-trigger" class="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+            <x-lucide-plus class="w-5 h-5" />
             Create new board
         </button>
     </div>
@@ -41,7 +41,7 @@
                     <div class="group bg-card border border-border-subtle rounded-2xl p-6 hover:border-primary/50 transition-all shadow-sm hover:shadow-xl hover:shadow-primary/5 flex flex-col">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                                <x-lucide-layout-dashboard class="w-6 h-6" />
                             </div>
                             <span class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider bg-white/5 px-2 py-1 rounded">Project</span>
                         </div>
@@ -75,13 +75,13 @@
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-muted-foreground hover:text-red-500 transition-colors" title="Delete board">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                            <x-lucide-trash-2 class="w-4 h-4" />
                                         </button>
                                     </form>
                                 @endif
                                 <a href="{{ route('boards.show', $itemBoard->id) }}" class="inline-flex items-center gap-1.5 text-primary hover:text-primary-light font-bold text-sm transition-all group-hover:gap-2">
                                     Open
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                                    <x-lucide-arrow-right class="w-4 h-4" />
                                 </a>
                             </div>
                         </div>
@@ -92,7 +92,7 @@
     @empty
         <div class="py-20 flex flex-col items-center justify-center bg-white/5 border border-dashed border-white/10 rounded-2xl">
             <div class="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-muted-foreground mb-4">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                <x-lucide-layers class="w-8 h-8" />
             </div>
             <h3 class="text-lg font-bold text-white mb-2">You don't have any boards yet</h3>
             <p class="text-muted-foreground mb-8 text-center max-w-sm">Start by creating your first Kanban board and inviting your team to join.</p>

@@ -31,16 +31,16 @@
             </div>
             <div class="flex items-center gap-3">
                 <button id="toggle-filters-btn" class="inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg font-medium transition-colors border border-white/10" title="Toggle Filters">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                    <x-lucide-filter class="w-5 h-5" />
                     Filters
                 </button>
                 <a href="{{ route('boards.sprints.history', $board->id) }}" class="inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg font-medium transition-colors border border-white/10" title="Sprint history">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <x-lucide-history class="w-5 h-5" />
                     Sprint History
                 </a>
                 @if($permissionLevel === 'admin')
                     <a href="{{ route('boards.settings', $board->id) }}" class="inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg font-medium transition-colors border border-white/10" title="Board settings">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        <x-lucide-settings class="w-5 h-5" />
                         Settings
                     </a>
                 @endif
@@ -61,7 +61,7 @@
         <div class="mb-8 p-6 rounded-[2rem] bg-amber-500/5 border border-amber-500/10 flex flex-col md:flex-row items-center justify-between gap-6 backdrop-blur-sm">
             <div class="flex items-center gap-5">
                 <div class="w-14 h-14 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 shadow-inner">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    <x-lucide-alert-triangle class="w-7 h-7" />
                 </div>
                 <div>
                     <h3 class="text-amber-200 font-bold text-lg">No Active Sprint</h3>
@@ -82,7 +82,7 @@
                             <div class="column-title-container flex items-center gap-2 group/title cursor-pointer">
                                 <h4 class="column-name text-xs font-bold uppercase tracking-widest text-muted-foreground group-hover/title:text-white transition-colors" data-id="{{ $status->id }}">{{ $status->name }}</h4>
                                 <input type="text" class="column-name-input hidden bg-white/5 border border-white/10 rounded px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-white focus:outline-none focus:ring-1 focus:ring-primary/50 w-32" value="{{ $status->name }}">
-                                <svg class="w-3 h-3 text-muted-foreground/0 group-hover/title:text-muted-foreground transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                <x-lucide-square-pen class="w-3 h-3 text-muted-foreground/0 group-hover/title:text-muted-foreground transition-colors" />
                             </div>
                         @else
                             <h4 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">{{ $status->name }}</h4>
@@ -98,7 +98,7 @@
                             data-column-name="{{ $status->name }}"
                             title="Delete column"
                         >
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            <x-lucide-x class="w-3.5 h-3.5" />
                         </button>
                     @endif
                 </div>
@@ -121,9 +121,7 @@
         @if($permissionLevel === 'admin')
             <div class="w-80 shrink-0">
                 <div id="add-column-trigger" class="group w-full h-12 flex items-center justify-center gap-2 bg-white/5 border border-dashed border-white/20 rounded-xl cursor-pointer hover:bg-white/10 hover:border-primary/50 transition-all">
-                    <svg class="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                    </svg>
+                        <x-lucide-plus class="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                     <span class="text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors">Add column</span>
                 </div>
 

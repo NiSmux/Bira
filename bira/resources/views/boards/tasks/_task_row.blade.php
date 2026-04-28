@@ -68,11 +68,11 @@
         <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
             @if($permissionLevel !== 'viewer')
                 <a href="{{ route('boards.tasks.edit', [$board->id, $item->id]) }}" class="p-2 rounded-xl hover:bg-white/10 text-muted-foreground hover:text-white transition-all" title="Quick Edit">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                    <x-lucide-square-pen class="w-4 h-4" />
                 </a>
             @endif
             <a href="{{ route('boards.tasks.show', [$board->id, $item->id]) }}" class="p-2 rounded-xl hover:bg-white/10 text-muted-foreground hover:text-white transition-all" title="View Details">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+                <x-lucide-chevron-right class="w-4 h-4" />
             </a>
         </div>
     </div>
