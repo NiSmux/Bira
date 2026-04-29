@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ItemType;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\WorkflowGroup;
@@ -100,7 +101,7 @@ class TeamController extends Controller
     {
         $this->ensureMember($team);
 
-        $team->load('members', 'boards');
+        $team->load('members', 'boards', 'itemTypes');
 
         $userId = Auth::user()->id;
         $isOwner = $team->members()
@@ -112,7 +113,59 @@ class TeamController extends Controller
             ? User::whereNotIn('id', $team->members->pluck('id'))->get()
             : collect();
 
-        return view('teams.show', compact('team', 'availableUsers', 'isOwner'));
+        $globalItemTypes = DB::table('item_types')->whereNull('team_id')->orderBy('order_index')->get();
+
+        return view('teams.show', compact('team', 'availableUsers', 'isOwner', 'globalItemTypes'));
+    }
+
+    public function updateDefaultType(Request $request, Team $team)
+    {
+        $this->ensureOwner($team);
+
+        $validated = $request->validate([
+            'default_item_type_id' => 'nullable|exists:item_types,id',
+        ]);
+
+        $team->update(['default_item_type_id' => $validated['default_item_type_id'] ?: null]);
+
+        return redirect()->route('teams.show', $team->id)
+            ->with('success', 'Default task type updated.');
+    }
+
+    public function storeItemType(Request $request, Team $team)
+    {
+        $this->ensureOwner($team);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:80',
+        ]);
+
+        $maxOrder = DB::table('item_types')->max('order_index') ?? 0;
+
+        ItemType::create([
+            'name'        => $validated['name'],
+            'order_index' => $maxOrder + 1,
+            'team_id'     => $team->id,
+        ]);
+
+        return redirect()->route('teams.show', $team->id)
+            ->with('success', 'Task type "' . $validated['name'] . '" added.');
+    }
+
+    public function destroyItemType(Team $team, ItemType $itemType)
+    {
+        $this->ensureOwner($team);
+
+        abort_unless($itemType->team_id === $team->id, 403);
+
+        if ($team->default_item_type_id === $itemType->id) {
+            $team->update(['default_item_type_id' => null]);
+        }
+
+        $itemType->delete();
+
+        return redirect()->route('teams.show', $team->id)
+            ->with('success', 'Task type removed.');
     }
 
     public function addMember(Request $request, Team $team)

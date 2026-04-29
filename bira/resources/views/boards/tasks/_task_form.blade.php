@@ -31,9 +31,9 @@
                     name="item_type_id" 
                     class="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                     required>
-                <option disabled selected>Select type...</option>
+                <option disabled {{ old('item_type_id') === null && !isset($defaultItemTypeId) ? 'selected' : '' }}>Select type...</option>
                 @foreach($itemTypes as $type)
-                    <option value="{{ $type->id }}" {{ old('item_type_id') == $type->id ? 'selected' : '' }}>
+                    <option value="{{ $type->id }}" {{ (old('item_type_id') !== null ? old('item_type_id') == $type->id : (isset($defaultItemTypeId) && $defaultItemTypeId == $type->id)) ? 'selected' : '' }}>
                         {{ $type->name }}
                     </option>
                 @endforeach

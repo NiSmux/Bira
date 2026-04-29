@@ -138,7 +138,27 @@
                     <a href="{{ route('profilis.rodyti') }}" class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-medium text-[10px] tracking-tighter hover:bg-primary/30 transition-all border border-primary/20" title="My profile">
                         {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}{{ strtoupper(substr(strstr(auth()->user()->name, ' ') ?: '', 1, 1)) }}
                     </a>
-                    
+
+                    {{-- Settings dropdown --}}
+                    <div class="relative" id="settings-menu-wrapper">
+                        <button id="settings-menu-btn" class="p-2 rounded-lg text-muted-foreground hover:text-white hover:bg-white/5 transition-all" title="Settings">
+                            <x-lucide-settings class="w-5 h-5" />
+                        </button>
+                        <div id="settings-menu"
+                             class="hidden absolute right-0 top-full mt-2 w-52 bg-sidebar border border-border-subtle rounded-xl shadow-xl z-50 overflow-hidden py-1">
+                            <a href="{{ route('feedback.feature-requests') }}"
+                               class="flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:text-white hover:bg-white/5 transition-colors {{ request()->routeIs('feedback.feature-requests') ? 'text-white bg-white/5' : '' }}">
+                                <x-lucide-lightbulb class="w-4 h-4 shrink-0" />
+                                Feature Requests
+                            </a>
+                            <a href="{{ route('feedback.bug-report') }}"
+                               class="flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:text-white hover:bg-white/5 transition-colors {{ request()->routeIs('feedback.bug-report') ? 'text-white bg-white/5' : '' }}">
+                                <x-lucide-bug class="w-4 h-4 shrink-0" />
+                                Report a Bug
+                            </a>
+                        </div>
+                    </div>
+
                     <form action="{{ route('atsijungti') }}" method="POST" class="inline">
                         @csrf
                         <button type="submit" class="p-2 rounded-lg text-muted-foreground hover:text-white hover:bg-white/5 transition-all" title="Logout">
@@ -164,6 +184,18 @@
                     if (alert) {
                         alert.style.opacity = '0';
                         setTimeout(() => alert.remove(), 300);
+                    }
+                }
+
+                // Settings dropdown toggle
+                const btn = document.getElementById('settings-menu-btn');
+                const menu = document.getElementById('settings-menu');
+                const wrapper = document.getElementById('settings-menu-wrapper');
+                if (btn && menu) {
+                    if (e.target.closest('#settings-menu-btn')) {
+                        menu.classList.toggle('hidden');
+                    } else if (wrapper && !wrapper.contains(e.target)) {
+                        menu.classList.add('hidden');
                     }
                 }
             });

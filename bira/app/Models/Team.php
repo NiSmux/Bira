@@ -12,7 +12,18 @@ class Team extends Model
     protected $fillable = [
         'name',
         'description',
+        'default_item_type_id',
     ];
+
+    public function defaultItemType()
+    {
+        return $this->belongsTo(ItemType::class, 'default_item_type_id');
+    }
+
+    public function itemTypes()
+    {
+        return $this->hasMany(ItemType::class, 'team_id');
+    }
 
     public function members()
     {

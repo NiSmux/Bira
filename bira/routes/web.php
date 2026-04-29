@@ -9,6 +9,7 @@ use App\Http\Controllers\BacklogController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\BoardSubTeamController;
 
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\PlanningPokerController;
 use App\Http\Controllers\SprintController;
 use App\Http\Controllers\ReportController;
@@ -30,6 +31,11 @@ Route::middleware(['mano_apsauga'])->group(function () {
         Route::post('/logout', [VartotojasController::class , 'logout'])->name('atsijungti');
 
 
+        // Feedback
+        Route::get('/feedback/feature-requests', [FeedbackController::class, 'featureRequests'])->name('feedback.feature-requests');
+        Route::get('/feedback/bug-report', [FeedbackController::class, 'bugReport'])->name('feedback.bug-report');
+        Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
+
         // Teams Management
         Route::get('/teams', [TeamController::class, 'index'])->name('teams.index');
         Route::get('/teams/create', [TeamController::class, 'create'])->name('teams.create');
@@ -37,6 +43,9 @@ Route::middleware(['mano_apsauga'])->group(function () {
         Route::get('/teams/{team}', [TeamController::class, 'show'])->name('teams.show');
         Route::post('/teams/{team}/members', [TeamController::class, 'addMember'])->name('teams.members.store');
         Route::delete('/teams/{team}/members/{user}', [TeamController::class, 'removeMember'])->name('teams.members.destroy');
+        Route::patch('/teams/{team}/default-type', [TeamController::class, 'updateDefaultType'])->name('teams.default-type.update');
+        Route::post('/teams/{team}/item-types', [TeamController::class, 'storeItemType'])->name('teams.item-types.store');
+        Route::delete('/teams/{team}/item-types/{itemType}', [TeamController::class, 'destroyItemType'])->name('teams.item-types.destroy');
 
         // AJAX: get team members for board creation form
         Route::get('/api/teams/{team}/members', [BoardController::class, 'getTeamMembers'])->name('api.teams.members');

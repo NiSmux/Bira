@@ -41,11 +41,25 @@ class WorkItemController extends Controller
      */
     public function create($board_id)
     {
-        $board = Board::with('members', 'subTeams.members')->findOrFail($board_id);
+        $board = Board::with('members', 'subTeams.members', 'team')->findOrFail($board_id);
 
         $this->ensureBoardPermission($board, 'member');
 
-        $itemTypes = DB::table('item_types')->get();
+        $itemTypes = DB::table('item_types')
+            ->where(function ($q) use ($board) {
+                $q->whereNull('team_id');
+                if ($board->team_id) {
+                    $q->orWhere('team_id', $board->team_id);
+                }
+            })
+            ->orderBy('order_index')
+            ->get();
+
+        $defaultItemTypeId = $board->team?->default_item_type_id;
+        if (!$defaultItemTypeId) {
+            $defaultItemTypeId = $itemTypes->firstWhere('name', 'User Story')?->id;
+        }
+
         $priorities = DB::table('priorities')->get();
 
         $statuses = WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
@@ -57,10 +71,10 @@ class WorkItemController extends Controller
         $redirectTo   = request()->query('redirect_to');
 
         if (request()->ajax()) {
-            return view('boards.tasks._task_form', compact('board', 'itemTypes', 'priorities', 'statuses', 'boardMembers', 'subTeams', 'redirectTo'));
+            return view('boards.tasks._task_form', compact('board', 'itemTypes', 'defaultItemTypeId', 'priorities', 'statuses', 'boardMembers', 'subTeams', 'redirectTo'));
         }
 
-        return view('boards.tasks.createTask', compact('board', 'itemTypes', 'priorities', 'statuses', 'boardMembers', 'subTeams', 'redirectTo'));
+        return view('boards.tasks.createTask', compact('board', 'itemTypes', 'defaultItemTypeId', 'priorities', 'statuses', 'boardMembers', 'subTeams', 'redirectTo'));
     }
 
     /**

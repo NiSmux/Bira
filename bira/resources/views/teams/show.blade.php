@@ -60,6 +60,67 @@
             </div>
             @endif
 
+            @if($isOwner)
+            <!-- Task Types Settings -->
+            <div class="bg-card border border-border-subtle rounded-2xl p-6 shadow-sm">
+                <h3 class="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-6 flex items-center gap-2">
+                    <x-lucide-tag class="w-4 h-4" />
+                    Task types
+                </h3>
+
+                {{-- Default type --}}
+                <form action="{{ route('teams.default-type.update', $team->id) }}" method="POST" class="mb-6">
+                    @csrf
+                    @method('PATCH')
+                    <label class="block text-[10px] font-bold text-muted-foreground uppercase mb-2">Default type</label>
+                    <div class="flex gap-2">
+                        <select name="default_item_type_id" class="flex-1 bg-background border border-border-subtle rounded-xl px-3 py-2 text-sm text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
+                            <option value="">-- None --</option>
+                            @foreach($globalItemTypes as $type)
+                                <option value="{{ $type->id }}" {{ $team->default_item_type_id == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
+                            @endforeach
+                            @foreach($team->itemTypes as $type)
+                                <option value="{{ $type->id }}" {{ $team->default_item_type_id == $type->id ? 'selected' : '' }}>{{ $type->name }} (custom)</option>
+                            @endforeach
+                        </select>
+                        <button type="submit" class="px-4 py-2 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-xl transition-all">Save</button>
+                    </div>
+                </form>
+
+                {{-- Custom types list --}}
+                @if($team->itemTypes->isNotEmpty())
+                <div class="mb-4 space-y-1.5">
+                    <label class="block text-[10px] font-bold text-muted-foreground uppercase mb-2">Custom types</label>
+                    @foreach($team->itemTypes as $type)
+                        <div class="flex items-center justify-between px-3 py-2 rounded-lg bg-white/5 border border-white/5">
+                            <span class="text-sm text-white">{{ $type->name }}</span>
+                            <form action="{{ route('teams.item-types.destroy', [$team->id, $type->id]) }}" method="POST" onsubmit="return confirm('Remove this type?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-400/50 hover:text-red-400 transition-colors">
+                                    <x-lucide-x class="w-4 h-4" />
+                                </button>
+                            </form>
+                        </div>
+                    @endforeach
+                </div>
+                @endif
+
+                {{-- Add custom type --}}
+                <form action="{{ route('teams.item-types.store', $team->id) }}" method="POST">
+                    @csrf
+                    <label class="block text-[10px] font-bold text-muted-foreground uppercase mb-2">Add custom type</label>
+                    <div class="flex gap-2">
+                        <input type="text" name="name" placeholder="e.g. Epic" maxlength="80" required
+                               class="flex-1 bg-background border border-border-subtle rounded-xl px-3 py-2 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
+                        <button type="submit" class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-bold rounded-xl transition-all border border-white/10">
+                            <x-lucide-plus class="w-4 h-4" />
+                        </button>
+                    </div>
+                </form>
+            </div>
+            @endif
+
             <!-- Team Boards -->
             <div class="bg-card border border-border-subtle rounded-2xl p-6 shadow-sm">
                 <div class="flex items-center justify-between mb-6">
