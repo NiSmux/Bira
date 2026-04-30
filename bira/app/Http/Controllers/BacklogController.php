@@ -53,6 +53,7 @@ class BacklogController extends Controller
 
         // Attach permission level for each board for UI toggles
         foreach ($boards as $boardItem) {
+            /** @var \App\Models\Board $boardItem */
             $boardItem->permissionLevel = $this->getBoardPermissionLevel($boardItem);
             
             // Organize sprints/items into categories Jira-style
@@ -91,8 +92,10 @@ class BacklogController extends Controller
 
     /**
      * Helper to get permission level for a board without throwing abort.
+     * 
+     * @param Board $board
      */
-    protected function getBoardPermissionLevel(Board $board)
+    protected function getBoardPermissionLevel($board)
     {
         $userId = Auth::user()->id;
 

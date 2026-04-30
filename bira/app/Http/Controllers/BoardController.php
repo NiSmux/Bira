@@ -228,6 +228,13 @@ class BoardController extends Controller
         $permissionLevel = $this->ensureBoardPermission($board, 'viewer');
         $userRole = $this->getBoardRole($board);
 
+        // Track when the user last accessed this board
+        $userId = Auth::user()->id;
+        DB::table('board_members')
+            ->where('board_id', $board->id)
+            ->where('user_id', $userId)
+            ->update(['last_accessed_at' => now()]);
+
         if (!$userRole && $permissionLevel === 'admin') {
             $userRole = 'team_owner';
         }
@@ -501,6 +508,164 @@ class BoardController extends Controller
         $column->delete();
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * AJAX: Return metrics data for the board metrics sidebar (4 tabs).
+     */
+    public function metricsData(Board $board)
+    {
+        $this->ensureBoardPermission($board, 'viewer');
+        $user = Auth::user();
+
+        $board->load(['members', 'sprints']);
+        $estimationMode = $board->estimation_mode ?? 'points';
+
+        // ── Active sprint ──────────────────────────────────────────────────
+        $activeSprint = \App\Models\Sprint::where('board_id', $board->id)
+            ->where('status', 'in_progress')
+            ->with(['items.status', 'items.type', 'items.assignee'])
+            ->first();
+
+        $sprintData = null;
+        if ($activeSprint) {
+            $items = $activeSprint->items->where('is_deleted', '!=', 1);
+            $totalItems = $items->count();
+            $doneItems  = $items->filter(fn($i) => $i->status && $i->status->is_done)->count();
+
+            $totalPts  = $items->sum('story_points');
+            $donePts   = $items->filter(fn($i) => $i->status && $i->status->is_done)->sum('story_points');
+            $totalHrs  = $items->sum('estimated_hours');
+            $doneHrs   = $items->filter(fn($i) => $i->status && $i->status->is_done)->sum('estimated_hours');
+
+            $byType = $items->groupBy(fn($i) => $i->type?->name ?? 'Untyped')
+                ->map(fn($g) => ['total' => $g->count(), 'done' => $g->filter(fn($i) => $i->status?->is_done)->count()])
+                ->toArray();
+
+            $byStatus = $items->groupBy(fn($i) => $i->status?->name ?? 'No Status')
+                ->map->count()->toArray();
+
+            $daysLeft = $activeSprint->end_date
+                ? max(0, now()->startOfDay()->diffInDays($activeSprint->end_date->startOfDay(), false))
+                : null;
+            $overdue = $activeSprint->end_date && now()->startOfDay()->gt($activeSprint->end_date->startOfDay());
+
+            $sprintData = [
+                'name'         => $activeSprint->name,
+                'goal'         => $activeSprint->goal,
+                'start_date'   => $activeSprint->start_date?->format('M j, Y'),
+                'end_date'     => $activeSprint->end_date?->format('M j, Y'),
+                'days_left'    => $daysLeft,
+                'overdue'      => $overdue,
+                'total_items'  => $totalItems,
+                'done_items'   => $doneItems,
+                'total_points' => $totalPts,
+                'done_points'  => $donePts,
+                'total_hours'  => round($totalHrs, 1),
+                'done_hours'   => round($doneHrs, 1),
+                'by_type'      => $byType,
+                'by_status'    => $byStatus,
+                'estimation_mode' => $estimationMode,
+            ];
+        }
+
+        // ── Release (historical sprints) ────────────────────────────────────
+        $completedSprints = \App\Models\Sprint::where('board_id', $board->id)
+            ->whereIn('status', ['to_be_released', 'delivered'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $allSprints = \App\Models\Sprint::where('board_id', $board->id)
+            ->orderBy('created_at', 'desc')
+            ->take(6)
+            ->get();
+
+        $avgVelocity = $completedSprints->isNotEmpty()
+            ? round($completedSprints->avg('completed_points'), 1)
+            : 0;
+
+        $sprintBars = $allSprints->map(fn($s) => [
+            'name'      => $s->name,
+            'status'    => $s->status,
+            'completed' => $s->completed_points ?? 0,
+            'total'     => $s->total_points ?? 0,
+        ])->reverse()->values()->toArray();
+
+        $releaseData = [
+            'total_sprints'      => $board->sprints->count(),
+            'completed_sprints'  => $completedSprints->count(),
+            'avg_velocity'       => $avgVelocity,
+            'last_sprint'        => $completedSprints->first() ? [
+                'name'   => $completedSprints->first()->name,
+                'points' => $completedSprints->first()->completed_points ?? 0,
+            ] : null,
+            'sprint_bars'        => $sprintBars,
+            'estimation_mode'    => $estimationMode,
+        ];
+
+        // ── Team ────────────────────────────────────────────────────────────
+        $board->load('members');
+        $boardItemIds = \DB::table('board_items')
+            ->where('board_id', $board->id)
+            ->pluck('item_id');
+
+        $itemsByMember = \App\Models\WorkItem::whereIn('id', $boardItemIds)
+            ->where('is_deleted', '!=', 1)
+            ->whereNotNull('assignee_id')
+            ->selectRaw('assignee_id, count(*) as total, sum(CASE WHEN story_points IS NOT NULL THEN story_points ELSE 0 END) as pts')
+            ->groupBy('assignee_id')
+            ->get()
+            ->keyBy('assignee_id');
+
+        $unassignedCount = $activeSprint
+            ? $activeSprint->items->where('is_deleted', '!=', 1)->whereNull('assignee_id')->count()
+            : 0;
+
+        $teamMembers = $board->members->map(function($member) use ($itemsByMember) {
+            $stats = $itemsByMember->get($member->id);
+            return [
+                'id'    => $member->id,
+                'name'  => $member->name,
+                'role'  => $member->pivot->role,
+                'items' => $stats?->total ?? 0,
+                'pts'   => $stats?->pts ?? 0,
+                'initials' => strtoupper(substr($member->name, 0, 1) . (strpos($member->name, ' ') !== false ? substr($member->name, strpos($member->name, ' ') + 1, 1) : '')),
+            ];
+        })->sortByDesc('items')->values()->toArray();
+
+        $teamData = [
+            'members'           => $teamMembers,
+            'total_members'     => count($teamMembers),
+            'unassigned_active' => $unassignedCount,
+        ];
+
+        // ── User (personal, scoped to this board) ───────────────────────────
+        $myItems = $activeSprint
+            ? $activeSprint->items->where('is_deleted', '!=', 1)->where('assignee_id', $user->id)
+            : collect();
+
+        $myDone     = $myItems->filter(fn($i) => $i->status?->is_done);
+        $myByType   = $myItems->groupBy(fn($i) => $i->type?->name ?? 'Untyped')
+            ->map(fn($g) => ['total' => $g->count(), 'done' => $g->filter(fn($i) => $i->status?->is_done)->count()])
+            ->toArray();
+
+        $userData = [
+            'my_total'  => $myItems->count(),
+            'my_done'   => $myDone->count(),
+            'my_pts_done'  => $myDone->sum('story_points'),
+            'my_pts_total' => $myItems->sum('story_points'),
+            'my_hrs_done'  => round($myDone->sum('estimated_hours'), 1),
+            'my_hrs_total' => round($myItems->sum('estimated_hours'), 1),
+            'my_by_type'   => $myByType,
+            'estimation_mode' => $estimationMode,
+        ];
+
+        return response()->json([
+            'sprint'  => $sprintData,
+            'release' => $releaseData,
+            'team'    => $teamData,
+            'user'    => $userData,
+        ]);
     }
 
     /**

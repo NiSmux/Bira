@@ -22,7 +22,7 @@
                     @endphp
                     <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tighter border {{ $roleStyle }}">
                         @if($userRole)
-                            {{ $roleLabels[$userRole] ?? ucwords(str_replace('_', ' ', $userRole)) }}
+                            {{ $roleLabels[(string)$userRole] ?? ucwords(str_replace('_', ' ', (string)$userRole)) }}
                         @else
                             Viewer
                         @endif
@@ -34,6 +34,7 @@
                     <x-lucide-filter class="w-5 h-5" />
                     Filters
                 </button>
+
                 <a href="{{ route('boards.sprints.history', $board->id) }}" class="inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg font-medium transition-colors border border-white/10" title="Sprint history">
                     <x-lucide-history class="w-5 h-5" />
                     Sprint History
@@ -417,4 +418,7 @@
         }
     });
 </script>
+
 @endpush
+
+

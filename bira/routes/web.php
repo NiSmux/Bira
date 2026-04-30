@@ -7,8 +7,8 @@ use App\Http\Controllers\WorkItemController;
 use App\Http\Controllers\BoardController;
 use App\Http\Controllers\BacklogController;
 use App\Http\Controllers\TeamController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BoardSubTeamController;
-
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PlanningPokerController;
@@ -24,11 +24,7 @@ Route::post('/register', [VartotojasController::class , 'register'])->name('regi
 // --- APSAUGOTI MARŠRUTAI (tik prisijungusiems) ---
 Route::middleware(['mano_apsauga'])->group(function () {
 
-    Route::get('/', function () {
-            return view('pagrindinis');
-        }
-        )->name('pagrindinis');
-
+    Route::get('/', [DashboardController::class, 'index'])->name('pagrindinis');
         Route::post('/logout', [VartotojasController::class , 'logout'])->name('atsijungti');
 
         // Notifications
@@ -56,8 +52,8 @@ Route::middleware(['mano_apsauga'])->group(function () {
         // AJAX: get team members for board creation form
         Route::get('/api/teams/{team}/members', [BoardController::class, 'getTeamMembers'])->name('api.teams.members');
 
-        // Pagrindinis (Švieslentės ar kiti valdikliai)
-    Route::get('/dashboard', [WorkItemController::class, 'index'])->name('pagrindinis');
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
     // Backlog (Global view)
     Route::get('/backlog', [BacklogController::class, 'index'])->name('backlog.index');
@@ -65,6 +61,7 @@ Route::middleware(['mano_apsauga'])->group(function () {
         Route::get('/boards', [BoardController::class , 'index'])->name('boards.index');
         Route::get('/boards/create', [BoardController::class , 'create'])->name('boards.create');
         Route::post('/boards', [BoardController::class , 'store'])->name('boards.store');
+        Route::get('/boards/{board}/metrics', [BoardController::class, 'metricsData'])->name('boards.metrics');
         Route::get('/boards/{board}', [BoardController::class , 'show'])->name('boards.show');
         Route::delete('/boards/{board}', [BoardController::class, 'destroy'])->name('boards.destroy');
 

@@ -92,6 +92,13 @@
                         <x-lucide-bar-chart-3 class="w-5 h-5" />
                         <span>Reports</span>
                     </a>
+                    <button
+                        id="open-metrics-btn"
+                        data-metrics-url="{{ route('boards.metrics', $effectiveBoardId) }}"
+                        class="sidebar-link w-full flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-white/5 hover:text-white transition-colors text-left">
+                        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                        <span>Metrics</span>
+                    </button>
                 @endif
 
                 @php
@@ -206,6 +213,38 @@
             </div>
         </main>
     </div>
+
+    {{-- ══════════════════════════ METRICS DRAWER (global) ══════════════════ --}}
+    <div id="metrics-backdrop" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 hidden" onclick="window.closeMetrics && closeMetrics()"></div>
+    <div id="metrics-drawer" class="fixed top-0 right-0 h-full w-[420px] bg-[#13131f] border-l border-white/10 z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-white/10 shrink-0">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                <h2 class="text-white font-bold text-base">Board Metrics</h2>
+            </div>
+            <button onclick="closeMetrics()" class="p-1.5 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-white transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div class="flex border-b border-white/10 shrink-0" id="metrics-tabs">
+            <button class="metrics-tab flex-1 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors text-primary border-b-2 border-primary" data-tab="sprint">Sprint</button>
+            <button class="metrics-tab flex-1 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors text-muted-foreground hover:text-white border-b-2 border-transparent" data-tab="release">Release</button>
+            <button class="metrics-tab flex-1 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors text-muted-foreground hover:text-white border-b-2 border-transparent" data-tab="team">Team</button>
+            <button class="metrics-tab flex-1 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors text-muted-foreground hover:text-white border-b-2 border-transparent" data-tab="user">You</button>
+        </div>
+        <div id="metrics-loading" class="flex-1 flex items-center justify-center">
+            <div class="flex flex-col items-center gap-3 text-muted-foreground">
+                <svg class="w-8 h-8 animate-spin text-primary" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                <span class="text-sm">Loading metrics…</span>
+            </div>
+        </div>
+        <div id="metrics-content" class="flex-1 overflow-y-auto hidden">
+            <div class="metrics-panel hidden" data-panel="sprint"><div id="sprint-panel-content" class="p-5 space-y-5"></div></div>
+            <div class="metrics-panel hidden" data-panel="release"><div id="release-panel-content" class="p-5 space-y-5"></div></div>
+            <div class="metrics-panel hidden" data-panel="team"><div id="team-panel-content" class="p-5 space-y-5"></div></div>
+            <div class="metrics-panel hidden" data-panel="user"><div id="user-panel-content" class="p-5 space-y-5"></div></div>
+        </div>
+    </div>
     
     @stack('scripts')
     <script>
@@ -319,6 +358,231 @@
                     }
                 }
             });
+
+            // ── Metrics Drawer Logic ─────────────────────────────────────────────
+            const openMetricsBtn = document.getElementById('open-metrics-btn');
+            const drawer         = document.getElementById('metrics-drawer');
+            const backdrop       = document.getElementById('metrics-backdrop');
+            
+            if (openMetricsBtn && drawer && backdrop) {
+                const METRICS_URL = openMetricsBtn.dataset.metricsUrl;
+                const loading     = document.getElementById('metrics-loading');
+                const content     = document.getElementById('metrics-content');
+                const tabs        = document.querySelectorAll('.metrics-tab');
+                const panels      = document.querySelectorAll('.metrics-panel');
+                let metricsData   = null;
+                let activeTab     = 'sprint';
+
+                openMetricsBtn.addEventListener('click', function () {
+                    drawer.classList.remove('translate-x-full');
+                    backdrop.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                    if (!metricsData) fetchMetrics();
+                    else showTab(activeTab);
+                });
+
+                window.closeMetrics = function () {
+                    drawer.classList.add('translate-x-full');
+                    backdrop.classList.add('hidden');
+                    document.body.style.overflow = '';
+                };
+
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        activeTab = tab.dataset.tab;
+                        tabs.forEach(t => {
+                            t.classList.remove('text-primary', 'border-primary');
+                            t.classList.add('text-muted-foreground', 'border-transparent');
+                        });
+                        tab.classList.add('text-primary', 'border-primary');
+                        tab.classList.remove('text-muted-foreground', 'border-transparent');
+                        if (metricsData) showTab(activeTab);
+                    });
+                });
+
+                function showTab(name) {
+                    loading.classList.add('hidden');
+                    content.classList.remove('hidden');
+                    panels.forEach(p => p.classList.add('hidden'));
+                    const panel = document.querySelector(`.metrics-panel[data-panel="${name}"]`);
+                    if (panel) panel.classList.remove('hidden');
+                }
+
+                function fetchMetrics() {
+                    loading.classList.remove('hidden');
+                    content.classList.add('hidden');
+
+                    fetch(METRICS_URL, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        metricsData = data;
+                        renderSprint(data.sprint);
+                        renderRelease(data.release);
+                        renderTeam(data.team);
+                        renderUser(data.user);
+                        showTab(activeTab);
+                    })
+                    .catch(() => {
+                        loading.innerHTML = '<p class="text-red-400 text-sm p-6">Failed to load metrics.</p>';
+                    });
+                }
+
+                function pct(done, total) { return total > 0 ? Math.round((done / total) * 100) : 0; }
+                function progressBar(done, total, color = 'bg-primary') {
+                    const p = pct(done, total);
+                    return `<div class="w-full bg-white/10 rounded-full h-1.5 mt-1.5"><div class="${color} h-1.5 rounded-full transition-all" style="width:${p}%"></div></div>`;
+                }
+                function statCard(label, value, sub = '', color = 'text-white') {
+                    return `<div class="bg-white/5 rounded-xl p-3 flex flex-col gap-1">
+                        <span class="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">${label}</span>
+                        <span class="text-xl font-bold ${color}">${value}</span>
+                        ${sub ? `<span class="text-[10px] text-muted-foreground">${sub}</span>` : ''}
+                    </div>`;
+                }
+                function sectionTitle(title, icon = '') {
+                    return `<div class="flex items-center gap-2 mb-3">${icon}<h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">${title}</h3></div>`;
+                }
+                const typeColors = { 'Bug': 'bg-red-500', 'Task': 'bg-blue-500', 'Story': 'bg-green-500', 'Epic': 'bg-purple-500', 'Untyped': 'bg-gray-500' };
+                function typeColor(name) { return typeColors[name] || 'bg-indigo-500'; }
+
+                function renderSprint(s) {
+                    const el = document.getElementById('sprint-panel-content');
+                    if (!s) {
+                        el.innerHTML = `<div class="flex flex-col items-center justify-center py-16 text-center text-muted-foreground gap-3">
+                            <svg class="w-10 h-10 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <p class="text-sm">No active sprint</p>
+                            <p class="text-xs">Start a sprint from the backlog to see sprint metrics here.</p>
+                        </div>`;
+                        return;
+                    }
+                    const itemPct = pct(s.done_items, s.total_items);
+                    const ptPct   = pct(s.done_points, s.total_points);
+                    const hrPct   = pct(s.done_hours, s.total_hours);
+                    const mode    = s.estimation_mode;
+                    const daysTag = s.days_left !== null ? (s.overdue ? `<span class="px-2 py-0.5 rounded bg-red-500/20 text-red-400 text-[10px] font-bold">Overdue</span>` : `<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">${s.days_left}d left</span>`) : '';
+
+                    const byTypeRows = Object.entries(s.by_type).map(([type, d]) => {
+                        const p = pct(d.done, d.total);
+                        return `<div class="flex items-center gap-2 text-xs">
+                            <span class="w-2 h-2 rounded-full shrink-0 ${typeColor(type)}"></span>
+                            <span class="flex-1 text-white/80">${type}</span>
+                            <span class="text-muted-foreground">${d.done}/${d.total}</span>
+                            <div class="w-16 bg-white/10 rounded-full h-1"><div class="${typeColor(type)} h-1 rounded-full" style="width:${p}%"></div></div>
+                        </div>`;
+                    }).join('');
+
+                    const byStatusRows = Object.entries(s.by_status).map(([st, count]) =>
+                        `<div class="flex items-center justify-between text-xs"><span class="text-white/70">${st}</span><span class="px-2 py-0.5 rounded-full bg-white/10 text-white text-[10px] font-bold">${count}</span></div>`
+                    ).join('');
+
+                    el.innerHTML = `
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <h3 class="text-white font-bold">${s.name}</h3>
+                                ${s.goal ? `<p class="text-xs text-muted-foreground mt-0.5 italic">"${s.goal}"</p>` : ''}
+                                ${s.start_date ? `<p class="text-[10px] text-muted-foreground mt-1">${s.start_date} → ${s.end_date ?? '?'}</p>` : ''}
+                            </div>
+                            ${daysTag}
+                        </div>
+                        <div>
+                            ${sectionTitle('Completion')}
+                            <div class="flex items-center justify-between mb-1"><span class="text-sm font-bold text-white">${itemPct}%</span><span class="text-xs text-muted-foreground">${s.done_items} / ${s.total_items} items</span></div>
+                            ${progressBar(s.done_items, s.total_items, 'bg-primary')}
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            ${mode === 'points' ? statCard('Story Points', `${s.done_points} <span class="text-sm text-muted-foreground font-normal">/ ${s.total_points}</span>`, `${ptPct}% complete`, 'text-purple-400') : statCard('Hours Done', `${s.done_hours}h <span class="text-sm text-muted-foreground font-normal">/ ${s.total_hours}h</span>`, `${hrPct}% complete`, 'text-orange-400')}
+                            ${statCard('Remaining', mode === 'points' ? `${s.total_points - s.done_points} pts` : `${(s.total_hours - s.done_hours).toFixed(1)}h`, 'left to complete', 'text-white')}
+                        </div>
+                        ${Object.keys(s.by_type).length > 0 ? `<div>${sectionTitle('Items by Type')}<div class="space-y-2">${byTypeRows}</div></div>` : ''}
+                        ${Object.keys(s.by_status).length > 0 ? `<div>${sectionTitle('Items by Column')}<div class="bg-white/5 rounded-xl p-3 space-y-2">${byStatusRows}</div></div>` : ''}
+                    `;
+                }
+
+                function renderRelease(r) {
+                    const el = document.getElementById('release-panel-content');
+                    const maxPts = Math.max(...r.sprint_bars.map(s => s.total || 0), 1);
+                    const bars = r.sprint_bars.map(s => {
+                        const compH = Math.round((s.completed / maxPts) * 80);
+                        const totH  = Math.round((s.total / maxPts) * 80);
+                        const statusColor = s.status === 'in_progress' ? 'bg-primary' : (s.status === 'delivered' ? 'bg-emerald-500' : (s.status === 'to_be_released' ? 'bg-yellow-500' : 'bg-white/20'));
+                        const shortName = s.name.length > 10 ? s.name.slice(0, 9) + '…' : s.name;
+                        return `<div class="flex flex-col items-center gap-1" title="${s.name}: ${s.completed}/${s.total} pts">
+                            <span class="text-[9px] text-muted-foreground font-bold">${s.completed}</span>
+                            <div class="w-full flex flex-col-reverse" style="height:80px"><div class="${statusColor} w-full rounded-t" style="height:${compH}px"></div><div class="bg-white/10 w-full" style="height:${totH - compH}px"></div></div>
+                            <span class="text-[9px] text-muted-foreground text-center leading-tight">${shortName}</span>
+                        </div>`;
+                    }).join('');
+
+                    el.innerHTML = `
+                        <div class="grid grid-cols-3 gap-3">
+                            ${statCard('Total Sprints', r.total_sprints, 'all time')}
+                            ${statCard('Completed', r.completed_sprints, 'finished sprints', 'text-emerald-400')}
+                            ${statCard('Avg Velocity', r.avg_velocity + ' pts', 'per sprint', 'text-purple-400')}
+                        </div>
+                        ${r.last_sprint ? `<div class="bg-white/5 rounded-xl p-3">${sectionTitle('Last Completed Sprint')}<p class="text-sm font-semibold text-white">${r.last_sprint.name}</p><p class="text-xs text-muted-foreground mt-0.5">${r.last_sprint.points} pts delivered</p></div>` : ''}
+                        ${r.sprint_bars.length > 0 ? `<div>${sectionTitle('Velocity Chart (last ' + r.sprint_bars.length + ')')}<div class="grid gap-1" style="grid-template-columns: repeat(${r.sprint_bars.length}, 1fr)">${bars}</div><div class="flex items-center gap-4 mt-3 text-[10px] text-muted-foreground"><span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-primary inline-block"></span> Done</span><span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-white/10 inline-block"></span> Planned</span><span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-emerald-500 inline-block"></span> Delivered</span></div></div>` : `<p class="text-sm text-muted-foreground text-center py-6">No sprint history yet.</p>`}
+                    `;
+                }
+
+                function renderTeam(t) {
+                    const el = document.getElementById('team-panel-content');
+                    const roleLabels = { product_owner: 'PO', techlead: 'TL', teamlead: 'Lead', developer: 'Dev', tester: 'QA', designer: 'UI', viewer: 'View' };
+                    const maxItems = Math.max(...t.members.map(m => m.items), 1);
+
+                    const memberRows = t.members.map(m => {
+                        const barW = Math.round((m.items / maxItems) * 100);
+                        const initBg = ['bg-purple-600','bg-blue-600','bg-emerald-600','bg-orange-600','bg-pink-600','bg-indigo-600'];
+                        const bg = initBg[m.id % initBg.length];
+                        const roleLabel = roleLabels[m.role] ?? m.role;
+                        return `<div class="flex items-center gap-3 py-2 border-b border-white/5 last:border-0">
+                            <div class="w-8 h-8 rounded-full ${bg} flex items-center justify-center text-white text-xs font-bold shrink-0">${m.initials}</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-2"><span class="text-sm text-white font-medium truncate">${m.name}</span><span class="text-[10px] text-muted-foreground shrink-0">${m.items} items · ${m.pts} pts</span></div>
+                                <div class="flex items-center gap-2 mt-1"><span class="text-[9px] uppercase bg-white/10 px-1.5 py-0.5 rounded text-muted-foreground font-bold">${roleLabel}</span><div class="flex-1 bg-white/10 rounded-full h-1"><div class="bg-primary h-1 rounded-full" style="width:${barW}%"></div></div></div>
+                            </div>
+                        </div>`;
+                    }).join('');
+
+                    el.innerHTML = `
+                        <div class="grid grid-cols-2 gap-3">
+                            ${statCard('Team Members', t.total_members, 'on this board')}
+                            ${statCard('Unassigned', t.unassigned_active, 'items in active sprint', t.unassigned_active > 0 ? 'text-amber-400' : 'text-white')}
+                        </div>
+                        <div>${sectionTitle('Workload Distribution')}<div class="bg-white/5 rounded-xl px-3 py-2">${memberRows || '<p class="text-xs text-muted-foreground py-2 text-center">No members found.</p>'}</div></div>
+                    `;
+                }
+
+                function renderUser(u) {
+                    const el = document.getElementById('user-panel-content');
+                    if (u.my_total === 0) {
+                        el.innerHTML = `<div class="flex flex-col items-center justify-center py-16 gap-3 text-center text-muted-foreground"><svg class="w-10 h-10 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"></path></svg><p class="text-sm">No tasks assigned to you in the active sprint.</p></div>`;
+                        return;
+                    }
+                    const mode = u.estimation_mode;
+                    const taskPct = pct(u.my_done, u.my_total);
+
+                    const byTypeRows = Object.entries(u.my_by_type).map(([type, d]) => {
+                        const p = pct(d.done, d.total);
+                        return `<div class="flex items-center gap-2 text-xs"><span class="w-2 h-2 rounded-full shrink-0 ${typeColor(type)}"></span><span class="flex-1 text-white/80">${type}</span><span class="text-muted-foreground">${d.done}/${d.total}</span><div class="w-16 bg-white/10 rounded-full h-1"><div class="${typeColor(type)} h-1 rounded-full" style="width:${p}%"></div></div></div>`;
+                    }).join('');
+
+                    el.innerHTML = `
+                        <div>
+                            ${sectionTitle('My Sprint Progress')}
+                            <div class="flex items-center justify-between mb-1"><span class="text-sm font-bold text-white">${taskPct}%</span><span class="text-xs text-muted-foreground">${u.my_done} / ${u.my_total} done</span></div>
+                            ${progressBar(u.my_done, u.my_total, 'bg-primary')}
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            ${mode === 'points' ? statCard('My Points', `${u.my_pts_done} <span class="text-sm font-normal text-muted-foreground">/ ${u.my_pts_total}</span>`, `${pct(u.my_pts_done, u.my_pts_total)}% done`, 'text-purple-400') : statCard('My Hours', `${u.my_hrs_done}h <span class="text-sm font-normal text-muted-foreground">/ ${u.my_hrs_total}h</span>`, `${pct(u.my_hrs_done, u.my_hrs_total)}% done`, 'text-orange-400')}
+                            ${statCard('Tasks Left', u.my_total - u.my_done, 'remaining in sprint', (u.my_total - u.my_done) === 0 ? 'text-emerald-400' : 'text-white')}
+                        </div>
+                        ${Object.keys(u.my_by_type).length > 0 ? `<div>${sectionTitle('My Items by Type')}<div class="space-y-2">${byTypeRows}</div></div>` : ''}
+                    `;
+                }
+            }
+
         });
     </script>
 </body>

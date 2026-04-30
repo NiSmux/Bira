@@ -106,7 +106,7 @@
                         </div>
                         <form action="{{ route('boards.sprints.store', $backlogBoard->id) }}" method="POST">
                             @csrf
-                            <input type="hidden" name="redirect_to" value="{{ url()->full() }}">
+                            <input type="hidden" name="redirect_to" value="{{ request()->fullUrl() }}">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div class="md:col-span-2">
                                     <label class="block text-xs font-bold text-muted-foreground uppercase tracking-[0.1em] mb-2">Sprint Name *</label>
@@ -366,7 +366,7 @@
             </div>
             <form id="edit-sprint-form" method="POST">
                 @csrf @method('PATCH')
-                <input type="hidden" name="redirect_to" value="{{ url()->full() }}">
+                <input type="hidden" name="redirect_to" value="{{ request()->fullUrl() }}">
                 <div class="grid grid-cols-2 gap-6 mb-8">
                     <div class="col-span-2">
                         <label class="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2.5">Sprint Name *</label>
