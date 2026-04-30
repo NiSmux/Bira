@@ -7,6 +7,7 @@ use App\Models\Team;
 use App\Models\User;
 use App\Models\WorkflowGroup;
 use App\Models\WorkflowStatus;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -187,6 +188,15 @@ class TeamController extends Controller
         $team->members()->attach($validated['user_id'], [
             'role_in_team' => 'member',
         ]);
+
+        // Notify the added user
+        NotificationService::notify(
+            [$validated['user_id']],
+            'team_added',
+            'Added to Team',
+            "You were added to team \"{$team->name}\"",
+            route('teams.show', $team->id)
+        );
 
         return redirect()->route('teams.show', $team->id)
             ->with('success', 'Member added successfully.');

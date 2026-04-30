@@ -6,6 +6,7 @@ use App\Models\Board;
 use App\Models\BoardSubTeam;
 use App\Models\User;
 use App\Http\Traits\ChecksBoardRole;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -115,6 +116,15 @@ class BoardSubTeamController extends Controller
         }
 
         $subTeam->members()->attach($validated['user_id']);
+
+        // Notify the added user
+        NotificationService::notify(
+            [$validated['user_id']],
+            'subteam_added',
+            'Added to Sub-Team',
+            "You were added to sub-team \"{$subTeam->name}\" on board \"{$board->name}\"",
+            route('boards.settings', $board->id)
+        );
 
         return redirect()->route('boards.settings', $board->id)
             ->with('success', 'Member added to sub-team.');

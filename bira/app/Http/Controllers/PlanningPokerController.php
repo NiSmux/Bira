@@ -8,6 +8,7 @@ use App\Models\PokerSessionItem;
 use App\Models\PokerVote;
 use App\Models\Team;
 use App\Models\WorkItem;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -71,8 +72,14 @@ class PlanningPokerController extends Controller
             return response()->json([], 403);
         }
 
+        // Only show backlog items (not assigned to active/completed sprints)
+        $backlogStatusIds = \App\Models\WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
+            ->where('is_backlog', 1)
+            ->pluck('id');
+
         $items = $board->items()
             ->where('is_deleted', 0)
+            ->whereIn('work_items.status_id', $backlogStatusIds)
             ->select('work_items.id', 'work_items.title', 'work_items.story_points')
             ->orderBy('work_items.title')
             ->get();
@@ -120,6 +127,20 @@ class PlanningPokerController extends Controller
                 'work_item_id' => $itemId,
                 'order_index'  => $index,
             ]);
+        }
+
+        // Notify team members about the new poker session
+        $notifyIds = $team->members()->pluck('users.id')->toArray();
+
+        if (!empty($notifyIds)) {
+            $boardName = $request->board_id ? (Board::find($request->board_id)?->name ?? 'N/A') : 'N/A';
+            NotificationService::notify(
+                $notifyIds,
+                'poker_started',
+                'Planning Poker Started',
+                "Session \"{$request->title}\" started on board \"{$boardName}\"",
+                route('poker.show', $session->id)
+            );
         }
 
         return redirect()->route('poker.show', $session->id)
@@ -333,5 +354,20 @@ class PlanningPokerController extends Controller
             'status' => 'completed',
             'finished_at' => now(),
         ]);
+
+        // Notify team members about completed session
+        $session->loadMissing('team.members', 'board');
+        $notifyIds = $session->team->members()->pluck('users.id')->toArray();
+
+        if (!empty($notifyIds)) {
+            $boardName = $session->board ? $session->board->name : 'N/A';
+            NotificationService::notify(
+                $notifyIds,
+                'poker_completed',
+                'Planning Poker Completed',
+                "Session \"{$session->title}\" completed on board \"{$boardName}\" — view results",
+                route('poker.results', $session->id)
+            );
+        }
     }
 }

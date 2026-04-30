@@ -7,6 +7,7 @@ use App\Models\Sprint;
 use App\Models\WorkItem;
 use App\Models\WorkflowStatus;
 use App\Http\Traits\ChecksBoardRole;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -125,6 +126,18 @@ class SprintController extends Controller
             'start_date' => $sprint->start_date ?? now()->toDateString(),
         ]);
 
+        // Notify team members about sprint start
+        $notifyIds = $board->team->members()->pluck('users.id')->toArray();
+        if (!empty($notifyIds)) {
+            NotificationService::notify(
+                $notifyIds,
+                'sprint_started',
+                'Sprint Started',
+                "Sprint \"{$sprint->name}\" started on board \"{$board->name}\"",
+                route('boards.show', $board->id)
+            );
+        }
+
         return redirect(request('redirect_to', route('boards.show', $board->id)))
             ->with('success', "Sprint \"{$sprint->name}\" started.");
     }
@@ -182,6 +195,18 @@ class SprintController extends Controller
             'total_points'     => $totalPoints,
             'completed_points' => $completedPoints,
         ]);
+
+        // Notify team members about sprint completion
+        $notifyIds = $board->team->members()->pluck('users.id')->toArray();
+        if (!empty($notifyIds)) {
+            NotificationService::notify(
+                $notifyIds,
+                'sprint_completed',
+                'Sprint Completed',
+                "Sprint \"{$sprint->name}\" completed on board \"{$board->name}\"",
+                route('boards.sprints.history', $board->id)
+            );
+        }
 
         return redirect(request('redirect_to', route('boards.show', $board->id)))
             ->with('success', "Sprint \"{$sprint->name}\" completed. Ready for release.");

@@ -10,6 +10,7 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\BoardSubTeamController;
 
 use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PlanningPokerController;
 use App\Http\Controllers\SprintController;
 use App\Http\Controllers\ReportController;
@@ -29,6 +30,11 @@ Route::middleware(['mano_apsauga'])->group(function () {
         )->name('pagrindinis');
 
         Route::post('/logout', [VartotojasController::class , 'logout'])->name('atsijungti');
+
+        // Notifications
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
+        Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
 
 
         // Feedback

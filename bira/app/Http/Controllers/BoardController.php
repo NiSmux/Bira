@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\WorkflowGroup;
 use App\Models\WorkflowStatus;
 use App\Http\Traits\ChecksBoardRole;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -195,6 +196,24 @@ class BoardController extends Controller
             }
         });
 
+        // Notify added members (except the creator)
+        $notifyIds = collect($validated['members'])
+            ->pluck('user_id')
+            ->map(fn($id) => (int) $id)
+            ->reject(fn($id) => $id === $userId)
+            ->values()
+            ->toArray();
+
+        if (!empty($notifyIds)) {
+            NotificationService::notify(
+                $notifyIds,
+                'board_added',
+                'Added to Board',
+                "You were added to new board \"{$validated['name']}\"",
+                route('boards.show', $board->id)
+            );
+        }
+
         return redirect()->route('boards.show', $board->id)
             ->with('success', 'Board created successfully!');
     }
@@ -322,6 +341,15 @@ class BoardController extends Controller
         $board->members()->attach($validated['user_id'], [
             'role' => $validated['role'],
         ]);
+
+        // Notify the added user
+        NotificationService::notify(
+            [$validated['user_id']],
+            'board_added',
+            'Added to Board',
+            "You were added to board \"{$board->name}\"",
+            route('boards.show', $board->id)
+        );
 
         return redirect()->route('boards.settings', $board->id)
             ->with('success', 'Member added to board.');

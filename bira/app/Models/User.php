@@ -30,7 +30,7 @@ class User extends Authenticatable
     }
     public function getAuthIdentifierName()
     {
-        return 'email'; // Jau OK pagal nutylėjimą
+        return 'id';
     }   
 
     public function teams()
