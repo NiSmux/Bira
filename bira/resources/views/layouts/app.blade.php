@@ -216,13 +216,13 @@
 
     {{-- ══════════════════════════ METRICS DRAWER (global) ══════════════════ --}}
     <div id="metrics-backdrop" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 hidden" onclick="window.closeMetrics && closeMetrics()"></div>
-    <div id="metrics-drawer" class="fixed top-0 right-0 h-full w-[420px] bg-[#13131f] border-l border-white/10 z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+    <div id="metrics-drawer" class="fixed top-0 right-0 h-full w-[420px] bg-[#13131f] border-l border-white/10 z-50 transition-transform duration-300 ease-in-out flex flex-col shadow-2xl" style="transform: translateX(100%);">
         <div class="flex items-center justify-between px-5 py-4 border-b border-white/10 shrink-0">
             <div class="flex items-center gap-2">
                 <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                 <h2 class="text-white font-bold text-base">Board Metrics</h2>
             </div>
-            <button onclick="closeMetrics()" class="p-1.5 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-white transition-colors">
+            <button onclick="window.closeMetrics && closeMetrics()" class="p-1.5 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-white transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
         </div>
@@ -374,7 +374,7 @@
                 let activeTab     = 'sprint';
 
                 openMetricsBtn.addEventListener('click', function () {
-                    drawer.classList.remove('translate-x-full');
+                    drawer.style.transform = 'translateX(0)';
                     backdrop.classList.remove('hidden');
                     document.body.style.overflow = 'hidden';
                     if (!metricsData) fetchMetrics();
@@ -382,7 +382,7 @@
                 });
 
                 window.closeMetrics = function () {
-                    drawer.classList.add('translate-x-full');
+                    drawer.style.transform = 'translateX(100%)';
                     backdrop.classList.add('hidden');
                     document.body.style.overflow = '';
                 };
