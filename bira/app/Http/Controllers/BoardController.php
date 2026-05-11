@@ -123,6 +123,7 @@ class BoardController extends Controller
             'members'           => 'required|array|min:1',
             'members.*.user_id' => 'required|exists:users,id',
             'members.*.role'    => 'required|string|in:' . implode(',', array_keys(self::boardRoles())),
+            'estimation_mode'   => 'sometimes|required|in:points,hours',
         ], [
             'name.unique' => 'A board with this name already exists in this team.',
         ]);
@@ -175,6 +176,7 @@ class BoardController extends Controller
                 'name'              => $validated['name'],
                 'team_id'           => $team->id,
                 'workflow_group_id' => $workflowGroup->id,
+                'estimation_mode'   => $validated['estimation_mode'] ?? 'points',
             ]);
 
             // Add selected members with their roles

@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Feature Requests')
+@section('hide_sidebar', true)
 
 @section('content')
 <div class="px-8 py-12 max-w-4xl mx-auto">

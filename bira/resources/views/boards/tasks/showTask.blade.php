@@ -7,9 +7,9 @@
     <!-- Breadcrumbs / Back -->
     <div class="mb-8 flex items-center justify-between">
         <div>
-            <a href="{{ route('boards.show', $board->id) }}" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors mb-4">
+            <a href="{{ $redirectTo ?? route('boards.show', $board->id) }}" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors mb-4">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                Back to board
+                Back to {{ isset($redirectTo) && str_contains($redirectTo, 'backlog') ? 'backlog' : 'board' }}
             </a>
             <div class="flex items-center gap-4">
                 <h2 class="text-3xl font-bold tracking-tight text-white">{{ $task->title }}</h2>
@@ -27,11 +27,11 @@
         </div>
         
         <div class="flex items-center gap-3">
-            <a href="{{ route('boards.tasks.edit', [$board->id, $task->id]) }}" class="inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-xl font-medium transition-all border border-white/10">
+            <a href="{{ route('boards.tasks.edit', [$board->id, $task->id]) }}{{ $redirectTo ? '?redirect_to=' . urlencode($redirectTo) : '' }}" class="inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-xl font-medium transition-all border border-white/10">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                 Edit
             </a>
-            <form action="{{ route('boards.tasks.destroy', [$board->id, $task->id]) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this task?')">
+            <form action="{{ route('boards.tasks.destroy', [$board->id, $task->id]) }}{{ $redirectTo ? '?redirect_to=' . urlencode($redirectTo) : '' }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this task?')">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="inline-flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-4 py-2 rounded-xl font-medium transition-all border border-red-500/20">

@@ -30,7 +30,20 @@ class NotificationController extends Controller
                 ];
             });
 
-        return response()->json($notifications);
+        if (request()->wantsJson()) {
+            return response()->json($notifications);
+        }
+
+        $query = Notification::where('user_id', Auth::id())
+            ->orderByDesc('created_at');
+
+        if (request()->query('unread')) {
+            $query->where('is_read', false);
+        }
+
+        $allNotifications = $query->paginate(30)->withQueryString();
+
+        return view('notifications.index', compact('allNotifications'));
     }
 
     /**
@@ -41,6 +54,10 @@ class NotificationController extends Controller
         abort_unless((int) $notification->user_id === Auth::id(), 403);
 
         $notification->update(['is_read' => true]);
+
+        if (request()->has('stay')) {
+            return back();
+        }
 
         if ($notification->link) {
             return redirect($notification->link);

@@ -34,8 +34,11 @@ class TeamController extends Controller
         return view('teams.index', compact('ownedTeams', 'memberTeams'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
+        if ($request->ajax()) {
+            return view('teams.partials.create_form');
+        }
         return view('teams.create');
     }
 

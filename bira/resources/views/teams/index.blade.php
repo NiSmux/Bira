@@ -12,11 +12,88 @@
             <h2 class="text-3xl font-bold tracking-tight text-white">Teams</h2>
             <p class="text-muted-foreground mt-1">Manage your teams and members</p>
         </div>
-        <a href="{{ route('teams.create') }}" class="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+        <button id="create-team-trigger" class="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium transition-colors">
             <x-lucide-plus class="w-5 h-5" />
             Create team
-        </a>
+        </button>
     </div>
+
+    {{-- Team Creation Modal --}}
+    <div id="team-create-modal" class="fixed inset-0 z-[100] items-center justify-center hidden">
+        <div class="absolute inset-0 bg-background/80 backdrop-blur-md" id="team-create-backdrop"></div>
+        <div class="relative bg-sidebar border border-white/10 rounded-[2.5rem] p-10 w-full max-w-2xl mx-4 shadow-3xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div id="team-create-modal-content">
+                <div class="flex justify-center py-12">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+        
+        @keyframes zoom-in {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .animate-in.zoom-in-95 {
+            animation: zoom-in 0.2s ease-out;
+        }
+    </style>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('team-create-modal');
+        const content = document.getElementById('team-create-modal-content');
+        const backdrop = document.getElementById('team-create-backdrop');
+        
+        const openModal = async () => {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            content.innerHTML = `
+                <div class="flex justify-center py-12">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+            `;
+
+            try {
+                const response = await fetch("{{ route('teams.create') }}", {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const html = await response.text();
+                
+                // Extract the script from partial manually
+                const temp = document.createElement('div');
+                temp.innerHTML = html;
+                const script = temp.querySelector('script');
+                
+                content.innerHTML = html;
+                
+                if (script) {
+                    const newScript = document.createElement('script');
+                    newScript.textContent = script.textContent;
+                    content.appendChild(newScript);
+                }
+            } catch (error) {
+                content.innerHTML = `<p class="text-red-400">Failed to load form. Please try again.</p>`;
+            }
+        };
+
+        const closeModal = () => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        };
+
+        document.getElementById('create-team-trigger')?.addEventListener('click', openModal);
+        backdrop?.addEventListener('click', closeModal);
+    });
+    </script>
+    @endpush
 
     @if(session('success'))
         <div class="alert-container mb-6 p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 flex items-center justify-between transition-opacity duration-300">

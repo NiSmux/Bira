@@ -62,6 +62,22 @@
                 </div>
             </div>
 
+            <div>
+                <label for="estimation_mode_modal" class="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">Estimation Mode</label>
+                <div class="relative group/select">
+                    <select name="estimation_mode" 
+                            id="estimation_mode_modal" 
+                            class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white appearance-none focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-lg font-medium cursor-pointer" 
+                            required>
+                        <option value="points" @selected(old('estimation_mode') == 'points' || !old('estimation_mode')) class="bg-card text-white">Story Points</option>
+                        <option value="hours" @selected(old('estimation_mode') == 'hours') class="bg-card text-white">Estimated Hours</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-6 flex items-center pointer-events-none text-muted-foreground group-hover/select:text-primary transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+            </div>
+
             <div id="modal-members-section" class="hidden">
                 <label class="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">Board members & roles</label>
                 <p class="text-[10px] text-muted-foreground mb-4 uppercase tracking-tighter">Include team members and assign their project roles.</p>

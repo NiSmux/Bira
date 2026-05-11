@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@section('hide_sidebar', true)
 
 @section('title', 'Dashboard – Bira')
 

@@ -5,9 +5,9 @@
 @section('content')
 <div class="max-w-3xl mx-auto px-8 py-12">
     <div class="mb-8">
-        <a href="{{ route('boards.show', $board->id) }}" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors mb-4">
+        <a href="{{ $redirectTo ?? route('boards.show', $board->id) }}" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors mb-4">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            Back to board
+            Back to {{ isset($redirectTo) && str_contains($redirectTo, 'backlog') ? 'backlog' : 'board' }}
         </a>
         <h2 class="text-3xl font-bold tracking-tight text-white">Edit task</h2>
         <p class="text-muted-foreground mt-1 text-sm">Editing task: <span class="text-white font-medium">{{ $task->title }}</span></p>
@@ -27,6 +27,10 @@
         <form action="{{ route('boards.tasks.update', [$board->id, $task->id]) }}" method="POST" class="space-y-6">
             @csrf
             @method('PUT')
+            
+            @if(isset($redirectTo))
+                <input type="hidden" name="redirect_to" value="{{ $redirectTo }}">
+            @endif
 
             <div>
                 <label for="title" class="block text-sm font-semibold text-white mb-2">Title</label>
@@ -242,7 +246,7 @@
             </div>
 
             <div class="pt-6 border-t border-border-subtle flex items-center justify-between">
-                <a href="{{ route('boards.show', $board->id) }}" class="px-6 py-2.5 rounded-xl text-white font-medium hover:bg-white/5 transition-colors">
+                <a href="{{ $redirectTo ?? route('boards.show', $board->id) }}" class="px-6 py-2.5 rounded-xl text-white font-medium hover:bg-white/5 transition-colors">
                     Cancel
                 </a>
                 <button type="submit" class="bg-primary hover:bg-primary/90 text-white px-8 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-primary/20 active:scale-[0.98]">

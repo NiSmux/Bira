@@ -33,7 +33,8 @@ class WorkItemController extends Controller
         $permissionLevel = $this->ensureBoardPermission($board, 'viewer');
 
         $task->load(['status', 'type', 'priority', 'creator', 'tags', 'comments.user']);
-        return view('boards.tasks.showTask', compact('board', 'task', 'permissionLevel'));
+        $redirectTo = request()->query('redirect_to');
+        return view('boards.tasks.showTask', compact('board', 'task', 'permissionLevel', 'redirectTo'));
     }
 
     /**
@@ -169,6 +170,10 @@ class WorkItemController extends Controller
             $task->delete();
         }
 
+        if (request()->has('redirect_to')) {
+            return redirect(request()->redirect_to)->with('success', 'Task deleted!');
+        }
+
         return redirect()
             ->route('boards.show', $board->id)
             ->with('success', 'Task deleted!');
@@ -191,6 +196,7 @@ class WorkItemController extends Controller
 
         $boardMembers = $board->members;
         $subTeams     = $board->subTeams;
+        $redirectTo   = request()->query('redirect_to');
 
         return view('boards.tasks.editTask', compact(
             'board',
@@ -199,7 +205,8 @@ class WorkItemController extends Controller
             'priorities',
             'statuses',
             'boardMembers',
-            'subTeams'
+            'subTeams',
+            'redirectTo'
         ));
     }
 
@@ -262,6 +269,10 @@ class WorkItemController extends Controller
             $task->tags()->sync($request->tags);
         } else {
             $task->tags()->sync([]);
+        }
+
+        if ($request->has('redirect_to')) {
+            return redirect($request->redirect_to)->with('success', 'Task updated!');
         }
 
         return redirect()

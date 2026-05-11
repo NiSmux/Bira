@@ -22,6 +22,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \Illuminate\Pagination\Paginator::useTailwind();
+
         // Share unread notification count with the main layout
         View::composer('layouts.app', function ($view) {
             $count = 0;
