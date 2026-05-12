@@ -67,13 +67,16 @@
 
                 <div>
                     <label for="item_type_id" class="block text-sm font-semibold text-white mb-2">Type</label>
-                    <select id="item_type_id" 
-                            name="item_type_id" 
+                    <select id="item_type_id"
+                            name="item_type_id"
                             class="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                             required>
                         @foreach($itemTypes as $type)
-                            <option value="{{ $type->id }}" {{ old('item_type_id', $task->item_type_id) == $type->id ? 'selected' : '' }}>
-                                {{ $type->name }}
+                            <option value="{{ $type->id }}"
+                                    data-color="{{ $type->color ?? '' }}"
+                                    data-icon="{{ $type->icon ?? '' }}"
+                                    {{ old('item_type_id', $task->item_type_id) == $type->id ? 'selected' : '' }}>
+                                {{ $type->icon ? $type->icon . ' ' : '' }}{{ $type->name }}
                             </option>
                         @endforeach
                     </select>
@@ -95,26 +98,50 @@
                     </select>
                 </div>
 
+                @if($board->estimation_mode === 'hours')
                 <div>
-                    @if($board->estimation_mode === 'hours')
-                        <label for="estimated_hours" class="block text-sm font-semibold text-white mb-2">Estimated Hours</label>
-                        <input type="number" 
-                               step="0.5"
-                               id="estimated_hours"
-                               name="estimated_hours" 
-                               min="0" max="1000"
-                               value="{{ old('estimated_hours', $task->estimated_hours) }}" 
-                               class="w-full bg-background border border-border-subtle rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium">
-                    @else
-                        <label for="story_points" class="block text-sm font-semibold text-white mb-2">Story Points</label>
-                        <input type="number" 
-                               id="story_points"
-                               name="story_points" 
-                               min="0" max="100"
-                               value="{{ old('story_points', $task->story_points) }}" 
-                               class="w-full bg-background border border-border-subtle rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium">
-                    @endif
+                    <label for="estimated_hours" class="block text-sm font-semibold text-white mb-2">Estimated Hours</label>
+                    <input type="number"
+                           step="0.5"
+                           id="estimated_hours"
+                           name="estimated_hours"
+                           min="0" max="1000"
+                           value="{{ old('estimated_hours', $task->estimated_hours) }}"
+                           class="w-full bg-background border border-border-subtle rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium">
                 </div>
+                @else
+                <div>
+                    <label for="story_points" class="block text-sm font-semibold text-white mb-2">Story Points</label>
+                    <input type="number"
+                           id="story_points"
+                           name="story_points"
+                           min="0" max="100"
+                           value="{{ old('story_points', $task->story_points) }}"
+                           data-sp-rate="{{ $board->sp_to_hours_rate }}"
+                           class="w-full bg-background border border-border-subtle rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium">
+                </div>
+                @if($board->sp_to_hours_rate)
+                </div>{{-- close grid row --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="estimated_hours" class="block text-sm font-semibold text-white mb-2 flex items-center gap-2">
+                        Estimated Hours
+                        <span class="text-[10px] font-normal text-primary bg-primary/10 px-1.5 py-0.5 rounded">auto · 1SP={{ $board->sp_to_hours_rate }}h</span>
+                    </label>
+                    <input type="number"
+                           step="0.5"
+                           id="estimated_hours"
+                           name="estimated_hours"
+                           min="0" max="1000"
+                           value="{{ old('estimated_hours', $task->estimated_hours) }}"
+                           placeholder="Auto-calculated"
+                           class="w-full bg-background border border-border-subtle rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium">
+                    <p class="text-[10px] text-muted-foreground mt-1">Override auto-calculation by typing a value.</p>
+                </div>
+                @else
+                <input type="hidden" name="estimated_hours" value="{{ old('estimated_hours', $task->estimated_hours) }}">
+                @endif
+                @endif
             </div>
 
             {{-- Tags Section --}}
@@ -283,6 +310,27 @@
 
 @push('scripts')
 <script>
+// SP → hours auto-converter
+(function() {
+    const spInput = document.getElementById('story_points');
+    const hrsInput = document.getElementById('estimated_hours');
+    if (!spInput || !hrsInput) return;
+    const rate = parseFloat(spInput.dataset.spRate);
+    if (!rate) return;
+    let userEditedHours = !!hrsInput.value;
+    spInput.addEventListener('input', function() {
+        if (userEditedHours) return;
+        const sp = parseFloat(this.value);
+        hrsInput.value = (!isNaN(sp) && sp >= 0) ? Math.round(sp * rate * 4) / 4 : '';
+    });
+    hrsInput.addEventListener('input', function() {
+        userEditedHours = this.value !== '';
+    });
+    hrsInput.addEventListener('blur', function() {
+        if (!this.value) userEditedHours = false;
+    });
+})();
+
 document.addEventListener('DOMContentLoaded', function () {
     const typeInput  = document.getElementById('assignee_type_input');
     const userDiv    = document.getElementById('assign-user-select');

@@ -14,6 +14,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PlanningPokerController;
 use App\Http\Controllers\SprintController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\MyTasksController;
 
 // --- PUBLIC ROUTES ---
 Route::get('/login', [VartotojasController::class , 'showLoginForm'])->name('login');
@@ -47,6 +48,7 @@ Route::middleware(['mano_apsauga'])->group(function () {
         Route::delete('/teams/{team}/members/{user}', [TeamController::class, 'removeMember'])->name('teams.members.destroy');
         Route::patch('/teams/{team}/default-type', [TeamController::class, 'updateDefaultType'])->name('teams.default-type.update');
         Route::post('/teams/{team}/item-types', [TeamController::class, 'storeItemType'])->name('teams.item-types.store');
+        Route::patch('/teams/{team}/item-types/{itemType}', [TeamController::class, 'updateItemType'])->name('teams.item-types.update');
         Route::delete('/teams/{team}/item-types/{itemType}', [TeamController::class, 'destroyItemType'])->name('teams.item-types.destroy');
 
         // AJAX: get team members for board creation form
@@ -54,6 +56,9 @@ Route::middleware(['mano_apsauga'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // My Active Tasks
+    Route::get('/my-tasks', [MyTasksController::class, 'index'])->name('my-tasks.index');
     
     // Backlog (Global view)
     Route::get('/backlog', [BacklogController::class, 'index'])->name('backlog.index');
@@ -68,6 +73,7 @@ Route::middleware(['mano_apsauga'])->group(function () {
         // Board Settings & Member Management
         Route::get('/boards/{board}/settings', [BoardController::class, 'settings'])->name('boards.settings');
         Route::patch('/boards/{board}/settings/mode', [BoardController::class, 'updateMode'])->name('boards.update_mode');
+        Route::patch('/boards/{board}/settings/sp-rate', [BoardController::class, 'updateSpRate'])->name('boards.update_sp_rate');
         Route::post('/boards/{board}/members', [BoardController::class, 'addBoardMember'])->name('boards.members.store');
         Route::patch('/boards/{board}/members/{user}', [BoardController::class, 'updateBoardMemberRole'])->name('boards.members.updateRole');
         Route::delete('/boards/{board}/members/{user}', [BoardController::class, 'removeBoardMember'])->name('boards.members.destroy');

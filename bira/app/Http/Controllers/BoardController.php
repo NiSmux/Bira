@@ -326,6 +326,22 @@ class BoardController extends Controller
     }
 
     /**
+     * Update the board's SP-to-hours conversion rate.
+     */
+    public function updateSpRate(Request $request, Board $board)
+    {
+        $this->ensureBoardPermission($board, 'admin');
+
+        $validated = $request->validate([
+            'sp_to_hours_rate' => 'nullable|numeric|min:0.1|max:100',
+        ]);
+
+        $board->update(['sp_to_hours_rate' => $validated['sp_to_hours_rate'] ?: null]);
+
+        return back()->with('success', 'SP to hours conversion rate updated.');
+    }
+
+    /**
      * Add a team member to the board.
      */
     public function addBoardMember(Request $request, Board $board)

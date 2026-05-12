@@ -12,7 +12,7 @@ class ItemType extends Model
     // Kadangi tavo SQL schemoje ši lentelė neturi laiko žymių
     public $timestamps = false;
 
-    protected $fillable = ['name', 'order_index', 'team_id'];
+    protected $fillable = ['name', 'order_index', 'team_id', 'icon', 'color', 'description'];
 
     public function workItems()
     {

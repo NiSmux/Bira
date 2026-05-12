@@ -58,6 +58,44 @@
                         </button>
                     </form>
                 </div>
+
+                {{-- SP → Hours Conversion Rate --}}
+                @if($board->estimation_mode === 'points')
+                <div class="bg-card border border-border-subtle rounded-2xl p-6 shadow-sm">
+                    <h3 class="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                        SP → Hours Rate
+                    </h3>
+                    <p class="text-[10px] text-muted-foreground mb-4">When set, entering story points will auto-calculate estimated hours.</p>
+                    <form action="{{ route('boards.update_sp_rate', $board->id) }}" method="POST" class="space-y-3">
+                        @csrf
+                        @method('PATCH')
+                        <div>
+                            <label class="block text-[10px] font-bold text-muted-foreground uppercase mb-1.5">Hours per Story Point</label>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-muted-foreground shrink-0">1 SP =</span>
+                                <input type="number"
+                                       name="sp_to_hours_rate"
+                                       step="0.25"
+                                       min="0.1"
+                                       max="100"
+                                       value="{{ $board->sp_to_hours_rate }}"
+                                       placeholder="e.g. 2"
+                                       class="flex-1 bg-background border border-border-subtle rounded-xl px-3 py-2 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
+                                <span class="text-xs text-muted-foreground shrink-0">h</span>
+                            </div>
+                            @if($board->sp_to_hours_rate)
+                                <p class="text-[10px] text-primary mt-1.5">Active: 1 SP = {{ $board->sp_to_hours_rate }}h &middot; 8 SP ≈ {{ round($board->sp_to_hours_rate * 8, 1) }}h</p>
+                            @else
+                                <p class="text-[10px] text-muted-foreground mt-1.5">Leave blank to disable auto-conversion.</p>
+                            @endif
+                        </div>
+                        <button type="submit" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white py-2 rounded-xl font-bold transition-all active:scale-[0.98] text-sm">
+                            Save Rate
+                        </button>
+                    </form>
+                </div>
+                @endif
             @endif
 
             <div class="bg-card border border-border-subtle rounded-2xl p-6 shadow-sm">

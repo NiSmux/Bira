@@ -951,6 +951,23 @@
                 });
             };
 
+            // SP → hours auto-conversion
+            const spInput = container.querySelector('#story_points');
+            const hrsInput = container.querySelector('#estimated_hours');
+            if (spInput && hrsInput) {
+                const rate = parseFloat(spInput.dataset.spRate);
+                if (rate) {
+                    let userEditedHours = !!hrsInput.value;
+                    spInput.addEventListener('input', function() {
+                        if (userEditedHours) return;
+                        const sp = parseFloat(this.value);
+                        hrsInput.value = (!isNaN(sp) && sp >= 0) ? Math.round(sp * rate * 4) / 4 : '';
+                    });
+                    hrsInput.addEventListener('input', function() { userEditedHours = this.value !== ''; });
+                    hrsInput.addEventListener('blur', function() { if (!this.value) userEditedHours = false; });
+                }
+            }
+
             // Form submission
             const form = container.querySelector('#create-task-form');
             if (form) {

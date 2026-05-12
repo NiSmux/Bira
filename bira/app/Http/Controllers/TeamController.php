@@ -141,19 +141,49 @@ class TeamController extends Controller
         $this->ensureOwner($team);
 
         $validated = $request->validate([
-            'name' => 'required|string|max:80',
+            'name'        => 'required|string|max:80',
+            'icon'        => 'nullable|string|max:10',
+            'color'       => 'nullable|string|max:20|regex:/^#[0-9a-fA-F]{3,8}$/',
+            'description' => 'nullable|string|max:255',
         ]);
 
         $maxOrder = DB::table('item_types')->max('order_index') ?? 0;
 
         ItemType::create([
             'name'        => $validated['name'],
+            'icon'        => $validated['icon'] ?? null,
+            'color'       => $validated['color'] ?? null,
+            'description' => $validated['description'] ?? null,
             'order_index' => $maxOrder + 1,
             'team_id'     => $team->id,
         ]);
 
         return redirect()->route('teams.show', $team->id)
             ->with('success', 'Task type "' . $validated['name'] . '" added.');
+    }
+
+    public function updateItemType(Request $request, Team $team, ItemType $itemType)
+    {
+        $this->ensureOwner($team);
+
+        abort_unless($itemType->team_id === $team->id, 403);
+
+        $validated = $request->validate([
+            'name'        => 'required|string|max:80',
+            'icon'        => 'nullable|string|max:10',
+            'color'       => 'nullable|string|max:20|regex:/^#[0-9a-fA-F]{3,8}$/',
+            'description' => 'nullable|string|max:255',
+        ]);
+
+        $itemType->update([
+            'name'        => $validated['name'],
+            'icon'        => $validated['icon'] ?? null,
+            'color'       => $validated['color'] ?? null,
+            'description' => $validated['description'] ?? null,
+        ]);
+
+        return redirect()->route('teams.show', $team->id)
+            ->with('success', 'Task type "' . $validated['name'] . '" updated.');
     }
 
     public function destroyItemType(Team $team, ItemType $itemType)
