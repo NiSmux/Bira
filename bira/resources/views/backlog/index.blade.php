@@ -1011,7 +1011,7 @@
                     spInput.addEventListener('input', function() {
                         if (userEditedHours) return;
                         const sp = parseFloat(this.value);
-                        hrsInput.value = (!isNaN(sp) && sp >= 0) ? Math.round(sp * rate * 4) / 4 : '';
+                        hrsInput.value = (!isNaN(sp) && sp >= 0) ? Math.round(sp * rate * 100) / 100 : '';
                     });
                     hrsInput.addEventListener('input', function() { userEditedHours = this.value !== ''; });
                     hrsInput.addEventListener('blur', function() { if (!this.value) userEditedHours = false; });

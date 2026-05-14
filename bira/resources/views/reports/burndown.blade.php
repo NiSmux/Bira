@@ -3,6 +3,16 @@
 @section('title', 'Burndown Chart - ' . $board->name)
 
 @section('content')
+<style>
+    #sprintSelector {
+        background-color: #1a1a2e !important;
+        color: white !important;
+    }
+    #sprintSelector option {
+        background-color: #1a1a2e;
+        color: white;
+    }
+</style>
 <div class="px-8 py-8">
 
     {{-- Page Header --}}

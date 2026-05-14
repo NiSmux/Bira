@@ -20,7 +20,15 @@ class FeedbackController extends Controller
 
     public function bugReport()
     {
-        return view('feedback.bug-report');
+        $bugs = collect();
+        if (Auth::user()->role_id == 2) {
+            $bugs = Feedback::where('type', 'bug_report')
+                ->with('user')
+                ->latest('created_at')
+                ->get();
+        }
+
+        return view('feedback.bug-report', compact('bugs'));
     }
 
     public function store(Request $request)

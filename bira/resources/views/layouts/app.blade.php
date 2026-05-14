@@ -18,6 +18,9 @@
             color: #8b5cf6;
             border-right: 2px solid #8b5cf6;
         }
+        button, a, .cursor-pointer {
+            cursor: pointer;
+        }
     </style>
 </head>
 <body class="bg-background text-foreground antialiased selection:bg-primary/30">
@@ -594,5 +597,6 @@
 
         });
     </script>
+
 </body>
 </html>

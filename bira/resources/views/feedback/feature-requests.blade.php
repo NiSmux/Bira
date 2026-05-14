@@ -52,34 +52,41 @@
         </form>
     </div>
 
-    {{-- Requests list --}}
-    <div class="space-y-3">
-        @forelse($requests as $item)
-            <div class="bg-card border border-border-subtle rounded-2xl p-5 shadow-sm">
-                <div class="flex items-start gap-4">
-                    <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary shrink-0 mt-0.5">
-                        {{ strtoupper(substr($item->user->name, 0, 1)) }}{{ strtoupper(substr(strstr($item->user->name, ' ') ?: '', 1, 1)) }}
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2 flex-wrap mb-1">
-                            <span class="text-white font-semibold text-sm">{{ $item->title }}</span>
+    {{-- Requests list (Admin only) --}}
+    @if(auth()->user()->role_id == 2)
+    <div class="mt-12">
+        <h3 class="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-5 flex items-center gap-2">
+            <x-lucide-list class="w-4 h-4" />
+            Submitted Requests (Admin View)
+        </h3>
+        <div class="space-y-3">
+            @forelse($requests as $item)
+                <div class="bg-card border border-border-subtle rounded-2xl p-5 shadow-sm">
+                    <div class="flex items-start gap-4">
+                        <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary shrink-0 mt-0.5">
+                            {{ strtoupper(substr($item->user->name, 0, 1)) }}{{ strtoupper(substr(strstr($item->user->name, ' ') ?: '', 1, 1)) }}
                         </div>
-                        @if($item->description)
-                            <p class="text-muted-foreground text-sm leading-relaxed">{{ $item->description }}</p>
-                        @endif
-                        <p class="text-xs text-muted-foreground/60 mt-2">
-                            {{ $item->user->name }} &middot; {{ \Carbon\Carbon::parse($item->created_at)->diffForHumans() }}
-                        </p>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap mb-1">
+                                <span class="text-white font-semibold text-sm">{{ $item->title }}</span>
+                            </div>
+                            @if($item->description)
+                                <p class="text-muted-foreground text-sm leading-relaxed">{{ $item->description }}</p>
+                            @endif
+                            <p class="text-xs text-muted-foreground/60 mt-2">
+                                {{ $item->user->name }} &middot; {{ \Carbon\Carbon::parse($item->created_at)->diffForHumans() }}
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
-        @empty
-            <div class="text-center py-16 text-muted-foreground">
-                <x-lucide-lightbulb class="w-10 h-10 mx-auto mb-3 opacity-30" />
-                <p class="font-medium">No requests yet.</p>
-                <p class="text-sm mt-1">Be the first to submit one above.</p>
-            </div>
-        @endforelse
+            @empty
+                <div class="text-center py-16 text-muted-foreground">
+                    <x-lucide-lightbulb class="w-10 h-10 mx-auto mb-3 opacity-30" />
+                    <p class="font-medium">No requests yet.</p>
+                </div>
+            @endforelse
+        </div>
     </div>
+    @endif
 </div>
 @endsection
