@@ -10,6 +10,7 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BoardSubTeamController;
 use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\ThemeController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PlanningPokerController;
 use App\Http\Controllers\SprintController;
@@ -33,6 +34,10 @@ Route::middleware(['mano_apsauga'])->group(function () {
         Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
         Route::match(['get', 'post'], '/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
 
+
+        // Themes
+        Route::get('/themes', [ThemeController::class, 'index'])->name('themes.index');
+        Route::post('/themes', [ThemeController::class, 'update'])->name('themes.update');
 
         // Feedback
         Route::get('/feedback/feature-requests', [FeedbackController::class, 'featureRequests'])->name('feedback.feature-requests');
