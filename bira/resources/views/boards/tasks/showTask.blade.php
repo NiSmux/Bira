@@ -172,6 +172,102 @@
                     </div>
                 </div>
             </div>
+
+            {{-- ── Time Tracking Card ─────────────────────────────────────── --}}
+            @php
+                $isAssignee = auth()->id() === $task->assignee_id;
+                $myTimeLogs = $task->timeLogs()->where('user_id', auth()->id())
+                    ->orderBy('logged_date','desc')->orderBy('created_at','desc')->get();
+                $totalLoggedMinutes = $myTimeLogs->sum('minutes');
+                $tlH = intdiv($totalLoggedMinutes, 60); $tlM = $totalLoggedMinutes % 60;
+                $totalFormatted = $tlH > 0 ? ($tlM > 0 ? "{$tlH}h {$tlM}m" : "{$tlH}h") : ($tlM > 0 ? "{$tlM}m" : '0m');
+            @endphp
+            @if($isAssignee || $permissionLevel === 'admin')
+            <div class="bg-card border border-border-subtle rounded-2xl p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                        <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Time Tracking
+                    </h3>
+                    @if($totalLoggedMinutes > 0)
+                        <span class="px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-xs font-bold">{{ $totalFormatted }}</span>
+                    @endif
+                </div>
+
+                {{-- Log Time Form --}}
+                <form action="{{ route('boards.tasks.timeLogs.store', [$board->id, $task->id]) }}" method="POST" class="mb-5">
+                    @csrf
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">Log Time</p>
+                    <div class="grid grid-cols-2 gap-2 mb-2">
+                        <div>
+                            <label class="text-[10px] text-muted-foreground mb-1 block">Hours</label>
+                            <input type="number" name="hours" min="0" max="999" placeholder="0" value="{{ old('hours') }}"
+                                class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/40">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-muted-foreground mb-1 block">Minutes</label>
+                            <input type="number" name="minutes" min="0" max="59" placeholder="0" value="{{ old('minutes') }}"
+                                class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/40">
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="text-[10px] text-muted-foreground mb-1 block">Date</label>
+                        <input type="date" name="logged_date" value="{{ date('Y-m-d') }}"
+                            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/40">
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-[10px] text-muted-foreground mb-1 block">Note (optional)</label>
+                        <input type="text" name="note" maxlength="200" placeholder="What did you work on?" value="{{ old('note') }}"
+                            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40">
+                    </div>
+                    @error('time') <p class="text-red-400 text-xs mb-2">{{ $message }}</p> @enderror
+                    <button type="submit"
+                        class="w-full bg-primary hover:bg-primary/90 text-white text-sm font-bold py-2 rounded-xl transition-all shadow-lg shadow-primary/20 active:scale-[0.98]">
+                        Log Time
+                    </button>
+                </form>
+
+                {{-- History --}}
+                @if($myTimeLogs->count() > 0)
+                <div class="border-t border-border-subtle pt-4">
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">My Log History</p>
+                    <div class="space-y-2">
+                        @foreach($myTimeLogs as $log)
+                        @php $lh=intdiv($log->minutes,60);$lm=$log->minutes%60;$dur=$lh>0?($lm>0?"{$lh}h {$lm}m":"{$lh}h"):"{$lm}m"; @endphp
+                        <div class="flex items-start gap-2 group">
+                            <div class="flex-1 min-w-0 p-2 rounded-lg bg-white/5 border border-white/5">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="text-xs font-bold text-primary">{{ $dur }}</span>
+                                    <span class="text-[10px] text-muted-foreground">{{ \Carbon\Carbon::parse($log->logged_date)->format('M j, Y') }}</span>
+                                </div>
+                                @if($log->note)<p class="text-[11px] text-muted-foreground mt-0.5">{{ $log->note }}</p>@endif
+                            </div>
+                            <form action="{{ route('boards.tasks.timeLogs.destroy', [$board->id, $task->id, $log->id]) }}" method="POST"
+                                  onsubmit="return confirm('Remove this time log?')" class="opacity-0 group-hover:opacity-100 transition-opacity mt-1">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="p-1 rounded hover:bg-red-500/20 text-muted-foreground hover:text-red-400 transition-colors">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </button>
+                            </form>
+                        </div>
+                        @endforeach
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-white/5 flex items-center justify-between">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Total logged</span>
+                        <span class="text-sm font-bold text-white">{{ $totalFormatted }}</span>
+                    </div>
+                    <a href="{{ route('calendar.index', ['date' => now()->toDateString()]) }}"
+                       class="mt-3 flex items-center justify-center gap-2 w-full py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] font-medium text-muted-foreground hover:text-white transition-colors border border-white/5">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        View in Calendar
+                    </a>
+                </div>
+                @else
+                    <p class="text-[11px] text-muted-foreground text-center py-1">No time logged yet.</p>
+                @endif
+            </div>
+            @endif
+
         </div>
     </div>
 </div>

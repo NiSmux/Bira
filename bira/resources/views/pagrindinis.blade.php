@@ -221,8 +221,76 @@
                 </div>
             </div>
 
-            <!-- Right Column: Notifications -->
-            <div class="bg-card border border-border-subtle rounded-xl p-5 lg:col-span-1">
+            <!-- Right Column: Mini Calendar + Notifications -->
+            <div class="lg:col-span-1 space-y-6">
+
+                <!-- Mini Calendar Widget -->
+                <div class="bg-card border border-border-subtle rounded-xl p-5">
+                    @php
+                        $calToday    = \Carbon\Carbon::today();
+                        $calYear     = $calToday->year;
+                        $calMonth    = $calToday->month;
+                        $calFirst    = \Carbon\Carbon::create($calYear, $calMonth, 1);
+                        $calDow      = $calFirst->dayOfWeek;
+                        $calDays     = $calFirst->daysInMonth;
+                        $calLabel    = $calFirst->format('F Y');
+                        $calDayNames = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+                        // Fetch active days for current user this month
+                        $calStart = $calFirst->toDateString();
+                        $calEnd   = $calFirst->copy()->endOfMonth()->toDateString();
+                        $userId   = auth()->id();
+                        $calLogDays  = \App\Models\TimeLog::where('user_id', $userId)
+                                        ->whereBetween('logged_date', [$calStart, $calEnd])
+                                        ->distinct()->pluck('logged_date')
+                                        ->map(fn($d) => \Carbon\Carbon::parse($d)->day)->flip()->toArray();
+                        $calNoteDays = \App\Models\CalendarNote::where('user_id', $userId)
+                                        ->whereBetween('note_date', [$calStart, $calEnd])
+                                        ->where('content','!=','')->distinct()->pluck('note_date')
+                                        ->map(fn($d) => \Carbon\Carbon::parse($d)->day)->flip()->toArray();
+                        $calActiveDays = $calLogDays + $calNoteDays;
+                    @endphp
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                            <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            {{ $calLabel }}
+                        </h2>
+                        <a href="{{ route('calendar.index') }}" class="text-xs text-primary hover:text-primary/80 transition-colors">Full view</a>
+                    </div>
+
+                    {{-- Day-of-week headers --}}
+                    <div class="grid mb-1" style="grid-template-columns: repeat(7, minmax(0, 1fr));">
+                        @foreach($calDayNames as $dn)
+                            <div class="text-center text-[9px] font-bold uppercase text-muted-foreground py-1">{{ $dn }}</div>
+                        @endforeach
+                    </div>
+
+                    {{-- Grid --}}
+                    <div class="grid gap-0.5" style="grid-template-columns: repeat(7, minmax(0, 1fr));">
+                        @for($b = 0; $b < $calDow; $b++)
+                            <div class="aspect-square"></div>
+                        @endfor
+                        @for($d = 1; $d <= $calDays; $d++)
+                            @php
+                                $isToday  = $d === $calToday->day;
+                                $hasEntry = isset($calActiveDays[$d]);
+                                $cellDate = \Carbon\Carbon::create($calYear, $calMonth, $d)->toDateString();
+                            @endphp
+                            <a href="#" onclick="openDayPanel('{{ $cellDate }}'); return false;"
+                               class="aspect-square flex flex-col items-center justify-center rounded-lg text-[11px] font-semibold transition-all relative
+                                   {{ $isToday ? 'text-white' : 'hover:bg-white/10 text-white/60 hover:text-white' }}"
+                               title="{{ $cellDate }}">
+                                {{ $d }}
+                                @if($hasEntry && !$isToday)
+                                    <span class="absolute bottom-0.5 w-1 h-1 rounded-full bg-primary/70 inline-block mini-day-dot"></span>
+                                @endif
+                            </a>
+                        @endfor
+                    </div>
+                </div>
+
+                <!-- Notifications Card -->
+                <div class="bg-card border border-border-subtle rounded-xl p-5">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-lg font-bold text-white flex items-center gap-2">
                         <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
@@ -239,33 +307,14 @@
                             @php
                                 $iconClass = 'text-primary';
                                 $iconName = 'lucide-bell';
-                                
                                 switch($notification->type) {
-                                    case 'poker_started':
-                                        $iconName = 'lucide-clipboard';
-                                        $iconClass = 'text-amber-400';
-                                        break;
-                                    case 'poker_completed':
-                                        $iconName = 'lucide-check-circle';
-                                        $iconClass = 'text-green-400';
-                                        break;
-                                    case 'sprint_started':
-                                        $iconName = 'lucide-zap';
-                                        $iconClass = 'text-blue-400';
-                                        break;
-                                    case 'sprint_completed':
-                                        $iconName = 'lucide-check';
-                                        $iconClass = 'text-emerald-400';
-                                        break;
+                                    case 'poker_started':   $iconName = 'lucide-clipboard';    $iconClass = 'text-amber-400';   break;
+                                    case 'poker_completed': $iconName = 'lucide-check-circle'; $iconClass = 'text-green-400';   break;
+                                    case 'sprint_started':  $iconName = 'lucide-zap';          $iconClass = 'text-blue-400';    break;
+                                    case 'sprint_completed':$iconName = 'lucide-check';        $iconClass = 'text-emerald-400'; break;
                                     case 'team_added':
-                                    case 'subteam_added':
-                                        $iconName = 'lucide-users';
-                                        $iconClass = 'text-violet-400';
-                                        break;
-                                    case 'board_added':
-                                        $iconName = 'lucide-layout-grid';
-                                        $iconClass = 'text-cyan-400';
-                                        break;
+                                    case 'subteam_added':   $iconName = 'lucide-users';        $iconClass = 'text-violet-400';  break;
+                                    case 'board_added':     $iconName = 'lucide-layout-grid';  $iconClass = 'text-cyan-400';    break;
                                 }
                             @endphp
                             <div class="p-3 rounded-lg border {{ $notification->is_read ? 'border-border-subtle bg-background/20' : 'border-primary/30 bg-primary/5' }} flex gap-3 transition-all hover:bg-background/50 hover:translate-x-1 duration-200">
@@ -276,9 +325,7 @@
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <div class="flex justify-between items-start gap-2">
-                                        <p class="text-xs font-semibold {{ $notification->is_read ? 'text-gray-400' : 'text-white' }} truncate">
-                                            {{ $notification->title }}
-                                        </p>
+                                        <p class="text-xs font-semibold {{ $notification->is_read ? 'text-gray-400' : 'text-white' }} truncate">{{ $notification->title }}</p>
                                         <span class="text-[9px] text-muted-foreground whitespace-nowrap mt-0.5">{{ \Carbon\Carbon::parse($notification->created_at)->diffForHumans() }}</span>
                                     </div>
                                     <p class="text-[11px] text-muted-foreground leading-snug line-clamp-2 mt-0.5">{{ $notification->message }}</p>
@@ -304,9 +351,20 @@
                         <p class="text-[10px] mt-1">No new notifications</p>
                     </div>
                 @endif
-            </div>
+                </div>{{-- /notifications card --}}
+
+            </div>{{-- /right col --}}
 
         </div>
     </div>
+
+    @include('calendar.partials.sidebar', ['isOverlay' => true])
+
 @endif
 @endsection
+
+@push('scripts')
+@if(Auth::check())
+    @include('calendar.partials.scripts')
+@endif
+@endpush

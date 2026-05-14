@@ -101,6 +101,16 @@ class DashboardController extends Controller
 
         $activeSprintsCount = $activeSprints->count();
 
+        $userId = $user->id;
+        $myBoards = \App\Models\Board::where(function ($query) use ($userId) {
+            $query->whereHas('members', function ($q) use ($userId) {
+                $q->where('users.id', $userId);
+            })->orWhereHas('team.members', function ($q) use ($userId) {
+                $q->where('users.id', $userId)
+                  ->whereIn('team_members.role_in_team', ['owner', 'Admin', 'Owner']);
+            });
+        })->get(['id', 'name']);
+
         return view('pagrindinis', compact(
             'totalTasks',
             'totalDoneTasks',
@@ -111,7 +121,8 @@ class DashboardController extends Controller
             'notifications',
             'recentBoards',
             'recentTasks',
-            'activeSprintsCount'
+            'activeSprintsCount',
+            'myBoards'
         ));
     }
 }

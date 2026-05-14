@@ -15,6 +15,8 @@ use App\Http\Controllers\PlanningPokerController;
 use App\Http\Controllers\SprintController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\MyTasksController;
+use App\Http\Controllers\CalendarController;
+use App\Http\Controllers\TimeLogController;
 
 // --- PUBLIC ROUTES ---
 Route::get('/login', [VartotojasController::class , 'showLoginForm'])->name('login');
@@ -59,6 +61,16 @@ Route::middleware(['mano_apsauga'])->group(function () {
 
     // My Active Tasks
     Route::get('/my-tasks', [MyTasksController::class, 'index'])->name('my-tasks.index');
+
+    // Calendar
+    Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');
+    Route::get('/calendar/month-data', [CalendarController::class, 'monthData'])->name('calendar.monthData');
+    Route::get('/calendar/day/{date}', [CalendarController::class, 'dayData'])->name('calendar.dayData');
+    Route::post('/calendar/notes', [CalendarController::class, 'storeNote'])->name('calendar.notes.store');
+    Route::post('/calendar/time-logs', [CalendarController::class, 'storeTimeLog'])->name('calendar.timeLogs.store');
+    Route::delete('/calendar/time-logs/{timeLog}', [CalendarController::class, 'destroyTimeLog'])->name('calendar.timeLogs.destroy');
+    Route::get('/calendar/board-tasks/{board}', [CalendarController::class, 'getBoardTasks'])->name('calendar.board-tasks');
+
     
     // Backlog (Global view)
     Route::get('/backlog', [BacklogController::class, 'index'])->name('backlog.index');
@@ -114,6 +126,10 @@ Route::middleware(['mano_apsauga'])->group(function () {
         // Task Comments
         Route::post('/boards/{board}/tasks/{task}/comments', [\App\Http\Controllers\WorkItemCommentController::class, 'store'])->name('boards.tasks.comments.store');
         Route::delete('/boards/{board}/tasks/{task}/comments/{comment}', [\App\Http\Controllers\WorkItemCommentController::class, 'destroy'])->name('boards.tasks.comments.destroy');
+
+        // Task Time Logs
+        Route::post('/boards/{board}/tasks/{task}/time-logs', [TimeLogController::class, 'store'])->name('boards.tasks.timeLogs.store');
+        Route::delete('/boards/{board}/tasks/{task}/time-logs/{timeLog}', [TimeLogController::class, 'destroy'])->name('boards.tasks.timeLogs.destroy');
 
         // Forma naujai užduočiai
         Route::get('/boards/{board}/tasks/create', [WorkItemController::class , 'create'])

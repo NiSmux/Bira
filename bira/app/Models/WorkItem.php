@@ -104,4 +104,9 @@ class WorkItem extends Model
     {
         return $this->hasMany(WorkItemComment::class, 'work_item_id');
     }
+
+    public function timeLogs()
+    {
+        return $this->hasMany(TimeLog::class, 'work_item_id');
+    }
 }
