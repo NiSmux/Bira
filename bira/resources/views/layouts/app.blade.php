@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="dark" data-theme="{{ auth()->check() ? (auth()->user()->theme ?? 'dark') : 'dark' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -200,6 +200,12 @@
                         </button>
                         <div id="settings-menu"
                              class="hidden absolute right-0 top-full mt-2 w-52 bg-sidebar border border-border-subtle rounded-xl shadow-xl z-50 overflow-hidden py-1">
+                            <a href="{{ route('themes.index') }}"
+                               class="flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:text-white hover:bg-white/5 transition-colors {{ request()->routeIs('themes.*') ? 'text-white bg-white/5' : '' }}">
+                                <x-lucide-palette class="w-4 h-4 shrink-0" />
+                                Themes
+                            </a>
+                            <div class="my-1 border-t border-border-subtle"></div>
                             <a href="{{ route('feedback.feature-requests') }}"
                                class="flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:text-white hover:bg-white/5 transition-colors {{ request()->routeIs('feedback.feature-requests') ? 'text-white bg-white/5' : '' }}">
                                 <x-lucide-lightbulb class="w-4 h-4 shrink-0" />

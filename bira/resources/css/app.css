@@ -52,6 +52,112 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+/* ── Violetinis dieninis ─────────────────────────────────────────── */
+[data-theme="violet-day"] {
+    --color-background: #F8FAFC;
+    --color-card:       #FFFFFF;
+    --color-sidebar:    #F1F5F9;
+    --color-border-subtle: #E2E8F0;
+    --color-primary:    #7C3AED;
+    --color-secondary:  #A78BFA;
+    --color-muted:      #94A3B8;
+    --background:       #F8FAFC;
+    --foreground:       #0F172A;
+    --card:             #FFFFFF;
+    --card-foreground:  #0F172A;
+    --primary:          #7C3AED;
+    --primary-foreground: #ffffff;
+    --muted-foreground: #475569;
+    --border:           #E2E8F0;
+    --input:            #E2E8F0;
+}
+[data-theme="violet-day"] .text-white {
+    color: #0F172A !important;
+}
+[data-theme="violet-day"] .text-muted-foreground {
+    color: #475569 !important;
+}
+/* Keep white text on explicitly coloured elements */
+[data-theme="violet-day"] .bg-primary.text-white,
+[data-theme="violet-day"] [class*="bg-red"].text-white,
+[data-theme="violet-day"] [class*="bg-green"].text-white,
+[data-theme="violet-day"] [class*="bg-amber"].text-white,
+[data-theme="violet-day"] [class*="bg-blue"].text-white,
+[data-theme="violet-day"] [class*="bg-violet"].text-white,
+[data-theme="violet-day"] [class*="bg-primary"].text-white {
+    color: #ffffff !important;
+}
+
+/* ── Žalias ──────────────────────────────────────────────────────── */
+[data-theme="green"] {
+    --color-background: #F0FDF4;
+    --color-card:       #FFFFFF;
+    --color-sidebar:    #ECFDF5;
+    --color-border-subtle: #D1FAE5;
+    --color-primary:    #10B981;
+    --color-secondary:  #34D399;
+    --color-muted:      #6B7280;
+    --background:       #F0FDF4;
+    --foreground:       #064E3B;
+    --card:             #FFFFFF;
+    --card-foreground:  #064E3B;
+    --primary:          #10B981;
+    --primary-foreground: #ffffff;
+    --muted-foreground: #065F46;
+    --border:           #D1FAE5;
+    --input:            #D1FAE5;
+}
+[data-theme="green"] .text-white {
+    color: #064E3B !important;
+}
+[data-theme="green"] .text-muted-foreground {
+    color: #065F46 !important;
+}
+[data-theme="green"] .bg-primary.text-white,
+[data-theme="green"] [class*="bg-red"].text-white,
+[data-theme="green"] [class*="bg-green"].text-white,
+[data-theme="green"] [class*="bg-amber"].text-white,
+[data-theme="green"] [class*="bg-blue"].text-white,
+[data-theme="green"] [class*="bg-violet"].text-white,
+[data-theme="green"] [class*="bg-primary"].text-white {
+    color: #ffffff !important;
+}
+
+/* ── Medinis / rudas ─────────────────────────────────────────────── */
+[data-theme="wood"] {
+    --color-background: #F5EFE7;
+    --color-card:       #FFFFFF;
+    --color-sidebar:    #EDE4D8;
+    --color-border-subtle: #E5D6C6;
+    --color-primary:    #8B5E3C;
+    --color-secondary:  #C8A98D;
+    --color-muted:      #A08D7C;
+    --background:       #F5EFE7;
+    --foreground:       #2C1F14;
+    --card:             #FFFFFF;
+    --card-foreground:  #2C1F14;
+    --primary:          #8B5E3C;
+    --primary-foreground: #ffffff;
+    --muted-foreground: #5A4633;
+    --border:           #E5D6C6;
+    --input:            #E5D6C6;
+}
+[data-theme="wood"] .text-white {
+    color: #2C1F14 !important;
+}
+[data-theme="wood"] .text-muted-foreground {
+    color: #5A4633 !important;
+}
+[data-theme="wood"] .bg-primary.text-white,
+[data-theme="wood"] [class*="bg-red"].text-white,
+[data-theme="wood"] [class*="bg-green"].text-white,
+[data-theme="wood"] [class*="bg-amber"].text-white,
+[data-theme="wood"] [class*="bg-blue"].text-white,
+[data-theme="wood"] [class*="bg-violet"].text-white,
+[data-theme="wood"] [class*="bg-primary"].text-white {
+    color: #ffffff !important;
+}
+
 /* Task Card Layout Toggling */
 .column-tasks .task-card-column {
     display: flex !important;
