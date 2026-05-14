@@ -170,7 +170,13 @@
                                     $boardId = $task->boards->first()->id ?? null;
                                 @endphp
                                 @if($boardId)
-                                    <a href="{{ route('boards.show', $boardId) }}" class="block p-3 rounded-lg border border-border-subtle bg-background/30 hover:bg-background transition-colors group">
+                                    @php
+                                        $targetUrl = route('boards.show', $boardId);
+                                        if ($task->status && $task->status->is_backlog) {
+                                            $targetUrl = route('backlog.index', ['team_id' => $task->team_id, 'board_id' => $boardId]);
+                                        }
+                                    @endphp
+                                    <a href="{{ $targetUrl }}" class="block p-3 rounded-lg border border-border-subtle bg-background/30 hover:bg-background transition-colors group">
                                         <div class="flex items-start gap-3">
                                             <div class="mt-0.5">
                                                 @if($task->status && $task->status->is_done)
@@ -219,7 +225,7 @@
             <div class="bg-card border border-border-subtle rounded-xl p-5 lg:col-span-1">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                        <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
                         Notifications
                     </h2>
                     @if($notifications->count() > 0)
@@ -228,32 +234,65 @@
                 </div>
 
                 @if($notifications->count() > 0)
-                    <div class="space-y-2 overflow-y-auto pr-1" style="max-height: 500px;">
+                    <div class="space-y-2">
                         @foreach($notifications as $notification)
-                            <div class="p-2.5 rounded-lg border {{ $notification->is_read ? 'border-border-subtle bg-background/20' : 'border-primary/30 bg-primary/5' }} flex items-start gap-2.5 transition-colors hover:bg-background/50">
-                                <div class="mt-0.5">
-                                    @if($notification->type === 'mention')
-                                        <div class="p-1 bg-blue-500/20 text-blue-400 rounded-md"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg></div>
-                                    @elseif($notification->type === 'task_assigned')
-                                        <div class="p-1 bg-purple-500/20 text-purple-400 rounded-md"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg></div>
-                                    @else
-                                        <div class="p-1 bg-gray-500/20 text-gray-400 rounded-md"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
-                                    @endif
+                            @php
+                                $iconClass = 'text-primary';
+                                $iconName = 'lucide-bell';
+                                
+                                switch($notification->type) {
+                                    case 'poker_started':
+                                        $iconName = 'lucide-clipboard';
+                                        $iconClass = 'text-amber-400';
+                                        break;
+                                    case 'poker_completed':
+                                        $iconName = 'lucide-check-circle';
+                                        $iconClass = 'text-green-400';
+                                        break;
+                                    case 'sprint_started':
+                                        $iconName = 'lucide-zap';
+                                        $iconClass = 'text-blue-400';
+                                        break;
+                                    case 'sprint_completed':
+                                        $iconName = 'lucide-check';
+                                        $iconClass = 'text-emerald-400';
+                                        break;
+                                    case 'team_added':
+                                    case 'subteam_added':
+                                        $iconName = 'lucide-users';
+                                        $iconClass = 'text-violet-400';
+                                        break;
+                                    case 'board_added':
+                                        $iconName = 'lucide-layout-grid';
+                                        $iconClass = 'text-cyan-400';
+                                        break;
+                                }
+                            @endphp
+                            <div class="p-3 rounded-lg border {{ $notification->is_read ? 'border-border-subtle bg-background/20' : 'border-primary/30 bg-primary/5' }} flex gap-3 transition-all hover:bg-background/50 hover:translate-x-1 duration-200">
+                                <div class="mt-0.5 shrink-0">
+                                    <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center {{ $iconClass }}">
+                                        <x-dynamic-component :component="$iconName" class="w-4 h-4" />
+                                    </div>
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <div class="flex justify-between items-start gap-2">
-                                        <p class="text-xs font-medium {{ $notification->is_read ? 'text-gray-300' : 'text-white font-semibold' }}">
+                                        <p class="text-xs font-semibold {{ $notification->is_read ? 'text-gray-400' : 'text-white' }} truncate">
                                             {{ $notification->title }}
                                         </p>
                                         <span class="text-[9px] text-muted-foreground whitespace-nowrap mt-0.5">{{ \Carbon\Carbon::parse($notification->created_at)->diffForHumans() }}</span>
                                     </div>
-                                    <p class="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{{ $notification->message }}</p>
+                                    <p class="text-[11px] text-muted-foreground leading-snug line-clamp-2 mt-0.5">{{ $notification->message }}</p>
                                     @if($notification->link)
-                                        <a href="{{ $notification->link }}" class="text-[10px] text-primary hover:underline mt-1 inline-block">View details</a>
+                                        <div class="mt-2">
+                                            <a href="{{ $notification->link }}" class="text-[10px] font-medium text-primary hover:text-primary/80 transition-colors inline-flex items-center gap-1 group/link">
+                                                View details
+                                                <x-lucide-chevron-right class="w-3 h-3 transform group-hover/link:translate-x-0.5 transition-transform" />
+                                            </a>
+                                        </div>
                                     @endif
                                 </div>
                                 @if(!$notification->is_read)
-                                    <div class="w-1.5 h-1.5 rounded-full bg-primary mt-1 shrink-0"></div>
+                                    <div class="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0 animate-pulse"></div>
                                 @endif
                             </div>
                         @endforeach

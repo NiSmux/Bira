@@ -55,21 +55,6 @@ class BoardController extends Controller
                 ->whereIn('team_members.role_in_team', ['owner', 'Admin', 'Owner']);
         })->with('members')->get();
 
-        if ($request->has('debug')) {
-            dd([
-                'user_id' => $userId,
-                'teams_count' => $teams->count(),
-                'teams_sql' => Team::whereHas('members', function ($query) use ($userId) {
-                    $query->where('users.id', $userId)
-                        ->whereIn('team_members.role_in_team', ['owner', 'Admin', 'Owner']);
-                })->toSql(),
-                'teams_bindings' => Team::whereHas('members', function ($query) use ($userId) {
-                    $query->where('users.id', $userId)
-                        ->whereIn('team_members.role_in_team', ['owner', 'Admin', 'Owner']);
-                })->getBindings()
-            ]);
-        }
-
         $roles = self::boardRoles();
         $preselectedTeamId = $request->query('team_id');
 

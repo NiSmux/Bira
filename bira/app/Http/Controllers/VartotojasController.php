@@ -27,7 +27,7 @@ class VartotojasController extends Controller
             'name' => $request->vardas,
             'email' => $request->e_pastas,
             'password_hash' => Hash::make($request->slaptazodis),
-            'role_id' => 1,  // <-- Visada paprastas vartotojas
+            'role_id' => $request->role,
             'is_active' => 1
         ]);
 

@@ -162,7 +162,7 @@
                         </button>
                         <div id="notif-dropdown" class="hidden absolute right-0 top-full mt-2 w-96 bg-sidebar border border-border-subtle rounded-xl shadow-2xl z-50 overflow-hidden">
                             {{-- Header --}}
-                            <div class="flex items-center justify-between px-4 py-3 border-b border-border-subtle">
+                            <div class="flex items-center justify-between gap-4 px-4 py-3 border-b border-border-subtle">
                                 <h3 class="text-sm font-bold text-white flex items-center gap-2">
                                     <x-lucide-bell class="w-4 h-4 text-primary" />
                                     Notifications

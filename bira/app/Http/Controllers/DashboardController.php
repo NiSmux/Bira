@@ -19,10 +19,10 @@ class DashboardController extends Controller
 
         $user = Auth::user();
 
-        // 1. User Statistics
+        // 1. User Statistics — exclude backlog items from active count
         $totalTasks = WorkItem::where('assignee_id', $user->id)
             ->whereHas('status', function($q) {
-                $q->where('is_done', false);
+                $q->where('is_done', false)->where('is_backlog', false);
             })->count();
             
         $totalDoneTasks = WorkItem::where('assignee_id', $user->id)
@@ -72,7 +72,7 @@ class DashboardController extends Controller
         $notifications = DB::table('notifications')
             ->where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
-            ->take(8)
+            ->take(6)
             ->get();
 
         // 3. Last boards user was in
@@ -84,6 +84,7 @@ class DashboardController extends Controller
                      ->where('board_members.user_id', '=', $user->id);
             })
             ->select('boards.*', 'board_members.last_accessed_at')
+            ->withCount('items')
             ->orderBy('last_accessed_at', 'desc')
             ->take(2)
             ->get();
@@ -93,7 +94,7 @@ class DashboardController extends Controller
                 $q->where('assignee_id', $user->id)
                   ->orWhere('created_by', $user->id);
             })
-            ->with(['status', 'type', 'priority'])
+            ->with(['status', 'type', 'priority', 'boards'])
             ->orderBy('updated_at', 'desc')
             ->take(6)
             ->get();

@@ -65,7 +65,7 @@
                         </div>
 
                         <div class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
-                            <span class="text-[10px] text-muted-foreground uppercase font-medium tracking-tight">Created: {{ \Carbon\Carbon::parse($itemBoard->created_at)->format('M d, Y') }}</span>
+                            <span class="text-[10px] text-muted-foreground uppercase font-medium tracking-tight">Created: {{ $itemBoard->created_at ? \Carbon\Carbon::parse($itemBoard->created_at)->format('M d, Y') : 'N/A' }}</span>
                             <div class="flex items-center gap-3">
                                 @php
                                     $isOwner = $itemBoard->team && $itemBoard->team->members()->where('users.id', Auth::user()->id)->where('team_members.role_in_team', 'owner')->exists();
@@ -106,8 +106,8 @@
 {{-- Board Creation Modal --}}
 <div id="board-create-modal" class="fixed inset-0 z-[100] items-center justify-center hidden">
     <div class="absolute inset-0 bg-background/80 backdrop-blur-md" id="board-create-backdrop"></div>
-    <div class="relative bg-sidebar border border-white/10 rounded-[2.5rem] p-10 w-full max-w-2xl mx-4 shadow-3xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto custom-scrollbar">
-        <div id="board-create-modal-content">
+    <div class="relative bg-sidebar border border-white/10 rounded-[2.5rem] w-full max-w-2xl mx-4 shadow-3xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto custom-scrollbar">
+        <div id="board-create-modal-content" class="p-12">
             <div class="flex justify-center py-12">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>

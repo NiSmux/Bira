@@ -89,7 +89,7 @@
                             <h4 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">{{ $status->name }}</h4>
                         @endif
                         <span class="px-2 py-0.5 rounded-full bg-white/5 text-[10px] font-bold text-muted-foreground mr-2">
-                            {{ $board->items->where('status_id', $status->id)->count() }}
+                            {{ $activeSprint ? $activeSprint->items->where('status_id', $status->id)->count() : 0 }}
                         </span>
                     </div>
                     @if($permissionLevel === 'admin')

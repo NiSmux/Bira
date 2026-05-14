@@ -32,22 +32,22 @@
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <button id="toggle-filters-btn" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold transition-all border border-white/10 shadow-lg hover:scale-[1.02] active:scale-[0.98] h-[46px]">
-                        <x-lucide-filter class="w-5 h-5" />
+                    <button type="button" id="toggle-filters-btn" class="relative flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold transition-all border border-white/10 hover:border-primary/30 shadow-lg hover:scale-[1.02] active:scale-[0.98] h-[46px] cursor-pointer group">
+                        <x-lucide-filter class="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                         Filters
                     </button>
                     
                     @if(isset($board) && $board->permissionLevel !== 'viewer')
-                        <button data-board-id="{{ $board->id }}" 
-                           class="create-task-modal-trigger flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold transition-all border border-white/10 shadow-lg hover:scale-[1.02] active:scale-[0.98] h-[46px]">
-                            <x-lucide-plus class="w-5 h-5" />
+                        <button type="button" data-board-id="{{ $board->id }}" 
+                           class="create-task-modal-trigger relative flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold transition-all border border-white/10 hover:border-primary/30 shadow-lg hover:scale-[1.02] active:scale-[0.98] h-[46px] cursor-pointer group">
+                            <x-lucide-plus class="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                             Create Task
                         </button>
                     @endif
 
                     @if(isset($board) && $board->permissionLevel === 'admin')
-                        <button id="new-sprint-trigger-global" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold transition-all shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] h-[46px]">
-                            <x-lucide-plus-circle class="w-5 h-5" />
+                        <button type="button" id="new-sprint-trigger-global" data-board-id="{{ $board->id }}" class="relative flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold transition-all shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] h-[46px] cursor-pointer border border-primary/20 hover:border-primary/40 group">
+                            <x-lucide-plus-circle class="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
                             Create Sprint
                         </button>
                     @endif
@@ -82,12 +82,12 @@
                             
                             <div class="ml-auto flex items-center gap-3">
                                 @if($permissionLevel === 'admin')
-                                    <button class="new-sprint-btn-board px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white text-xs font-bold transition-all border border-white/10" data-board-id="{{ $backlogBoard->id }}">
+                                    <button type="button" class="new-sprint-btn-board px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white text-xs font-bold transition-all border border-white/10 hover:border-white/20 cursor-pointer" data-board-id="{{ $backlogBoard->id }}">
                                         New Sprint
                                     </button>
                                 @endif
-                                <button data-board-id="{{ $backlogBoard->id }}" 
-                                   class="create-task-modal-trigger px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-all border border-primary/20 flex items-center gap-1.5">
+                                <button type="button" data-board-id="{{ $backlogBoard->id }}" 
+                                   class="create-task-modal-trigger px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-all border border-primary/20 hover:border-primary/30 flex items-center gap-1.5 cursor-pointer">
                                     <x-lucide-plus class="w-3.5 h-3.5" />
                                     Create Task
                                 </button>
@@ -352,7 +352,7 @@
     </div>
 
     <!-- Edit Sprint Modal (Reused) -->
-    <div id="edit-sprint-modal" class="fixed inset-0 z-[100] items-center justify-center hidden">
+    <div id="edit-sprint-modal" class="fixed inset-0 z-[1000] items-center justify-center hidden">
         <div class="absolute inset-0 bg-background/80 backdrop-blur-md" id="edit-sprint-backdrop"></div>
         <div class="relative bg-sidebar border border-white/10 rounded-[2.5rem] p-10 w-full max-w-xl mx-4 shadow-3xl animate-in zoom-in-95 duration-200">
             <div class="flex items-center gap-4 mb-8">
@@ -397,20 +397,19 @@
         </div>
     </div>
     <!-- Create Task Modal -->
-    <div id="create-task-modal" class="fixed inset-0 z-[100] items-center justify-center hidden">
+    <div id="create-task-modal" class="fixed inset-0 z-[1000] items-center justify-center hidden">
         <div class="absolute inset-0 bg-background/80 backdrop-blur-md" id="create-task-backdrop"></div>
-        <div class="relative bg-sidebar border border-white/10 rounded-[2.5rem] p-10 w-full max-w-2xl mx-4 shadow-3xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto custom-scrollbar">
-            <div class="flex items-center gap-4 mb-8">
-                <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-                    <x-lucide-plus class="w-6 h-6" />
+        <div class="relative bg-sidebar border border-white/10 rounded-[2.5rem] w-full max-w-2xl mx-4 shadow-3xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div id="create-task-modal-content" class="p-12">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                        <x-lucide-plus class="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h3 class="text-white font-black text-2xl tracking-tight">Create New Task</h3>
+                        <p class="text-muted-foreground text-sm font-medium">Add a new item to your backlog</p>
+                    </div>
                 </div>
-                <div>
-                    <h3 class="text-white font-black text-2xl tracking-tight">Create New Task</h3>
-                    <p class="text-muted-foreground text-sm font-medium">Add a new item to your backlog</p>
-                </div>
-            </div>
-            <div id="create-task-modal-content">
-                <!-- Form moves here -->
                 <div class="flex justify-center py-12">
                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
@@ -419,7 +418,7 @@
     </div>
 
     {{-- Tag Edit Modal (Reused for task form tags) --}}
-    <div id="tag-edit-modal" class="fixed inset-0 z-[110] items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+    <div id="tag-edit-modal" class="fixed inset-0 z-[1010] items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
         <div class="relative bg-[#1a1a2e] border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-in zoom-in duration-200">
             <h3 class="text-white font-bold text-lg mb-5">Edit Tag</h3>
             <div class="space-y-4">
@@ -462,6 +461,35 @@
 
     .sprint-toggle-btn.rotate-180 { transform: rotate(180deg); }
     .sprint-content.collapsed { display: none; }
+    
+    /* Ensure pointer cursor on all header buttons */
+    #toggle-filters-btn, .create-task-modal-trigger, #new-sprint-trigger-global, .new-sprint-btn-board {
+        cursor: pointer !important;
+    }
+
+    /* Tag Selection Feedback */
+    .tag-checkbox:checked + .tag-label {
+        background-color: var(--tag-color) !important;
+        color: #fff !important;
+        border-color: var(--tag-color) !important;
+        box-shadow: 0 0 15px var(--tag-bg);
+    }
+    .tag-label {
+        background-color: var(--tag-bg);
+    }
+
+    /* Management mode highlights */
+    .tag-container-managing-delete .tag-label { opacity: 0.5; }
+    .tag-to-delete .tag-label { 
+        border-color: #ef4444 !important; 
+        background-color: rgba(239, 68, 68, 0.2) !important; 
+        color: #f87171 !important;
+        opacity: 1 !important;
+    }
+    .tag-container-managing-edit .tag-label { 
+        border-style: dashed !important;
+        border-color: var(--tag-color) !important;
+    }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -475,6 +503,8 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
+        const createTaskModal = document.getElementById('create-task-modal');
+        const createTaskContent = document.getElementById('create-task-modal-content');
 
         // ── Date pickers ──────────────────────────────────────────────────
         flatpickr('input[type="date"]', {
@@ -482,22 +512,57 @@
             theme: 'dark'
         });
 
-        // ── Sprint creation toggle ────────────────────────────────────────
-        const globalTrigger = document.getElementById('new-sprint-trigger-global');
-        if (globalTrigger) {
-            globalTrigger.addEventListener('click', () => {
-                // If single board, trigger its form
-                const form = document.querySelector('[id^="new-sprint-form-"]');
-                form?.classList.toggle('hidden');
-            });
-        }
+        // ── Unified Interaction Delegation ────────────────────────────────
+        document.addEventListener('click', async (e) => {
+            // Create Task
+            const taskBtn = e.target.closest('.create-task-modal-trigger');
+            if (taskBtn) {
+                const bId = taskBtn.dataset.boardId;
+                if (createTaskModal && createTaskContent) {
+                    createTaskModal.classList.remove('hidden');
+                    createTaskModal.classList.add('flex');
+                    createTaskContent.innerHTML = `<div class="flex justify-center py-12"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>`;
+                    try {
+                        const response = await fetch(`/boards/${bId}/tasks/create`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                        createTaskContent.innerHTML = await response.text();
+                        initTaskForm(createTaskContent, bId);
+                    } catch (error) {
+                        createTaskContent.innerHTML = `<p class="text-red-400 p-8">Failed to load form.</p>`;
+                    }
+                }
+                return;
+            }
 
-        document.querySelectorAll('.new-sprint-btn-board').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const boardId = btn.dataset.boardId;
-                document.getElementById('new-sprint-form-' + boardId).classList.toggle('hidden');
-            });
+            // Global Sprint Trigger
+            const globalSprintBtn = e.target.closest('#new-sprint-trigger-global');
+            if (globalSprintBtn) {
+                const bId = globalSprintBtn.dataset.boardId;
+                const form = bId ? document.getElementById('new-sprint-form-' + bId) : document.querySelector('[id^="new-sprint-form-"]');
+                if (form) {
+                    form.classList.toggle('hidden');
+                    if (!form.classList.contains('hidden')) {
+                        form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        form.querySelector('input')?.focus();
+                    }
+                }
+                return;
+            }
+
+            // Board Sprint Btn
+            const boardSprintBtn = e.target.closest('.new-sprint-btn-board');
+            if (boardSprintBtn) {
+                const bId = boardSprintBtn.dataset.boardId;
+                document.getElementById('new-sprint-form-' + bId)?.classList.toggle('hidden');
+                return;
+            }
         });
+
+        document.getElementById('create-task-backdrop')?.addEventListener('click', closeModal);
+
+        function closeModal() {
+            createTaskModal?.classList.add('hidden');
+            createTaskModal?.classList.remove('flex');
+        }
 
         document.querySelectorAll('.cancel-new-sprint').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -646,37 +711,6 @@
             editModal.classList.remove('flex');
         });
 
-        // ── Create Task Modal ─────────────────────────────────────────────
-        const createTaskModal = document.getElementById('create-task-modal');
-        const createTaskContent = document.getElementById('create-task-modal-content');
-        
-        document.querySelectorAll('.create-task-modal-trigger').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const bId = btn.dataset.boardId;
-                createTaskModal.classList.remove('hidden');
-                createTaskModal.classList.add('flex');
-                
-                createTaskContent.innerHTML = `
-                    <div class="flex justify-center py-12">
-                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                    </div>
-                `;
-
-                try {
-                    const response = await fetch(`/boards/${bId}/tasks/create`, {
-                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                    });
-                    const html = await response.text();
-                    createTaskContent.innerHTML = html;
-                    
-                    // Re-initialize any JS needed for the form
-                    initTaskForm(createTaskContent);
-                } catch (error) {
-                    createTaskContent.innerHTML = `<p class="text-red-400">Failed to load form. Please try again.</p>`;
-                }
-            });
-        });
-
 
         // ── Tag System Shared Logic ──────────────────────────────────────
         let currentTagContext = { boardId: null, container: null };
@@ -685,7 +719,8 @@
             const editModal = document.getElementById('tag-edit-modal');
             editModal.classList.add('hidden');
             editModal.classList.remove('flex');
-            if (window.exitManagementMode) window.exitManagementMode();
+            // exitManagementMode is defined inside initTaskForm, so we check if it exists
+            // Since it's scoped, we'll handle it via event dispatch or just leave it if it's only for the modal
         });
 
         document.getElementById('save-tag-edit-btn')?.addEventListener('click', async () => {
@@ -760,27 +795,21 @@
                         modal.classList.add('hidden');
                         modal.classList.remove('flex');
                     }
-                    
-                    // Exit management mode safely - handle potential closure issues
-                    if (typeof window.exitManagementMode === 'function') {
-                        try {
-                            window.exitManagementMode();
-                        } catch (cleanupError) {
-                            console.warn('Cleanup warning:', cleanupError);
-                            // We don't alert here because the tag is already saved and updated
-                        }
-                    }
                 } else {
-                    alert('Server returned success: false. Message: ' + (data.message || 'No message provided'));
+                    alert('Server returned an error. Please try again.');
                 }
             } catch (error) {
-                console.error('Full Error Details:', error);
-                alert('An error occurred during UI update: ' + error.name + ': ' + error.message);
+                console.error('Tag save error:', error);
+                alert('An error occurred while saving the tag.');
             }
         });
 
-        function initTaskForm(container) {
-            const boardId = container.querySelector('form').action.split('/').slice(-2)[0];
+        function initTaskForm(container, boardId) {
+            // If boardId not passed, try to extract from form action
+            if (!boardId) {
+                const formEl = container.querySelector('form');
+                boardId = formEl?.action.split('/').slice(-3, -2)[0] || '';
+            }
 
             // Close modal logic
             container.querySelectorAll('.cancel-modal-btn').forEach(btn => {
@@ -807,21 +836,24 @@
                     }
                     btn.classList.remove('bg-white/5', 'border-white/10', 'text-muted-foreground');
                     
-                    typeInput.value = type === 'none' ? '' : type;
-                    if(userDiv) userDiv.classList.toggle('hidden', type !== 'user');
-                    if(subTeamDiv) subTeamDiv.classList.toggle('hidden', type !== 'sub_team');
+                    if (typeInput) typeInput.value = type === 'none' ? '' : type;
+                    if (userDiv) userDiv.classList.toggle('hidden', type !== 'user');
+                    if (subTeamDiv) subTeamDiv.classList.toggle('hidden', type !== 'sub_team');
                 });
             });
 
-            // ── Tag Management Logic ──────────────────────────────────────
+            // ── Tag Management ──────────────────────────────────────────
             let tagManagementMode = 'none';
             let selectedTagsForDeletion = new Set();
             const tagsContainer = container.querySelector('#tags-container');
 
-            window.toggleTagManagement = (mode) => {
-                const deleteBtn = container.querySelector('#tag-manage-delete-btn');
-                const editBtn = container.querySelector('#tag-manage-edit-btn');
-                
+            const deleteBtn = container.querySelector('#tag-manage-delete-btn');
+            const editBtn = container.querySelector('#tag-manage-edit-btn');
+
+            if (deleteBtn) deleteBtn.addEventListener('click', () => toggleTagManagement('delete'));
+            if (editBtn) editBtn.addEventListener('click', () => toggleTagManagement('edit'));
+
+            function toggleTagManagement(mode) {
                 if (tagManagementMode === mode) {
                     if (mode === 'delete' && selectedTagsForDeletion.size > 0) {
                         confirmBatchDelete();
@@ -835,42 +867,35 @@
                 tagManagementMode = mode;
                 
                 if (mode === 'delete') {
-                    tagsContainer.classList.add('tag-container-managing-delete');
-                    deleteBtn.classList.add('bg-red-500/20', 'border-red-500/50', 'text-red-400');
-                    deleteBtn.classList.remove('text-muted-foreground');
+                    tagsContainer?.classList.add('tag-container-managing-delete');
+                    deleteBtn?.classList.add('bg-red-500/20', 'border-red-500/50', 'text-red-400');
+                    deleteBtn?.classList.remove('text-muted-foreground');
                     container.querySelectorAll('.tag-wrapper label').forEach(label => label.addEventListener('click', handleTagManagementClick, { capture: true }));
                 } else if (mode === 'edit') {
-                    tagsContainer.classList.add('tag-container-managing-edit');
-                    editBtn.classList.add('bg-primary/20', 'border-primary/50', 'text-white');
-                    editBtn.classList.remove('text-muted-foreground');
+                    tagsContainer?.classList.add('tag-container-managing-edit');
+                    editBtn?.classList.add('bg-primary/20', 'border-primary/50', 'text-white');
+                    editBtn?.classList.remove('text-muted-foreground');
                     container.querySelectorAll('.tag-wrapper label').forEach(label => label.addEventListener('click', handleTagManagementClick, { capture: true }));
                 }
-            };
+            }
 
-            window.exitManagementMode = () => {
-                const deleteBtn = container.querySelector('#tag-manage-delete-btn');
-                const editBtn = container.querySelector('#tag-manage-edit-btn');
-
-                tagsContainer.classList.remove('tag-container-managing-delete', 'tag-container-managing-edit');
+            function exitManagementMode() {
+                tagsContainer?.classList.remove('tag-container-managing-delete', 'tag-container-managing-edit');
                 deleteBtn?.classList.remove('bg-red-500/20', 'border-red-500/50', 'text-red-400');
                 deleteBtn?.classList.add('text-muted-foreground');
                 editBtn?.classList.remove('bg-primary/20', 'border-primary/50', 'text-white');
                 editBtn?.classList.add('text-muted-foreground');
-                
                 container.querySelectorAll('.tag-wrapper label').forEach(label => label.removeEventListener('click', handleTagManagementClick, { capture: true }));
                 container.querySelectorAll('.tag-wrapper').forEach(w => w.classList.remove('tag-to-delete'));
-                
                 selectedTagsForDeletion.clear();
                 tagManagementMode = 'none';
-            };
+            }
 
-            const handleTagManagementClick = (e) => {
+            function handleTagManagementClick(e) {
                 if (tagManagementMode === 'none') return;
                 e.preventDefault(); e.stopPropagation();
-                
                 const wrapper = e.currentTarget.closest('.tag-wrapper');
                 const tagId = wrapper.dataset.tagId;
-                
                 if (tagManagementMode === 'delete') {
                     if (selectedTagsForDeletion.has(tagId)) {
                         selectedTagsForDeletion.delete(tagId);
@@ -880,60 +905,17 @@
                         wrapper.classList.add('tag-to-delete');
                     }
                 } else if (tagManagementMode === 'edit') {
-                    const boardId = wrapper.dataset.boardId;
                     const tagEditModal = document.getElementById('tag-edit-modal');
-                    document.getElementById('edit_tag_id').value = tagId;
-                    document.getElementById('edit_tag_board_id').value = boardId;
-                    document.getElementById('edit_tag_name').value = wrapper.dataset.tagName;
-                    document.getElementById('edit_tag_color').value = wrapper.dataset.tagColor;
-                    tagEditModal.classList.remove('hidden');
-                    tagEditModal.classList.add('flex');
-                }
-            };
-
-            window.toggleCustomTagForm = () => {
-                const btn = container.querySelector('#show-custom-tag-btn');
-                const form = container.querySelector('#custom-tag-form');
-                if (form.classList.contains('hidden')) {
-                    form.classList.remove('hidden'); form.classList.add('flex'); btn.classList.add('hidden');
-                } else {
-                    form.classList.add('hidden'); form.classList.remove('flex'); btn.classList.remove('hidden');
-                }
-            };
-
-            window.saveCustomTag = () => {
-                const nameInput = container.querySelector('#new_tag_name');
-                const colorInput = container.querySelector('#new_tag_color');
-                const name = nameInput.value.trim();
-                const color = colorInput.value;
-
-                if (!name) return alert('Tag name cannot be empty');
-
-                fetch(`/boards/${boardId}/tags`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
-                    body: JSON.stringify({ name, color })
-                }).then(res => res.json()).then(data => {
-                    if (data.success) {
-                        const tag = data.tag;
-                        const btn = container.querySelector('#show-custom-tag-btn');
-                        const div = document.createElement('div');
-                        div.className = 'tag-wrapper';
-                        div.dataset.tagId = tag.id; div.dataset.tagName = tag.name; div.dataset.tagColor = tag.color;
-                        div.innerHTML = `
-                            <input type="checkbox" id="tag_${tag.id}" name="tags[]" value="${tag.id}" class="hidden tag-checkbox" checked>
-                            <label for="tag_${tag.id}" class="tag-label px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer flex items-center gap-1.5 hover:opacity-80 border-transparent shadow-sm"
-                                   style="--tag-bg: ${tag.color}1a; --tag-color: ${tag.color}; color: ${tag.color};">
-                                <div class="w-2.5 h-2.5 rounded-full" style="background-color: ${tag.color}"></div>
-                                <span class="tag-name">${tag.name}</span>
-                            </label>
-                        `;
-                        tagsContainer.insertBefore(div, btn);
-                        nameInput.value = '';
-                        toggleCustomTagForm();
+                    if (tagEditModal) {
+                        document.getElementById('edit_tag_id').value = tagId;
+                        document.getElementById('edit_tag_board_id').value = wrapper.dataset.boardId;
+                        document.getElementById('edit_tag_name').value = wrapper.dataset.tagName;
+                        document.getElementById('edit_tag_color').value = wrapper.dataset.tagColor;
+                        tagEditModal.classList.remove('hidden');
+                        tagEditModal.classList.add('flex');
                     }
-                });
-            };
+                }
+            }
 
             const confirmBatchDelete = () => {
                 if (!confirm(`Delete ${selectedTagsForDeletion.size} tags?`)) return;
@@ -950,6 +932,74 @@
                     }
                 });
             };
+
+            // Custom Tag logic
+            const showCustomBtn = container.querySelector('#show-custom-tag-btn');
+            const customTagForm = container.querySelector('#custom-tag-form');
+            const saveCustomBtn = container.querySelector('#save-custom-tag-btn');
+            const closeCustomBtn = container.querySelector('#close-custom-tag-btn');
+
+            if (showCustomBtn) showCustomBtn.addEventListener('click', () => {
+                customTagForm?.classList.remove('hidden');
+                customTagForm?.classList.add('flex');
+                showCustomBtn.classList.add('hidden');
+            });
+
+            if (closeCustomBtn) closeCustomBtn.addEventListener('click', () => {
+                customTagForm?.classList.add('hidden');
+                customTagForm?.classList.remove('flex');
+                showCustomBtn?.classList.remove('hidden');
+            });
+
+            if (saveCustomBtn) saveCustomBtn.addEventListener('click', () => {
+                const nameInput = container.querySelector('#new_tag_name');
+                const colorInput = container.querySelector('#new_tag_color');
+                const name = nameInput?.value.trim();
+                const color = colorInput?.value;
+                if (!name) return;
+
+                fetch(`/boards/${boardId}/tags`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ name, color })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'tag-wrapper';
+                        wrapper.dataset.tagId = data.tag.id;
+                        wrapper.dataset.tagName = data.tag.name;
+                        wrapper.dataset.tagColor = data.tag.color;
+                        wrapper.dataset.boardId = boardId;
+                        wrapper.innerHTML = `
+                            <input type="checkbox" id="tag_${data.tag.id}" name="tags[]" value="${data.tag.id}" class="hidden tag-checkbox" checked>
+                            <label for="tag_${data.tag.id}" class="tag-label px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer flex items-center gap-1.5 hover:opacity-80 border-transparent shadow-sm"
+                                   style="--tag-bg: ${data.tag.color}1a; --tag-color: ${data.tag.color}; color: ${data.tag.color};">
+                                <div class="w-2.5 h-2.5 rounded-full" style="background-color: ${data.tag.color}"></div>
+                                <span class="tag-name">${data.tag.name}</span>
+                            </label>
+                        `;
+                        if (tagsContainer && showCustomBtn) {
+                            tagsContainer.insertBefore(wrapper, showCustomBtn);
+                        }
+                        if (nameInput) nameInput.value = '';
+                        customTagForm?.classList.add('hidden');
+                        customTagForm?.classList.remove('flex');
+                        showCustomBtn?.classList.remove('hidden');
+                    } else {
+                        alert('Error creating tag: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(err => {
+                    console.error('Tag creation error:', err);
+                    alert('Failed to create tag. Check console for details.');
+                });
+            });
 
             // SP → hours auto-conversion
             const spInput = container.querySelector('#story_points');
@@ -975,16 +1025,12 @@
                     e.preventDefault();
                     const formData = new FormData(form);
                     const submitBtn = form.querySelector('button[type="submit"]');
-                    submitBtn.disabled = true;
-                    submitBtn.textContent = 'Creating...';
+                    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Creating...'; }
 
                     try {
                         const response = await fetch(form.action, {
                             method: 'POST',
-                            headers: { 
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'X-CSRF-TOKEN': csrfToken
-                            },
+                            headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrfToken },
                             body: formData
                         });
                         const result = await response.json();
@@ -992,24 +1038,16 @@
                             location.reload();
                         } else {
                             alert('Error: ' + (result.message || 'Failed to create task'));
-                            submitBtn.disabled = false;
-                            submitBtn.textContent = 'Create task';
+                            if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Create task'; }
                         }
                     } catch (error) {
-                        alert('System error.');
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = 'Create task';
+                        console.error('Submit error:', error);
+                        alert('System error occurred.');
+                        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Create task'; }
                     }
                 });
             }
         }
-
-        function closeModal() {
-            createTaskModal.classList.add('hidden');
-            createTaskModal.classList.remove('flex');
-        }
-
-        document.getElementById('create-task-backdrop').addEventListener('click', closeModal);
     });
 </script>
 @endpush

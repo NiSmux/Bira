@@ -1,4 +1,4 @@
-<div class="flex items-center justify-between mb-8">
+<div class="flex items-center justify-between mb-12">
     <div class="flex items-center gap-4">
         <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
@@ -26,12 +26,13 @@
         </a>
     </div>
 @else
-    <form action="{{ route('boards.store') }}" method="POST" class="space-y-8" id="create-board-form-modal">
+    <form action="{{ route('boards.store') }}" method="POST" id="create-board-form-modal">
         @csrf
         
-        <div class="space-y-6">
-            <div>
-                <label for="board_name_modal" class="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">Board name</label>
+        <div class="pt-6">
+            {{-- Group 1: Board Name --}}
+            <div class="flex flex-col gap-3 mb-12">
+                <label for="board_name_modal" class="block text-[10px] font-black text-muted-foreground/50 uppercase tracking-[0.2em] ml-1">Board name</label>
                 <input type="text" 
                        name="name" 
                        id="board_name_modal" 
@@ -42,8 +43,9 @@
                        placeholder="e.g.: Marketing Campaign 2024">
             </div>
 
-            <div>
-                <label for="team_id_modal" class="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">Assign to team</label>
+            {{-- Group 2: Team Selection --}}
+            <div class="flex flex-col gap-3 mb-12 pt-4">
+                <label for="team_id_modal" class="block text-[10px] font-black text-muted-foreground/50 uppercase tracking-[0.2em] ml-1">Assign to team</label>
                 <div class="relative group/select">
                     <select name="team_id" 
                             id="team_id_modal" 
@@ -62,8 +64,9 @@
                 </div>
             </div>
 
-            <div>
-                <label for="estimation_mode_modal" class="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">Estimation Mode</label>
+            {{-- Group 3: Estimation Mode --}}
+            <div class="flex flex-col gap-3 mb-12 pt-4">
+                <label for="estimation_mode_modal" class="block text-[10px] font-black text-muted-foreground/50 uppercase tracking-[0.2em] ml-1">Estimation Mode</label>
                 <div class="relative group/select">
                     <select name="estimation_mode" 
                             id="estimation_mode_modal" 
@@ -78,9 +81,9 @@
                 </div>
             </div>
 
-            <div id="modal-members-section" class="hidden">
-                <label class="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">Board members & roles</label>
-                <p class="text-[10px] text-muted-foreground mb-4 uppercase tracking-tighter">Include team members and assign their project roles.</p>
+            <div id="modal-members-section" class="hidden flex flex-col gap-4">
+                <label class="block text-[10px] font-black text-muted-foreground/50 uppercase tracking-[0.2em] ml-1">Board members & roles</label>
+                <p class="text-[10px] text-muted-foreground mb-1 uppercase tracking-tighter ml-1">Include team members and assign their project roles.</p>
                 
                 <div id="modal-members-loading" class="hidden p-6 text-center">
                     <div class="inline-flex items-center gap-2 text-muted-foreground text-sm">
@@ -96,7 +99,10 @@
             </div>
         </div>
 
-        <div class="pt-8 border-t border-white/5 flex gap-4">
+        {{-- Massive spacer to ensure the footer is pushed down --}}
+        <div class="h-16"></div>
+
+        <div class="pt-10 border-t border-white/5 flex gap-4">
             <button type="submit" class="flex-1 bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-2xl font-black text-lg transition-all shadow-xl shadow-primary/25 active:scale-95 leading-none">
                 Create Board
             </button>
