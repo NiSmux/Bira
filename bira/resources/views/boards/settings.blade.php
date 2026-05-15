@@ -188,12 +188,12 @@
                                 @endphp
                                 <tr class="hover:bg-white/[0.02] transition-colors">
                                     <td class="px-6 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                                        <a href="{{ route('profilis.rodyti', ['id' => $member->id, 'board_id' => $board->id]) }}" class="flex items-center gap-3 group/member hover:opacity-80 transition-all" title="View board-specific profile">
+                                            <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary group-hover/member:bg-primary/20 transition-colors">
                                                 {{ strtoupper(substr($member->name, 0, 1)) }}{{ strtoupper(substr(strstr($member->name, ' ') ?: '', 1, 1)) }}
                                             </div>
-                                            <span class="text-sm font-medium text-white">{{ $member->name }}</span>
-                                        </div>
+                                            <span class="text-sm font-medium text-white group-hover/member:text-primary transition-colors">{{ $member->name }}</span>
+                                        </a>
                                     </td>
                                     <td class="px-6 py-4 text-sm text-muted-foreground">{{ $member->email }}</td>
                                     <td class="px-6 py-4">

@@ -1,13 +1,20 @@
 @extends('layouts.app')
 
-@section('title', ($isOwnProfile ? 'My Profile' : $user->name . "'s Profile") . ' – Bira')
+@section('title', ($isOwnProfile ? 'My Profile' : $user->name . "'s Profile") . ($board ? ' - Board: ' . $board->name : ($team ? ' - Team: ' . $team->name : '')) . ' – Bira')
 
 @section('hide_sidebar', true)
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
     <div class="flex items-center justify-between mb-8">
-        <h2 class="text-2xl font-bold text-white">{{ $isOwnProfile ? 'My Profile' : $user->name . "'s Profile" }}</h2>
+        <div>
+            <h2 class="text-2xl font-bold text-white">{{ $isOwnProfile ? 'My Profile' : $user->name . "'s Profile" }}</h2>
+            @if($board)
+                <p class="text-sm text-muted-foreground mt-1">Viewing activity for board: <span class="text-primary font-semibold">{{ $board->name }}</span></p>
+            @elseif($team)
+                <p class="text-sm text-muted-foreground mt-1">Viewing activity for team: <span class="text-primary font-semibold">{{ $team->name }}</span></p>
+            @endif
+        </div>
         <a href="javascript:history.back()" class="inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg font-medium transition-all border border-white/10">
             <x-lucide-arrow-left class="w-4 h-4" />
             Back
@@ -38,6 +45,17 @@
                         <x-lucide-shield-check class="w-4 h-4 text-primary" />
                         {{ $role ? $role->name : 'User' }}
                     </span>
+                    @if($board)
+                        <span class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium text-primary">
+                            <x-lucide-layout-dashboard class="w-4 h-4" />
+                            Board stats only
+                        </span>
+                    @elseif($team)
+                        <span class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium text-primary">
+                            <x-lucide-users class="w-4 h-4" />
+                            Team stats only
+                        </span>
+                    @endif
                     @if(!$user->is_active)
                         <span class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 text-sm font-medium text-red-400">
                             <x-lucide-circle-x class="w-4 h-4" />
@@ -126,6 +144,18 @@
                             <p class="text-sm font-medium text-white">{{ $role ? $role->name : '—' }}</p>
                         </div>
                     </div>
+
+                    @if($boardRole)
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                            <x-lucide-award class="w-5 h-5" />
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-xs text-muted-foreground">Board role</p>
+                            <p class="text-sm font-medium text-white">{{ $boardRole }}</p>
+                        </div>
+                    </div>
+                    @endif
 
                     <div class="flex items-center gap-4">
                         <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-muted-foreground shrink-0">

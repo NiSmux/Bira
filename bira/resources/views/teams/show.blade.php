@@ -236,12 +236,21 @@
                             @foreach($team->members as $member)
                                 <tr class="hover:bg-white/[0.02] transition-colors">
                                     <td class="px-6 py-4">
-                                        <a href="{{ route('profilis.rodyti', $member->id) }}" class="flex items-center gap-3 group/member">
-                                            <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary group-hover/member:bg-primary/20 transition-colors">
-                                                {{ strtoupper(substr($member->name, 0, 1)) }}{{ strtoupper(substr(strstr($member->name, ' ') ?: '', 1, 1)) }}
+                                        @if($isOwner)
+                                            <a href="{{ route('profilis.rodyti', ['id' => $member->id, 'team_id' => $team->id]) }}" class="flex items-center gap-3 group/member" title="View profile">
+                                                <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary group-hover/member:bg-primary/20 transition-colors">
+                                                    {{ strtoupper(substr($member->name, 0, 1)) }}{{ strtoupper(substr(strstr($member->name, ' ') ?: '', 1, 1)) }}
+                                                </div>
+                                                <span class="text-sm font-medium text-white group-hover/member:text-primary transition-colors">{{ $member->name }}</span>
+                                            </a>
+                                        @else
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                                                    {{ strtoupper(substr($member->name, 0, 1)) }}{{ strtoupper(substr(strstr($member->name, ' ') ?: '', 1, 1)) }}
+                                                </div>
+                                                <span class="text-sm font-medium text-white">{{ $member->name }}</span>
                                             </div>
-                                            <span class="text-sm font-medium text-white group-hover/member:text-primary transition-colors">{{ $member->name }}</span>
-                                        </a>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 text-sm text-muted-foreground">{{ $member->email }}</td>
                                     <td class="px-6 py-4">

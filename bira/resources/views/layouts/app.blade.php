@@ -145,8 +145,7 @@
                         <a href="{{ route('calendar.index') }}" class="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all {{ request()->is('calendar*') ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-white/5 hover:text-white' }}">
                             Calendar
                         </a>
-                        <a href="{{ route('notifications.index') }}" class="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all {{ request()->is('notifications*') ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-white/5 hover:text-white' }}">Notifications</a>
-                    </nav>
+                       </nav>
                 </div>
                 
                 <div class="flex items-center gap-3">
@@ -441,7 +440,7 @@
                         metricsData = data;
                         renderSprint(data.sprint);
                         renderRelease(data.release);
-                        renderTeam(data.team);
+                        renderTeam(data.team, data.is_admin, data.board_id);
                         renderUser(data.user);
                         showTab(activeTab);
                     })
@@ -547,7 +546,7 @@
                     `;
                 }
 
-                function renderTeam(t) {
+                function renderTeam(t, isAdmin, boardId) {
                     const el = document.getElementById('team-panel-content');
                     const roleLabels = { product_owner: 'PO', techlead: 'TL', teamlead: 'Lead', developer: 'Dev', tester: 'QA', designer: 'UI', viewer: 'View' };
                     const maxItems = Math.max(...t.members.map(m => m.items), 1);
@@ -557,13 +556,17 @@
                         const initBg = ['bg-purple-600','bg-blue-600','bg-emerald-600','bg-orange-600','bg-pink-600','bg-indigo-600'];
                         const bg = initBg[m.id % initBg.length];
                         const roleLabel = roleLabels[m.role] ?? m.role;
-                        return `<div class="flex items-center gap-3 py-2 border-b border-white/5 last:border-0">
+                        
+                        const wrapperOpen = isAdmin ? `<a href="/profile/${m.id}?board_id=${boardId}" class="flex items-center gap-3 py-2 border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors px-2 rounded-lg -mx-2 group/member" title="View board-specific profile">` : `<div class="flex items-center gap-3 py-2 border-b border-white/5 last:border-0">`;
+                        const wrapperClose = isAdmin ? `</a>` : `</div>`;
+
+                        return `${wrapperOpen}
                             <div class="w-8 h-8 rounded-full ${bg} flex items-center justify-center text-white text-xs font-bold shrink-0">${m.initials}</div>
                             <div class="flex-1 min-w-0">
-                                <div class="flex items-center justify-between gap-2"><span class="text-sm text-white font-medium truncate">${m.name}</span><span class="text-[10px] text-muted-foreground shrink-0">${m.items} items · ${m.pts} pts</span></div>
+                                <div class="flex items-center justify-between gap-2"><span class="text-sm text-white font-medium truncate ${isAdmin ? 'group-hover/member:text-primary transition-colors' : ''}">${m.name}</span><span class="text-[10px] text-muted-foreground shrink-0">${m.items} items · ${m.pts} pts</span></div>
                                 <div class="flex items-center gap-2 mt-1"><span class="text-[9px] uppercase bg-white/10 px-1.5 py-0.5 rounded text-muted-foreground font-bold">${roleLabel}</span><div class="flex-1 bg-white/10 rounded-full h-1"><div class="bg-primary h-1 rounded-full" style="width:${barW}%"></div></div></div>
                             </div>
-                        </div>`;
+                        ${wrapperClose}`;
                     }).join('');
 
                     el.innerHTML = `

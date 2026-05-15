@@ -664,10 +664,12 @@ class BoardController extends Controller
         ];
 
         return response()->json([
-            'sprint'  => $sprintData,
-            'release' => $releaseData,
-            'team'    => $teamData,
-            'user'    => $userData,
+            'sprint'   => $sprintData,
+            'release'  => $releaseData,
+            'team'     => $teamData,
+            'user'     => $userData,
+            'board_id' => $board->id,
+            'is_admin' => $this->isBoardAdmin($board)
         ]);
     }
 
