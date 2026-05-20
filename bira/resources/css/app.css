@@ -74,6 +74,10 @@ body {
 [data-theme="violet-day"] .text-white {
     color: #0F172A !important;
 }
+/* Fractional white opacity text (e.g. text-white/70) → dark */
+[data-theme="violet-day"] [class*="text-white\/"] {
+    color: #374151 !important;
+}
 [data-theme="violet-day"] .text-muted-foreground {
     color: #475569 !important;
 }
@@ -88,12 +92,61 @@ body {
     color: #ffffff !important;
 }
 
+/* White-opacity borders → subtle gray */
+[data-theme="violet-day"] .border-white\/5  { border-color: #F1F5F9 !important; }
+[data-theme="violet-day"] .border-white\/10 { border-color: #E2E8F0 !important; }
+[data-theme="violet-day"] .border-white\/15 { border-color: #CBD5E1 !important; }
+[data-theme="violet-day"] .border-white\/20 { border-color: #CBD5E1 !important; }
+[data-theme="violet-day"] .border-white\/40 { border-color: #94A3B8 !important; }
+
+/* White-opacity backgrounds → subtle dark tints */
+[data-theme="violet-day"] [class*="bg-white\/"] {
+    background-color: rgba(0, 0, 0, 0.04) !important;
+}
+/* hover: variants — raise slightly */
+[data-theme="violet-day"] [class*="hover:bg-white\/"]:hover {
+    background-color: rgba(0, 0, 0, 0.07) !important;
+}
+
+/* Modal backdrop: swap light wash for a proper dark overlay */
+[data-theme="violet-day"] .bg-background\/80 {
+    background-color: rgba(15, 23, 42, 0.35) !important;
+}
+/* Modal box: stronger visible border + shadow */
+[data-theme="violet-day"] .bg-sidebar.border {
+    border-color: #CBD5E1 !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Calendar day cells */
+[data-theme="violet-day"] .cal-day {
+    background-color: #FFFFFF !important;
+    border-color: #E2E8F0 !important;
+}
+[data-theme="violet-day"] .cal-day:hover {
+    background-color: #F8F5FF !important;
+    border-color: #C4B5FD !important;
+}
+[data-theme="violet-day"] .cal-day.active-tile {
+    border-color: #7C3AED !important;
+    box-shadow: 0 0 0 2px #F8FAFC, 0 0 0 4px #7C3AED !important;
+}
+/* Swimlane columns */
+[data-theme="violet-day"] .kanban-column {
+    background-color: #F1F5F9 !important;
+    border-color: #CBD5E1 !important;
+}
+[data-theme="violet-day"] .kanban-column:hover {
+    background-color: #EEF2FF !important;
+    border-color: #A5B4FC !important;
+}
+
 /* ── Žalias ──────────────────────────────────────────────────────── */
 [data-theme="green"] {
     --color-background: #F0FDF4;
     --color-card:       #FFFFFF;
     --color-sidebar:    #ECFDF5;
-    --color-border-subtle: #D1FAE5;
+    --color-border-subtle: #A7F3D0;
     --color-primary:    #10B981;
     --color-secondary:  #34D399;
     --color-muted:      #6B7280;
@@ -103,15 +156,18 @@ body {
     --card-foreground:  #064E3B;
     --primary:          #10B981;
     --primary-foreground: #ffffff;
-    --muted-foreground: #065F46;
-    --border:           #D1FAE5;
-    --input:            #D1FAE5;
+    --muted-foreground: #6B7280;
+    --border:           #A7F3D0;
+    --input:            #A7F3D0;
 }
 [data-theme="green"] .text-white {
     color: #064E3B !important;
 }
+[data-theme="green"] [class*="text-white\/"] {
+    color: #374151 !important;
+}
 [data-theme="green"] .text-muted-foreground {
-    color: #065F46 !important;
+    color: #6B7280 !important;
 }
 [data-theme="green"] .bg-primary.text-white,
 [data-theme="green"] [class*="bg-red"].text-white,
@@ -123,12 +179,60 @@ body {
     color: #ffffff !important;
 }
 
+/* White-opacity borders → green-tinted gray */
+[data-theme="green"] .border-white\/5  { border-color: #D1FAE5 !important; }
+[data-theme="green"] .border-white\/10 { border-color: #A7F3D0 !important; }
+[data-theme="green"] .border-white\/15 { border-color: #6EE7B7 !important; }
+[data-theme="green"] .border-white\/20 { border-color: #6EE7B7 !important; }
+[data-theme="green"] .border-white\/40 { border-color: #34D399 !important; }
+
+/* White-opacity backgrounds → subtle dark tints */
+[data-theme="green"] [class*="bg-white\/"] {
+    background-color: rgba(0, 0, 0, 0.04) !important;
+}
+[data-theme="green"] [class*="hover:bg-white\/"]:hover {
+    background-color: rgba(0, 0, 0, 0.07) !important;
+}
+
+/* Modal backdrop */
+[data-theme="green"] .bg-background\/80 {
+    background-color: rgba(6, 78, 59, 0.25) !important;
+}
+/* Modal box */
+[data-theme="green"] .bg-sidebar.border {
+    border-color: #6EE7B7 !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Calendar day cells */
+[data-theme="green"] .cal-day {
+    background-color: #FFFFFF !important;
+    border-color: #A7F3D0 !important;
+}
+[data-theme="green"] .cal-day:hover {
+    background-color: #F0FFF8 !important;
+    border-color: #34D399 !important;
+}
+[data-theme="green"] .cal-day.active-tile {
+    border-color: #10B981 !important;
+    box-shadow: 0 0 0 2px #F0FDF4, 0 0 0 4px #10B981 !important;
+}
+/* Swimlane columns */
+[data-theme="green"] .kanban-column {
+    background-color: #FFFFFF !important;
+    border-color: #A7F3D0 !important;
+}
+[data-theme="green"] .kanban-column:hover {
+    background-color: #F0FFF8 !important;
+    border-color: #34D399 !important;
+}
+
 /* ── Medinis / rudas ─────────────────────────────────────────────── */
 [data-theme="wood"] {
     --color-background: #F5EFE7;
     --color-card:       #FFFFFF;
     --color-sidebar:    #EDE4D8;
-    --color-border-subtle: #E5D6C6;
+    --color-border-subtle: #D2A679;
     --color-primary:    #8B5E3C;
     --color-secondary:  #C8A98D;
     --color-muted:      #A08D7C;
@@ -139,11 +243,14 @@ body {
     --primary:          #8B5E3C;
     --primary-foreground: #ffffff;
     --muted-foreground: #5A4633;
-    --border:           #E5D6C6;
-    --input:            #E5D6C6;
+    --border:           #D2A679;
+    --input:            #D2A679;
 }
 [data-theme="wood"] .text-white {
     color: #2C1F14 !important;
+}
+[data-theme="wood"] [class*="text-white\/"] {
+    color: #374151 !important;
 }
 [data-theme="wood"] .text-muted-foreground {
     color: #5A4633 !important;
@@ -156,6 +263,59 @@ body {
 [data-theme="wood"] [class*="bg-violet"].text-white,
 [data-theme="wood"] [class*="bg-primary"].text-white {
     color: #ffffff !important;
+}
+
+/* White-opacity borders → warm tan */
+[data-theme="wood"] .border-white\/5  { border-color: #EDE4D8 !important; }
+[data-theme="wood"] .border-white\/10 { border-color: #E5D6C6 !important; }
+[data-theme="wood"] .border-white\/15 { border-color: #D2A679 !important; }
+[data-theme="wood"] .border-white\/20 { border-color: #D2A679 !important; }
+[data-theme="wood"] .border-white\/40 { border-color: #C8A98D !important; }
+
+/* White-opacity backgrounds → subtle dark tints */
+[data-theme="wood"] [class*="bg-white\/"] {
+    background-color: rgba(0, 0, 0, 0.04) !important;
+}
+[data-theme="wood"] [class*="hover:bg-white\/"]:hover {
+    background-color: rgba(0, 0, 0, 0.07) !important;
+}
+
+/* Modal backdrop */
+[data-theme="wood"] .bg-background\/80 {
+    background-color: rgba(44, 31, 20, 0.3) !important;
+}
+/* Modal box */
+[data-theme="wood"] .bg-sidebar.border {
+    border-color: #D2A679 !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Calendar day cells */
+[data-theme="wood"] .cal-day {
+    background-color: #FFFFFF !important;
+    border-color: #E5D6C6 !important;
+}
+[data-theme="wood"] .cal-day:hover {
+    background-color: #FDF8F3 !important;
+    border-color: #C8A98D !important;
+}
+[data-theme="wood"] .cal-day.active-tile {
+    border-color: #8B5E3C !important;
+    box-shadow: 0 0 0 2px #F5EFE7, 0 0 0 4px #8B5E3C !important;
+}
+/* Swimlane columns */
+[data-theme="wood"] .kanban-column {
+    background-color: #FFFFFF !important;
+    border-color: #D2A679 !important;
+}
+[data-theme="wood"] .kanban-column:hover {
+    background-color: #FDF8F3 !important;
+    border-color: #C8A98D !important;
+}
+
+/* ── Swimlane outline — dark theme (global) ──────────────────────── */
+.kanban-column {
+    border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 /* Task Card Layout Toggling */
