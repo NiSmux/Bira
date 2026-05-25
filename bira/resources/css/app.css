@@ -52,6 +52,25 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+/* ── Theme logo filters (applied when custom logo file is absent) ── */
+/* violet-day: tint to purple #7C3AED */
+[data-theme="violet-day"] .theme-logo {
+    filter: brightness(0) saturate(100%) invert(22%) sepia(90%) saturate(600%) hue-rotate(248deg) opacity(0.9);
+}
+/* green: tint to #10B981 */
+[data-theme="green"] .theme-logo {
+    filter: brightness(0) saturate(100%) invert(55%) sepia(80%) saturate(500%) hue-rotate(118deg) opacity(0.9);
+}
+/* wood: tint to #8B5E3C */
+[data-theme="wood"] .theme-logo {
+    filter: brightness(0) saturate(100%) invert(40%) sepia(60%) saturate(400%) hue-rotate(15deg) opacity(0.9);
+}
+/* Remove filter once real themed logos are placed */
+[data-theme="green"] .theme-logo[src*="logo_zalias"],
+[data-theme="wood"]  .theme-logo[src*="logo_kreminis"] {
+    filter: none;
+}
+
 /* ── Violetinis dieninis ─────────────────────────────────────────── */
 [data-theme="violet-day"] {
     --color-background: #F8FAFC;

@@ -25,11 +25,22 @@
 </head>
 <body class="bg-background text-foreground antialiased selection:bg-primary/30">
     <div class="flex h-screen overflow-hidden">
+        @php
+            $_theme = auth()->check() ? (auth()->user()->theme ?? 'dark') : 'dark';
+            $_logoMap = [
+                'green' => 'logo_zalias.png',
+                'wood'  => 'logo_kreminis.png',
+            ];
+            $_logoFile = $_logoMap[$_theme] ?? null;
+            $_logo = ($_logoFile && file_exists(public_path('assets/' . $_logoFile)))
+                ? $_logoFile
+                : 'logo_su_pavadinimu.png';
+        @endphp
         <!-- Sidebar -->
         @unless(View::hasSection('hide_sidebar'))
         <aside class="w-64 bg-sidebar border-r border-border-subtle flex flex-col shrink-0">
             <a href="{{ route('pagrindinis') }}" class="p-6 flex items-center gap-3 hover:opacity-80 transition-opacity">
-                <img src="{{ asset('assets/logo_su_pavadinimu.png') }}" alt="Bira Logo" class="h-8 w-auto">
+                <img src="{{ asset('assets/' . $_logo) }}" alt="Bira Logo" class="theme-logo h-8 w-auto">
             </a>
             
             <nav class="flex-1 px-4 space-y-1 mt-4">
@@ -134,7 +145,7 @@
                 <div class="flex items-center gap-8">
                     @if(View::hasSection('hide_sidebar'))
                         <a href="{{ route('pagrindinis') }}" class="mr-4 hover:opacity-80 transition-opacity">
-                            <img src="{{ asset('assets/logo_su_pavadinimu.png') }}" alt="Bira Logo" class="h-8 w-auto">
+                            <img src="{{ asset('assets/' . $_logo) }}" alt="Bira Logo" class="theme-logo h-8 w-auto">
                         </a>
                     @endif
                     <nav class="hidden md:flex items-center gap-1">
