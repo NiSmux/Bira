@@ -6,7 +6,7 @@
 <div class="p-8 max-w-4xl mx-auto">
     {{-- Header --}}
     <div class="mb-8">
-        <a href="{{ route('poker.index', array_filter(['team_id' => request('team_id'), 'board_id' => request('board_id')])) }}" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors mb-4">
+        <a href="{{ route('poker.index', array_filter(['team_id' => $session->team_id, 'board_id' => $session->board_id])) }}" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors mb-4">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
             Back to Sessions
         </a>

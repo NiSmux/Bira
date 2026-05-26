@@ -65,18 +65,18 @@
     {{-- Current Item Card --}}
     @if($currentItem)
         <div class="bg-card border border-border-subtle rounded-2xl p-6 mb-6">
-            <div class="flex items-start justify-between">
-                <div>
-                    <span class="text-xs font-semibold text-primary uppercase tracking-wider">{{ $currentItem->workItem->type->name ?? 'Task' }}</span>
-                    <h2 class="text-xl font-bold text-white mt-1">{{ $currentItem->workItem->title }}</h2>
-                    <p class="text-muted-foreground text-sm mt-2">Vote on the complexity of this {{ strtolower($currentItem->workItem->type->name ?? 'task') }}</p>
-                </div>
-                @if($currentItem->workItem->description)
-                    <div class="ml-4 max-w-xs">
-                        <p class="text-muted-foreground text-sm">{{ Str::limit($currentItem->workItem->description, 150) }}</p>
-                    </div>
-                @endif
+            <div>
+                <span class="text-xs font-semibold text-primary uppercase tracking-wider">{{ $currentItem->workItem->type->name ?? 'Task' }}</span>
+                <h2 class="text-xl font-bold text-white mt-1">{{ $currentItem->workItem->title }}</h2>
+                <p class="text-muted-foreground text-sm mt-1">Vote on the complexity of this {{ strtolower($currentItem->workItem->type->name ?? 'task') }}</p>
             </div>
+            
+            @if($currentItem->workItem->description)
+                <div class="mt-4 p-4 rounded-xl bg-white/5 border border-white/10">
+                    <h4 class="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Description</h4>
+                    <p class="text-sm text-white/90 whitespace-pre-wrap">{{ $currentItem->workItem->description }}</p>
+                </div>
+            @endif
         </div>
 
         <div class="mb-6">
