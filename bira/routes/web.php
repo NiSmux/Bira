@@ -178,6 +178,8 @@ Route::middleware(['mano_apsauga'])->group(function () {
         Route::post('/poker', [PlanningPokerController::class, 'store'])->name('poker.store');
         Route::get('/poker/{session}', [PlanningPokerController::class, 'show'])->name('poker.show');
         Route::post('/poker/{session}/items/{item}/vote', [PlanningPokerController::class, 'vote'])->name('poker.vote');
+        Route::post('/poker/{session}/items/{item}/restart', [PlanningPokerController::class, 'restartTask'])->name('poker.restartTask');
+        Route::post('/poker/{session}/items/{item}/next', [PlanningPokerController::class, 'nextTask'])->name('poker.nextTask');
         Route::post('/poker/{session}/complete', [PlanningPokerController::class, 'complete'])->name('poker.complete');
         Route::get('/poker/{session}/results', [PlanningPokerController::class, 'results'])->name('poker.results');
         Route::post('/poker/{session}/save-points', [PlanningPokerController::class, 'savePoints'])->name('poker.savePoints');

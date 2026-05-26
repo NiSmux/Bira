@@ -17,11 +17,13 @@ class PokerSession extends Model
         'status',
         'created_by',
         'finished_at',
+        'participants',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'finished_at' => 'datetime',
+        'participants' => 'array',
     ];
 
     public function team()
@@ -45,21 +47,48 @@ class PokerSession extends Model
     }
 
     /**
+     * Check if this is a live session (no time limit, synchronous)
+     */
+    public function isLive(): bool
+    {
+        return $this->time_limit === 0;
+    }
+
+    /**
      * Check if the session timer has expired
      */
     public function isExpired(): bool
     {
+        if ($this->isLive()) return false;
         if (!$this->created_at) return false;
         return now()->greaterThan($this->created_at->addSeconds($this->time_limit));
     }
 
     /**
-     * Check if all team members have voted for a specific item
+     * Get the users who are participating in this session.
+     * If no participants are explicitly set, defaults to all team members.
+     */
+    public function getActiveParticipants()
+    {
+        if (empty($this->participants)) {
+            return $this->team->members;
+        }
+
+        // Return members filtered by the stored participants array
+        return $this->team->members()->whereIn('users.id', $this->participants)->get();
+    }
+
+    /**
+     * Check if all participants have voted for a specific item
      */
     public function allVotedForItem(PokerSessionItem $item): bool
     {
-        $memberCount = $this->team->members()->count();
-        $voteCount = $item->votes()->count();
+        $participants = $this->getActiveParticipants();
+        $memberCount = $participants->count();
+        
+        // Count votes only from active participants
+        $voteCount = $item->votes()->whereIn('user_id', $participants->pluck('id'))->count();
+        
         return $voteCount >= $memberCount;
     }
 

@@ -67,10 +67,39 @@
                    placeholder="e.g. Sprint 5 Estimation">
         </div>
 
+        {{-- Session Mode --}}
+        <div class="space-y-3">
+            <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider pl-1">Session Mode</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label class="relative flex cursor-pointer rounded-2xl border border-white/10 bg-white/5 p-4 hover:bg-white/10 transition-colors">
+                    <input type="radio" name="session_mode" value="live" class="peer sr-only" checked onchange="toggleTimeLimit(this.value)">
+                    <div class="flex flex-col">
+                        <span class="text-sm font-semibold text-white mb-1">Live Session</span>
+                        <span class="text-xs text-muted-foreground">Wait for everyone to answer. No time limit.</span>
+                    </div>
+                    <div class="absolute top-4 right-4 text-primary opacity-0 transition-opacity peer-checked:opacity-100">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <div class="absolute inset-0 rounded-2xl border-2 border-transparent peer-checked:border-primary pointer-events-none transition-colors"></div>
+                </label>
+                <label class="relative flex cursor-pointer rounded-2xl border border-white/10 bg-white/5 p-4 hover:bg-white/10 transition-colors">
+                    <input type="radio" name="session_mode" value="async" class="peer sr-only" onchange="toggleTimeLimit(this.value)">
+                    <div class="flex flex-col">
+                        <span class="text-sm font-semibold text-white mb-1">Asynchronous</span>
+                        <span class="text-xs text-muted-foreground">Set a time limit. Users vote independently.</span>
+                    </div>
+                    <div class="absolute top-4 right-4 text-primary opacity-0 transition-opacity peer-checked:opacity-100">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <div class="absolute inset-0 rounded-2xl border-2 border-transparent peer-checked:border-primary pointer-events-none transition-colors"></div>
+                </label>
+            </div>
+        </div>
+
         {{-- Time Limit --}}
-        <div class="space-y-2">
+        <div id="time_limit_container" class="space-y-2 hidden">
             <label for="time_limit" class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider pl-1">Time Limit (minutes)</label>
-            <input type="number" id="time_limit" name="time_limit" value="{{ old('time_limit', 5) }}" min="1" max="120" required
+            <input type="number" id="time_limit" name="time_limit" value="{{ old('time_limit', 5) }}" min="1" max="120"
                    class="block w-full px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-muted-foreground/30 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all">
         </div>
 
@@ -81,6 +110,28 @@
                 <p id="work-items-placeholder" class="text-muted-foreground/50 text-sm text-center py-6">Select a board to load items.</p>
                 <div id="work-items-list" class="space-y-2 hidden"></div>
             </div>
+        </div>
+
+        {{-- Participants --}}
+        <div class="space-y-2">
+            <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider pl-1">Participants</label>
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-4 max-h-60 overflow-y-auto space-y-2">
+                @if($selectedTeam)
+                    @foreach($selectedTeam->members as $member)
+                        <label class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer">
+                            <input type="checkbox" name="participants[]" value="{{ $member->id }}" checked
+                                   class="w-4 h-4 rounded bg-white/5 border-white/20 text-primary focus:ring-primary/20 focus:ring-offset-0">
+                            <div class="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
+                                {{ strtoupper(substr($member->name, 0, 1)) }}{{ strtoupper(substr(strstr($member->name, ' ') ?: '', 1, 1)) }}
+                            </div>
+                            <span class="text-white text-sm font-medium">{{ $member->name }}</span>
+                        </label>
+                    @endforeach
+                @else
+                    <p class="text-muted-foreground/50 text-sm text-center py-4">No team selected.</p>
+                @endif
+            </div>
+            <p class="text-xs text-muted-foreground pl-1 mt-1">Select which team members will participate in estimating.</p>
         </div>
 
         {{-- Submit --}}
@@ -151,6 +202,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initial load
     loadItems(boardId);
 });
+
+function toggleTimeLimit(mode) {
+    const container = document.getElementById('time_limit_container');
+    const input = document.getElementById('time_limit');
+    if (mode === 'async') {
+        container.classList.remove('hidden');
+        input.setAttribute('required', 'required');
+    } else {
+        container.classList.add('hidden');
+        input.removeAttribute('required');
+    }
+}
 </script>
 @endpush
 

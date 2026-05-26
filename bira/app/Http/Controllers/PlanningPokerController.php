@@ -93,12 +93,15 @@ class PlanningPokerController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'team_id'    => 'required|integer|exists:teams,id',
-            'board_id'   => 'nullable|integer|exists:boards,id',
-            'title'      => 'required|string|max:200',
-            'time_limit' => 'required|integer|min:1|max:120',
-            'work_items' => 'required|array|min:1',
+            'team_id'      => 'required|integer|exists:teams,id',
+            'board_id'     => 'nullable|integer|exists:boards,id',
+            'title'        => 'required|string|max:200',
+            'session_mode' => 'required|in:live,async',
+            'time_limit'   => 'nullable|required_if:session_mode,async|integer|min:1|max:120',
+            'work_items'   => 'required|array|min:1',
             'work_items.*' => 'integer|exists:work_items,id',
+            'participants' => 'required|array|min:1',
+            'participants.*' => 'integer|exists:users,id',
         ]);
 
         $user = Auth::user();
@@ -109,15 +112,16 @@ class PlanningPokerController extends Controller
             return redirect()->back()->withErrors(['team_id' => 'You are not a member of this team.']);
         }
 
-        // Create the session (time_limit stored in seconds)
+        // Create the session (time_limit stored in seconds, 0 for live sessions)
         $session = PokerSession::create([
-            'team_id'  => $request->team_id,
-            'board_id' => $request->board_id ?: null,
-            'title'    => $request->title,
-            'time_limit' => $request->time_limit * 60, // convert minutes to seconds
-            'status'     => 'active',
-            'created_by' => $user->id,
-            'created_at' => now(),
+            'team_id'      => $request->team_id,
+            'board_id'     => $request->board_id ?: null,
+            'title'        => $request->title,
+            'time_limit'   => $request->session_mode === 'live' ? 0 : $request->time_limit * 60,
+            'participants' => array_map('intval', $request->participants),
+            'status'       => 'active',
+            'created_by'   => $user->id,
+            'created_at'   => now(),
         ]);
 
         // Attach work items
@@ -155,9 +159,10 @@ class PlanningPokerController extends Controller
         $user = Auth::user();
         $team = $session->team;
 
-        // Check user is a team member
-        if (!$team->members()->where('users.id', $user->id)->exists()) {
-            abort(403, 'You are not a member of this team.');
+        // Check user is an active participant
+        $participants = $session->getActiveParticipants();
+        if (!$participants->contains('id', $user->id) && $session->created_by !== $user->id) {
+            abort(403, 'You are not a participant in this poker session.');
         }
 
         // Auto-complete if timer expired
@@ -172,25 +177,50 @@ class PlanningPokerController extends Controller
         }
 
         $session->load(['items.workItem', 'items.votes', 'creator']);
-        $members = $team->members;
+        $members = $participants; // Use the active participants instead of all team members
 
-        // Find the current item to vote on (first item without user's vote)
+        // Determine the current item based on the session mode
         $currentItem = null;
-        foreach ($session->items as $item) {
-            if (!$item->hasUserVoted($user->id)) {
-                $currentItem = $item;
-                break;
+        $waitingForOthers = false;
+        $showingResultsForCurrent = false;
+
+        if ($session->isLive()) {
+            // Live Mode: Synchronous progression, wait for everybody
+            foreach ($session->items as $item) {
+                if ($item->final_points === null) {
+                    $currentItem = $item;
+                    if ($session->allVotedForItem($item)) {
+                        $showingResultsForCurrent = true;
+                    } elseif ($item->hasUserVoted($user->id)) {
+                        $waitingForOthers = true;
+                    }
+                    break;
+                }
+            }
+            
+            if (!$currentItem) {
+                // If all items have final_points set, session is done
+                $this->finishSession($session);
+                return redirect()->route('poker.results', $session->id);
+            }
+        } else {
+            // Async Mode: Independent progression
+            foreach ($session->items as $item) {
+                if (!$item->hasUserVoted($user->id)) {
+                    $currentItem = $item;
+                    break;
+                }
             }
         }
 
-        // If user voted on all items, show the last item
+        // If all items are fully voted (everyone has voted on everything), show the last item
         if (!$currentItem && $session->items->count() > 0) {
             $currentItem = $session->items->last();
         }
 
         $fibonacciCards = [0, 1, 2, 3, 5, 8, 13, 21, '?'];
 
-        return view('poker.show', compact('session', 'members', 'currentItem', 'fibonacciCards', 'user'));
+        return view('poker.show', compact('session', 'members', 'currentItem', 'fibonacciCards', 'user', 'waitingForOthers', 'showingResultsForCurrent'));
     }
 
     /**
@@ -201,9 +231,10 @@ class PlanningPokerController extends Controller
         $user = Auth::user();
         $team = $session->team;
 
-        // Validate
-        if (!$team->members()->where('users.id', $user->id)->exists()) {
-            abort(403);
+        // Validate participant
+        $participants = $session->getActiveParticipants();
+        if (!$participants->contains('id', $user->id)) {
+            abort(403, 'You are not a participant in this poker session.');
         }
 
         if ($session->status !== 'active') {
@@ -245,7 +276,7 @@ class PlanningPokerController extends Controller
             }
         }
 
-        if ($allDone) {
+        if ($allDone && !$session->isLive()) {
             $this->finishSession($session);
             return redirect()->route('poker.results', [
                 $session->id,
@@ -259,6 +290,51 @@ class PlanningPokerController extends Controller
             'board_id' => $request->query('board_id'),
             'team_id'  => $request->query('team_id'),
         ])->with('success', 'Vote recorded!');
+    }
+
+    /**
+     * Advance to the next task in live mode
+     */
+    public function nextTask(Request $request, PokerSession $session, PokerSessionItem $item)
+    {
+        $user = Auth::user();
+
+        if ($session->created_by !== $user->id) {
+            abort(403, 'Only the session creator can advance the task.');
+        }
+
+        // Set final points to consensus so it's marked as complete
+        $item->update(['final_points' => $item->consensusPoints() ?? 0]);
+
+        return redirect()->route('poker.show', [
+            $session->id,
+            'board_id' => $request->query('board_id'),
+            'team_id'  => $request->query('team_id'),
+        ]);
+    }
+
+    /**
+     * Restart voting for a specific task
+     */
+    public function restartTask(Request $request, PokerSession $session, PokerSessionItem $item)
+    {
+        $user = Auth::user();
+
+        if ($session->created_by !== $user->id) {
+            abort(403, 'Only the session creator can restart voting.');
+        }
+
+        // Delete all votes for this item
+        $item->votes()->delete();
+        
+        // Ensure final_points is null
+        $item->update(['final_points' => null]);
+
+        return redirect()->route('poker.show', [
+            $session->id,
+            'board_id' => $request->query('board_id'),
+            'team_id'  => $request->query('team_id'),
+        ]);
     }
 
     /**
