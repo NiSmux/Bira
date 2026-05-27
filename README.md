@@ -28,33 +28,39 @@ Bira is a powerful, Agile project management and issue tracking tool (inspired b
 
 ### Installation
 
-1. **Install PHP dependencies:**
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd Bira/bira
+   ```
+
+2. **Install PHP dependencies:**
    ```bash
    composer install
    ```
 
-2. **Install Node dependencies:**
+3. **Install Node dependencies:**
    ```bash
    npm install
    ```
 
-3. **Environment Setup:**
+4. **Environment Setup:**
    Copy the example environment file and configure your database settings.
    ```bash
    cp .env.example .env
    ```
 
-4. **Generate Application Key:**
+5. **Generate Application Key:**
    ```bash
    php artisan key:generate
    ```
 
-5. **Run Migrations & Seeders:**
+6. **Run Migrations & Seeders:**
    ```bash
    php artisan migrate --seed
    ```
 
-6. **Start the Development Server:**
+7. **Start the Development Server:**
    You can run everything concurrently using the built-in Composer script:
    ```bash
    composer run dev
@@ -63,10 +69,12 @@ Bira is a powerful, Agile project management and issue tracking tool (inspired b
 
 ## 📂 Core Project Structure
 
-- `app/Models` - Contains Eloquent models (`Board`, `Sprint`, `PokerSession`, `WorkItem`, etc.)
-- `app/Http/Controllers` - Handlers for various features like Sprints, Teams, Boards, and Planning Poker.
-- `routes/web.php` - Application routes and endpoints.
-- `resources/views` - Blade templates for the application's user interface.
+The Laravel application is located inside the `bira/` directory.
+
+- `bira/app/Models` - Contains Eloquent models (`Board`, `Sprint`, `PokerSession`, `WorkItem`, etc.)
+- `bira/app/Http/Controllers` - Handlers for various features like Sprints, Teams, Boards, and Planning Poker.
+- `bira/routes/web.php` - Application routes and endpoints.
+- `bira/resources/views` - Blade templates for the application's user interface.
 
 ## 📝 License
 
