@@ -441,6 +441,8 @@
             </div>
         </div>
     </div>
+
+    @include('boards.tasks._quick_edit_modal')
 @endsection
 
 @push('scripts')

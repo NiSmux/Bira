@@ -210,6 +210,64 @@ class WorkItemController extends Controller
         ));
     }
 
+    /**
+     * Return task + board option data as JSON for the quick-edit modal.
+     */
+    public function quickEditData(Board $board, WorkItem $task)
+    {
+        $this->ensureTaskBelongsToBoard($board, $task);
+        $this->ensureBoardPermission($board, 'member');
+
+        $board->load('members', 'subTeams.members', 'tags');
+        $task->load('assignee', 'subTeam', 'tags');
+
+        $itemTypes = \DB::table('item_types')
+            ->where(function ($q) use ($board) {
+                $q->whereNull('team_id');
+                if ($board->team_id) {
+                    $q->orWhere('team_id', $board->team_id);
+                }
+            })
+            ->orderBy('order_index')
+            ->get();
+
+        $priorities = \DB::table('priorities')->get();
+
+        $statuses = WorkflowStatus::where('workflow_group_id', $board->workflow_group_id)
+            ->orderBy('order_index')
+            ->get();
+
+        return response()->json([
+            'task' => [
+                'id'              => $task->id,
+                'title'           => $task->title,
+                'description'     => $task->description,
+                'status_id'       => $task->status_id,
+                'item_type_id'    => $task->item_type_id,
+                'priority_id'     => $task->priority_id,
+                'story_points'    => $task->story_points,
+                'estimated_hours' => $task->estimated_hours,
+                'assignee_id'     => $task->assignee_id,
+                'sub_team_id'     => $task->sub_team_id,
+                'tags'            => $task->tags->pluck('id')->values(),
+            ],
+            'statuses'       => $statuses,
+            'itemTypes'      => $itemTypes,
+            'priorities'     => $priorities,
+            'boardMembers'   => $board->members->map(fn ($m) => ['id' => $m->id, 'name' => $m->name])->values(),
+            'subTeams'       => $board->subTeams->map(fn ($s) => [
+                'id'          => $s->id,
+                'name'        => $s->name,
+                'memberCount' => $s->members->count(),
+            ])->values(),
+            'boardTags'      => $board->tags->map(fn ($t) => ['id' => $t->id, 'name' => $t->name, 'color' => $t->color])->values(),
+            'estimationMode' => $board->estimation_mode,
+            'spToHoursRate'  => $board->sp_to_hours_rate,
+            'updateUrl'      => route('boards.tasks.update', [$board->id, $task->id]),
+            'editUrl'        => route('boards.tasks.edit', [$board->id, $task->id]),
+        ]);
+    }
+
     public function update(Request $request, Board $board, WorkItem $task)
     {
         $this->ensureTaskBelongsToBoard($board, $task);

@@ -154,6 +154,8 @@ Route::middleware(['mano_apsauga'])->group(function () {
             ->name('boards.tasks.show');
         Route::patch('/boards/{board}/tasks/{task}/status', [WorkItemController::class, 'updateStatus'])
             ->name('boards.tasks.updateStatus');
+        Route::get('/boards/{board}/tasks/{task}/quick-edit-data', [WorkItemController::class, 'quickEditData'])
+            ->name('boards.tasks.quickEditData');
 
 
 

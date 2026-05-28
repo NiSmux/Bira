@@ -67,9 +67,12 @@
 
         <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
             @if($permissionLevel !== 'viewer')
-                <a href="{{ route('boards.tasks.edit', [$board->id, $item->id]) }}?redirect_to={{ urlencode(request()->fullUrl()) }}" class="p-2 rounded-xl hover:bg-white/10 text-muted-foreground hover:text-white transition-all" title="Quick Edit">
+                <button type="button" 
+                        onclick="openQuickEdit({{ $board->id }}, {{ $item->id }})" 
+                        class="p-2 rounded-xl hover:bg-white/10 text-muted-foreground hover:text-white transition-all" 
+                        title="Quick Edit">
                     <x-lucide-square-pen class="w-4 h-4" />
-                </a>
+                </button>
             @endif
             <a href="{{ route('boards.tasks.show', [$board->id, $item->id]) }}?redirect_to={{ urlencode(request()->fullUrl()) }}" class="p-2 rounded-xl hover:bg-white/10 text-muted-foreground hover:text-white transition-all" title="View Details">
                 <x-lucide-chevron-right class="w-4 h-4" />

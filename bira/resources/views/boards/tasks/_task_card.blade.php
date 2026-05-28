@@ -33,9 +33,12 @@
             <h5 class="text-white font-semibold line-clamp-2 leading-tight">{{ $item->title }}</h5>
             @if($permissionLevel !== 'viewer')
                 <div class="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 -mr-2">
-                    <a href="{{ route('boards.tasks.edit', [$board->id ?? $backlogBoard->id, $item->id]) }}" class="p-1.5 rounded-lg hover:bg-white/5 text-muted-foreground hover:text-white transition-colors">
+                    <button type="button" 
+                            onclick="openQuickEdit({{ $board->id ?? $backlogBoard->id }}, {{ $item->id }})" 
+                            class="p-1.5 rounded-lg hover:bg-white/5 text-muted-foreground hover:text-white transition-colors"
+                            title="Quick Edit">
                         <x-lucide-square-pen class="w-4 h-4" />
-                    </a>
+                    </button>
                 </div>
             @endif
         </div>
@@ -112,9 +115,12 @@
 
             <div class="flex items-center gap-2 border-l border-white/5 pl-6">
                 @if($permissionLevel !== 'viewer')
-                    <a href="{{ route('boards.tasks.edit', [$board->id ?? $backlogBoard->id, $item->id]) }}" class="p-2 rounded-lg hover:bg-white/5 text-muted-foreground hover:text-white transition-colors opacity-0 group-hover:opacity-100">
+                    <button type="button" 
+                            onclick="openQuickEdit({{ $board->id ?? $backlogBoard->id }}, {{ $item->id }})" 
+                            class="p-2 rounded-lg hover:bg-white/5 text-muted-foreground hover:text-white transition-colors opacity-0 group-hover:opacity-100"
+                            title="Quick Edit">
                         <x-lucide-square-pen class="w-4 h-4" />
-                    </a>
+                    </button>
                 @endif
                 <a href="{{ route('boards.tasks.show', [$board->id ?? $backlogBoard->id, $item->id]) }}" class="p-2 rounded-lg hover:bg-primary/10 hover:text-primary text-muted-foreground transition-all">
                     <x-lucide-chevron-right class="w-5 h-5" />
