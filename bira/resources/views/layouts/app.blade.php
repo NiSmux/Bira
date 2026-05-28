@@ -28,8 +28,10 @@
         @php
             $_theme = auth()->check() ? (auth()->user()->theme ?? 'dark') : 'dark';
             $_logoMap = [
-                'green' => 'logo_zalias.png',
-                'wood'  => 'logo_kreminis.png',
+                'violet-day' => 'logo_su_pavadinimu.png',
+                'green'      => 'logo_zalias.png',
+                'wood'       => 'logo_kreminis.png',
+                'dark'       => 'logo_su_pavadinimu.png', // Explicitly setting it for dark as well, since it's the fallback
             ];
             $_logoFile = $_logoMap[$_theme] ?? null;
             $_logo = ($_logoFile && file_exists(public_path('assets/' . $_logoFile)))

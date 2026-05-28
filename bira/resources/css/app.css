@@ -66,6 +66,7 @@ body {
     filter: brightness(0) saturate(100%) invert(40%) sepia(60%) saturate(400%) hue-rotate(15deg) opacity(0.9);
 }
 /* Remove filter once real themed logos are placed */
+[data-theme="violet-day"] .theme-logo[src*="logo_su_pavadinimu"],
 [data-theme="green"] .theme-logo[src*="logo_zalias"],
 [data-theme="wood"]  .theme-logo[src*="logo_kreminis"] {
     filter: none;
